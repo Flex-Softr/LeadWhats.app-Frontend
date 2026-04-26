@@ -24,6 +24,12 @@
 .DS_Store
 *.pem
 
+# Baileys / WhatsApp Web session files (per workspace + device)
+.wa-sessions/
+
+# User-uploaded template media (API local storage)
+uploads/template-media/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

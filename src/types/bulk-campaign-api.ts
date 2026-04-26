@@ -1,0 +1,104 @@
+export type BulkCampaignStatusApi = "scheduled" | "completed" | "failed";
+
+export type BulkCampaignDeviceModeApi =
+  | "single"
+  | "failover"
+  | "round_robin";
+
+export type BulkCampaignAntiBlockApi = {
+  enabled: boolean;
+  spintax: boolean;
+  verifyNumbers: boolean;
+  repliedOnly: boolean;
+  recent24hOnly: boolean;
+  uniquenessMode: "none" | "campaign" | "workspace_window";
+  batchPauseEvery: number;
+  batchPauseSec: number;
+  failLimitInRow: number;
+  activeHoursStart: string | null;
+  activeHoursEnd: string | null;
+};
+
+export type BulkCampaignListItemApi = {
+  id: string;
+  name: string;
+  status: BulkCampaignStatusApi;
+  kind: "text" | "template";
+  selectionMode: "groups" | "all_verified" | "manual";
+  deviceMode: BulkCampaignDeviceModeApi;
+  scheduleType: "immediate" | "scheduled";
+  scheduledAt: string | null;
+  recipientCount: number;
+  delayMinSec: number;
+  delayMaxSec: number;
+  maxRetries: number;
+  attachmentType: string | null;
+  attachmentAssetId: string | null;
+  attachmentFileName: string | null;
+  antiBlock: BulkCampaignAntiBlockApi;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BulkCampaignsListResponse = {
+  campaigns: BulkCampaignListItemApi[];
+};
+
+export type CreateBulkCampaignResponse = {
+  campaign: BulkCampaignListItemApi;
+  dispatchedMessages: number;
+  note?: string;
+};
+
+export type BulkCampaignDeviceRowApi = {
+  id: string;
+  name: string;
+  phone: string | null;
+  status: string;
+};
+
+export type BulkCampaignDeviceSendStatsApi = {
+  deviceId: string;
+  deviceName: string;
+  phone: string | null;
+  sent: number;
+  failed: number;
+  queued: number;
+  simulated: number;
+  total: number;
+};
+
+export type BulkCampaignOutboundStatsApi = {
+  targetRecipients: number;
+  totalOutboundRows: number;
+  sent: number;
+  failed: number;
+  queued: number;
+  simulated: number;
+  pendingInQueue: number;
+  notDispatchedYet: number;
+  delivered: number;
+  readReceiptsTracked: false;
+  seenCount: null;
+};
+
+export type BulkCampaignRecentMessageApi = {
+  id: string;
+  toPhone: string;
+  status: string;
+  deviceId: string;
+  deviceName: string;
+  devicePhone: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+};
+
+export type BulkCampaignDetailApi = {
+  campaign: BulkCampaignListItemApi;
+  template: { id: string; name: string; typeId: string } | null;
+  messagePreview: string | null;
+  devices: BulkCampaignDeviceRowApi[];
+  deviceSendStats: BulkCampaignDeviceSendStatsApi[];
+  stats: BulkCampaignOutboundStatsApi;
+  recentMessages: BulkCampaignRecentMessageApi[];
+};

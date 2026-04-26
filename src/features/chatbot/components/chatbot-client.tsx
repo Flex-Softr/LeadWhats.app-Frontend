@@ -1,0 +1,352 @@
+"use client";
+
+import * as React from "react";
+import {
+  CheckCircle2,
+  Loader2,
+  MessageSquare,
+  Pause,
+  Play,
+  Plus,
+  RefreshCw,
+  Search,
+  Zap,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { ChatbotFlowsTable } from "@/features/chatbot/components/chatbot-flows-table";
+import { CreateChatbotFlowDialog } from "@/features/chatbot/components/create-chatbot-flow-dialog";
+import { flowApiToUi } from "@/features/chatbot/lib/chatbot-map";
+import { ListEmptyState } from "@/features/shared/components/list-empty-state";
+import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
+import { StatCard } from "@/features/shared/components/stat-card";
+import type { ChatbotFlow } from "@/types/chatbot";
+import type {
+  ChatbotFlowMutationResponse,
+  ChatbotFlowsListResponse,
+} from "@/types/chatbot-api";
+import { useSessionIdentity } from "@/hooks/use-session-identity";
+import { ApiError, apiJson } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { usePagination } from "@/hooks/use-pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type FlowFilter = "all" | "active" | "inactive";
+
+export function ChatbotClient() {
+  const { userId, workspaceId, routeKey } = useSessionIdentity();
+  const [flows, setFlows] = React.useState<ChatbotFlow[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [togglingId, setTogglingId] = React.useState<string | null>(null);
+  const [search, setSearch] = React.useState("");
+  const [filter, setFilter] = React.useState<FlowFilter>("all");
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [editingFlow, setEditingFlow] = React.useState<ChatbotFlow | null>(
+    null
+  );
+  const [deleteTarget, setDeleteTarget] = React.useState<ChatbotFlow | null>(
+    null
+  );
+
+  const loadFlows = React.useCallback(async (opts?: { silent?: boolean }) => {
+    const silent = opts?.silent === true;
+    if (silent) setRefreshing(true);
+    else setLoading(true);
+    try {
+      const data = await apiJson<ChatbotFlowsListResponse>(
+        "/v1/chatbot-flows"
+      );
+      setFlows(data.flows.map(flowApiToUi));
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not load chatbot flows.";
+      toast.error("Load failed", { description: msg });
+      setFlows([]);
+    } finally {
+      if (silent) setRefreshing(false);
+      else setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void loadFlows();
+  }, [loadFlows, userId, workspaceId, routeKey]);
+
+  const stats = React.useMemo(() => {
+    const total = flows.length;
+    const active = flows.filter((f) => f.active).length;
+    const inactive = total - active;
+    const totalNodes = flows.reduce((acc, f) => acc + f.nodes.length, 0);
+    const conversations = flows.reduce(
+      (acc, f) => acc + f.conversationCount,
+      0
+    );
+    return { total, active, inactive, totalNodes, conversations };
+  }, [flows]);
+
+  const visible = React.useMemo(() => {
+    let list = flows;
+    if (filter === "active") list = list.filter((f) => f.active);
+    if (filter === "inactive") list = list.filter((f) => !f.active);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter((f) => {
+        const desc = f.description.toLowerCase();
+        const kw = f.triggerKeywords.toLowerCase();
+        return (
+          f.name.toLowerCase().includes(q) ||
+          desc.includes(q) ||
+          kw.includes(q) ||
+          f.deviceLabel.toLowerCase().includes(q)
+        );
+      });
+    }
+    return list;
+  }, [flows, filter, search]);
+  const pagination = usePagination({
+    totalItems: visible.length,
+    initialPageSize: 10,
+  });
+  const pagedFlows = pagination.slice(visible);
+
+  function openCreate() {
+    setEditingFlow(null);
+    setCreateOpen(true);
+  }
+
+  function openEdit(flow: ChatbotFlow) {
+    setEditingFlow(flow);
+    setCreateOpen(true);
+  }
+
+  async function handleToggleActive(flow: ChatbotFlow, active: boolean) {
+    if (flow.active === active) return;
+    setTogglingId(flow.id);
+    try {
+      const res = await apiJson<ChatbotFlowMutationResponse>(
+        `/v1/chatbot-flows/${flow.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ active }),
+        }
+      );
+      const updated = flowApiToUi(res.flow);
+      setFlows((prev) =>
+        prev.map((f) => (f.id === flow.id ? updated : f))
+      );
+      toast.success(active ? "Flow enabled" : "Flow disabled", {
+        description: `“${flow.name}” is ${active ? "now active" : "turned off"}.`,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not update flow.";
+      toast.error("Update failed", { description: msg });
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
+  async function confirmDeleteFlow() {
+    if (!deleteTarget) return;
+    const flow = deleteTarget;
+    try {
+      await apiJson(`/v1/chatbot-flows/${flow.id}`, { method: "DELETE" });
+      setFlows((prev) => prev.filter((f) => f.id !== flow.id));
+      toast.success("Flow removed", {
+        description: `“${flow.name}” deleted.`,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not delete flow.";
+      toast.error("Delete failed", { description: msg });
+      throw err;
+    }
+  }
+
+  return (
+    <>
+      <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
+              Chatbot
+            </h2>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
+              Create intelligent conversational flows tied to a WhatsApp session.
+              Flows and nodes are stored on the server.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 gap-2 border-blue-200 bg-white px-5 text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:bg-slate-950 dark:text-blue-300 dark:hover:bg-blue-950/40"
+              disabled={loading || refreshing}
+              onClick={() => void loadFlows({ silent: true })}
+            >
+              <RefreshCw
+                className={`size-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              className="h-11 gap-2 bg-blue-600 px-5 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
+              disabled={loading}
+              onClick={() => openCreate()}
+            >
+              <Plus className="size-4" />
+              Create Flow
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search flows..."
+              className="h-11 rounded-xl pl-10"
+              aria-label="Search flows"
+            />
+          </div>
+          <Select
+            value={filter}
+            onValueChange={(v) => setFilter((v ?? "all") as FlowFilter)}
+          >
+            <SelectTrigger className="h-11 w-full rounded-xl sm:w-[200px]">
+              <SelectValue placeholder="All Flows" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Flows</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5">
+          <StatCard
+            label="Total Flows"
+            value={stats.total}
+            icon={MessageSquare}
+            accent="blue"
+          />
+          <StatCard
+            label="Active"
+            value={stats.active}
+            icon={Play}
+            accent="green"
+          />
+          <StatCard
+            label="Inactive"
+            value={stats.inactive}
+            icon={Pause}
+            accent="amber"
+          />
+          <StatCard
+            label="Total Nodes"
+            value={stats.totalNodes}
+            icon={Zap}
+            accent="violet"
+          />
+          <StatCard
+            label="Conversations"
+            value={stats.conversations}
+            icon={CheckCircle2}
+            accent="violet"
+          />
+        </div>
+
+        <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+          <CardContent className="p-0 sm:rounded-3xl">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
+                <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
+                <p className="text-sm">Loading flows…</p>
+              </div>
+            ) : flows.length === 0 ? (
+              <div className="px-6 pb-10 pt-6 sm:px-8">
+                <ListEmptyState
+                  icon={MessageSquare}
+                  title="No chatbot flows yet"
+                  description="Create your first chatbot flow to start automated conversations."
+                  className="py-14 sm:py-20"
+                />
+                <div className="flex justify-center">
+                  <Button
+                    type="button"
+                    className="h-11 gap-2 bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
+                    onClick={() => openCreate()}
+                  >
+                    <Plus className="size-4" />
+                    Create Flow
+                  </Button>
+                </div>
+              </div>
+            ) : visible.length === 0 ? (
+              <div className="px-6 py-16 text-center text-sm text-muted-foreground">
+                No flows match your search or filter.
+              </div>
+            ) : (
+              <div className="overflow-x-auto p-2 sm:p-4">
+                <ChatbotFlowsTable
+                  flows={pagedFlows}
+                  togglingId={togglingId}
+                  onToggleActive={(f, a) => void handleToggleActive(f, a)}
+                  onEdit={openEdit}
+                  onDelete={(f) => setDeleteTarget(f)}
+                />
+              </div>
+            )}
+            {!loading && visible.length > 0 ? (
+              <TablePagination {...pagination} />
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
+
+      <CreateChatbotFlowDialog
+        open={createOpen}
+        onOpenChange={(o) => {
+          setCreateOpen(o);
+          if (!o) setEditingFlow(null);
+        }}
+        editingFlow={editingFlow}
+        onSaved={() => void loadFlows({ silent: true })}
+      />
+
+      <ConfirmDestructiveDialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null);
+        }}
+        title="Delete chatbot flow?"
+        description={
+          <>
+            Remove{" "}
+            <span className="font-semibold text-foreground">
+              {deleteTarget?.name}
+            </span>{" "}
+            and all of its nodes? This cannot be undone.
+          </>
+        }
+        confirmLabel="Delete flow"
+        onConfirm={confirmDeleteFlow}
+      />
+    </>
+  );
+}
