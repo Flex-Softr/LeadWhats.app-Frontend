@@ -249,13 +249,14 @@ export function BillingClient() {
               key={plan.id}
               className={cn(
                 "relative flex flex-col rounded-2xl border bg-white/90 shadow-sm backdrop-blur-md dark:bg-slate-950/60",
+                plan.highlight && "overflow-visible",
                 plan.highlight
                   ? "border-violet-400/60 shadow-md shadow-violet-500/10 dark:border-violet-600/50"
                   : "border-white/70 dark:border-slate-800/80"
               )}
             >
               {plan.highlight ? (
-                <div className="absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white shadow-md">
+                <div className="absolute -top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white shadow-md">
                   <Sparkles className="size-3.5" />
                   Popular
                 </div>

@@ -89,7 +89,7 @@ export function CreateTemplateDialog({
     if (editingTemplate) {
       setTypeId(editingTemplate.typeId);
       setName(editingTemplate.name);
-      setCategory(editingTemplate.category);
+      setCategory(editingTemplate.category ?? "general");
       setContent(editingTemplate.content);
       setFooter(editingTemplate.footer ?? "");
       if (editingTemplate.typeId === "mixed_interactive") {
@@ -399,6 +399,7 @@ export function CreateTemplateDialog({
               </div>
 
               <TemplateTypeExtrasFields
+                key={typeId}
                 typeId={typeId}
                 extras={extras}
                 setExtras={setExtras}

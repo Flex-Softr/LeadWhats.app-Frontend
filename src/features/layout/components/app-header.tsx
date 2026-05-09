@@ -12,7 +12,7 @@ import {
   SunMedium,
   UserCircle,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/providers/theme-provider";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { getPageMeta } from "@/config/pages";

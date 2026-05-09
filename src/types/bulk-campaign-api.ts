@@ -1,4 +1,9 @@
-export type BulkCampaignStatusApi = "scheduled" | "completed" | "failed";
+export type BulkCampaignStatusApi =
+  | "scheduled"
+  | "completed"
+  | "failed"
+  | "pending"
+  | "running";
 
 export type BulkCampaignDeviceModeApi =
   | "single"
@@ -17,6 +22,8 @@ export type BulkCampaignAntiBlockApi = {
   failLimitInRow: number;
   activeHoursStart: string | null;
   activeHoursEnd: string | null;
+  inactiveHoursStart: string | null;
+  inactiveHoursEnd: string | null;
 };
 
 export type BulkCampaignListItemApi = {

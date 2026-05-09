@@ -23,6 +23,7 @@ import { toast } from "sonner";
 
 import { LiveChatNewThreadDialog } from "@/features/live-chat/components/live-chat-new-thread-dialog";
 import { LiveChatRenameThreadDialog } from "@/features/live-chat/components/live-chat-rename-thread-dialog";
+import { useContacts } from "@/features/contacts/contacts-provider";
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import type {
   LiveChatMessageRowApi,
@@ -47,10 +48,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 function deviceOptionLabel(d: DeviceApiRecord): string {
-  const bits = [d.name];
+  const bits = [deviceName(d)];
   if (d.phone) bits.push(d.phone);
   const status = d.status === "connected" ? "Connected" : "QR ready";
   return `${bits.join(" · ")} · ${status}`;
+}
+
+function deviceName(d: DeviceApiRecord): string {
+  const name = (d.name ?? "").trim();
+  return name || "Unnamed device";
+}
+
+function normalizePhoneForLookup(phone: string): string {
+  const digits = phone.replace(/\D+/g, "");
+  return digits.startsWith("00") ? digits.slice(2) : digits;
 }
 
 function formatMessageTime(iso: string): string {
@@ -88,6 +99,7 @@ function deliveryLabel(
 export function LiveChatClient() {
   const QUICK_EMOJIS = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎉", "❤️"];
   const { userId, workspaceId, routeKey } = useSessionIdentity();
+  const { groups, contactsByGroup, ensureGroupContacts } = useContacts();
   const [devices, setDevices] = React.useState<DeviceApiRecord[]>([]);
   const [devicesLoading, setDevicesLoading] = React.useState(true);
   const [deviceId, setDeviceId] = React.useState("");
@@ -319,6 +331,61 @@ export function LiveChatClient() {
   );
 
   React.useEffect(() => {
+    if (groups.length === 0) return;
+    void Promise.all(
+      groups
+        .filter((g) => !contactsByGroup[g.id])
+        .map((g) => ensureGroupContacts(g.id).catch(() => undefined))
+    );
+  }, [groups, contactsByGroup, ensureGroupContacts]);
+
+  const savedContactNameByPhone = React.useMemo(() => {
+    const byPhone = new Map<string, string>();
+    for (const groupId of Object.keys(contactsByGroup)) {
+      for (const contact of contactsByGroup[groupId] ?? []) {
+        const normalized = normalizePhoneForLookup(contact.phone);
+        const name = contact.name.trim();
+        if (!normalized || !name || byPhone.has(normalized)) continue;
+        byPhone.set(normalized, name);
+      }
+    }
+    return byPhone;
+  }, [contactsByGroup]);
+
+  const threadTitleById = React.useMemo(() => {
+    return new Map(
+      threads.map((thread) => {
+        const normalizedPeer = normalizePhoneForLookup(thread.peerPhone);
+        let title = thread.displayTitle;
+        if (normalizedPeer && savedContactNameByPhone.size > 0) {
+          const direct = savedContactNameByPhone.get(normalizedPeer);
+          if (direct) {
+            title = direct;
+          } else {
+            let longestMatchName = "";
+            let longestMatchPhoneLen = -1;
+            for (const [savedPhone, savedName] of savedContactNameByPhone) {
+              if (
+                normalizedPeer.endsWith(savedPhone) ||
+                savedPhone.endsWith(normalizedPeer)
+              ) {
+                if (savedPhone.length > longestMatchPhoneLen) {
+                  longestMatchPhoneLen = savedPhone.length;
+                  longestMatchName = savedName;
+                }
+              }
+            }
+            if (longestMatchName) {
+              title = longestMatchName;
+            }
+          }
+        }
+        return [thread.id, title] as const;
+      })
+    );
+  }, [threads, savedContactNameByPhone]);
+
+  React.useEffect(() => {
     if (!selectedThreadId) return;
     if (threads.some((t) => t.id === selectedThreadId)) return;
     setSelectedThreadId(null);
@@ -329,11 +396,11 @@ export function LiveChatClient() {
     if (!q) return threads;
     return threads.filter(
       (t) =>
-        t.displayTitle.toLowerCase().includes(q) ||
+        (threadTitleById.get(t.id) ?? t.displayTitle).toLowerCase().includes(q) ||
         t.peerPhone.toLowerCase().includes(q) ||
         t.lastPreview.toLowerCase().includes(q)
     );
-  }, [threads, listQuery]);
+  }, [threads, listQuery, threadTitleById]);
 
   const canSend =
     selectedThread != null &&
@@ -548,7 +615,7 @@ export function LiveChatClient() {
             <div className="flex size-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
               <Smartphone className="size-4" />
             </div>
-            <span className="text-sm font-semibold">Live Chat</span>
+            <span className="whitespace-nowrap text-sm font-semibold">Live Chat</span>
           </div>
           {devicesLoading ? (
             <div className="flex h-10 items-center gap-2 text-sm text-muted-foreground">
@@ -562,7 +629,9 @@ export function LiveChatClient() {
           ) : (
             <Select value={deviceId} onValueChange={(v) => setDeviceId(v ?? "")}>
               <SelectTrigger className="h-10 w-full rounded-xl sm:w-[min(100%,320px)]">
-                <SelectValue placeholder="Select session…" />
+                <SelectValue placeholder="Select session…">
+                  {selectedDevice ? deviceName(selectedDevice) : null}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {devices.map((d) => (
@@ -672,7 +741,7 @@ export function LiveChatClient() {
                         )}
                       >
                         <p className="truncate font-medium text-foreground">
-                          {t.displayTitle}
+                          {threadTitleById.get(t.id) ?? t.displayTitle}
                         </p>
                         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                           {t.lastPreview || "No messages yet"}
@@ -714,7 +783,7 @@ export function LiveChatClient() {
               <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/90 px-4 py-3 dark:border-slate-800">
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-foreground">
-                    {selectedThread.displayTitle}
+                    {threadTitleById.get(selectedThread.id) ?? selectedThread.displayTitle}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {selectedThread.peerPhone}

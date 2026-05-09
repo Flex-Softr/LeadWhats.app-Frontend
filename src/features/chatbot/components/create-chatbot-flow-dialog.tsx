@@ -52,10 +52,15 @@ function kindLabel(k: ChatbotFlowNode["kind"]) {
 }
 
 function deviceOptionLabel(d: DeviceApiRecord): string {
-  const bits = [d.name];
+  const bits = [deviceName(d)];
   if (d.phone) bits.push(d.phone);
   const status = d.status === "connected" ? "Connected" : "QR ready";
   return `${bits.join(" · ")} · ${status}`;
+}
+
+function deviceName(d: DeviceApiRecord): string {
+  const name = (d.name ?? "").trim();
+  return name || "Unnamed device";
 }
 
 function nodePayloadForApi(n: ChatbotFlowNode): Record<string, unknown> | null {
@@ -158,6 +163,7 @@ export function CreateChatbotFlowDialog({
     name.trim().length > 0 &&
     deviceId.length > 0 &&
     triggerKeywords.trim().length > 0;
+  const selectedDevice = devices.find((d) => d.id === deviceId);
 
   function removeNode(id: string) {
     setDraftNodes((prev) => prev.filter((n) => n.id !== id));
@@ -307,7 +313,9 @@ export function CreateChatbotFlowDialog({
                             id="cb-session"
                             className="h-11 w-full rounded-xl"
                           >
-                            <SelectValue placeholder="Select a session" />
+                            <SelectValue placeholder="Select a session">
+                              {selectedDevice ? deviceName(selectedDevice) : null}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {devices.map((d) => (

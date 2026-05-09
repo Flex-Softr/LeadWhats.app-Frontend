@@ -177,8 +177,16 @@ export function CreateBulkCampaignDialog({
   const [failLimitInRow, setFailLimitInRow] = React.useState("5");
   const [activeHoursStart, setActiveHoursStart] = React.useState("");
   const [activeHoursEnd, setActiveHoursEnd] = React.useState("");
+  const [inactiveHoursStart, setInactiveHoursStart] = React.useState("");
+  const [inactiveHoursEnd, setInactiveHoursEnd] = React.useState("");
 
   const g = globalStats();
+
+  const activeHoursEnabled =
+  activeHoursStart.trim() !== "" &&
+  activeHoursEnd.trim() !== "";
+
+
   const { count: recipientCount, verifiedOnly } = useRecipientSummary(
     selectionMode,
     selectedGroupIds,
@@ -234,6 +242,8 @@ export function CreateBulkCampaignDialog({
         setFailLimitInRow("5");
         setActiveHoursStart("");
         setActiveHoursEnd("");
+        setInactiveHoursStart("");
+        setInactiveHoursEnd("");
       } catch (err) {
         if (!cancelled) {
           const msg =
@@ -346,6 +356,10 @@ export function CreateBulkCampaignDialog({
     (activeHoursStart.trim().length === 0 && activeHoursEnd.trim().length === 0) ||
     (activeHoursStart.trim().length > 0 && activeHoursEnd.trim().length > 0);
 
+  const inactiveHoursPairOk =
+    (inactiveHoursStart.trim().length === 0 && inactiveHoursEnd.trim().length === 0) ||
+    (inactiveHoursStart.trim().length > 0 && inactiveHoursEnd.trim().length > 0);
+
   const canSubmit =
     !contextLoading &&
     !submitting &&
@@ -356,7 +370,8 @@ export function CreateBulkCampaignDialog({
     messageOk &&
     recipientsOk &&
     scheduleOk &&
-    activeHoursPairOk;
+    activeHoursPairOk &&
+    inactiveHoursPairOk;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -434,6 +449,8 @@ export function CreateBulkCampaignDialog({
           failLimitInRow: failLimit,
           activeHoursStart: activeHoursStart.trim() || null,
           activeHoursEnd: activeHoursEnd.trim() || null,
+          inactiveHoursStart: inactiveHoursStart.trim() || null,
+          inactiveHoursEnd: inactiveHoursEnd.trim() || null,
         },
       };
 
@@ -477,7 +494,7 @@ export function CreateBulkCampaignDialog({
       <DialogContent
         showCloseButton
         className={cn(
-          "max-h-[min(94vh,900px)] max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden rounded-3xl p-0",
+          "max-h-[min(94vh,900px)] max-w-[calc(100%-1rem)] gap-0 overflow-hidden rounded-3xl p-0",
           "border border-white/70 bg-white/95 shadow-2xl shadow-violet-950/10",
           "backdrop-blur-md sm:max-w-6xl",
           "dark:border-slate-800 dark:bg-slate-950/95"
@@ -501,8 +518,8 @@ export function CreateBulkCampaignDialog({
         ) : (
           <>
             <div className="max-h-[min(62vh,640px)] overflow-y-auto">
-              <div className="grid gap-8 px-6 py-7 sm:gap-10 sm:px-8 sm:py-8 lg:grid-cols-2 lg:items-start">
-                <div className="space-y-7">
+              <div className="flex flex-col md:flex-row gap-8 px-6 py-7 sm:gap-10 sm:px-8 sm:py-8 lg:items-start w-full">
+                <div className="space-y-7 w-full md:w-[65%]">
                   <div className="space-y-2.5">
                     <Label
                       htmlFor="bulk-campaign-name"
@@ -1026,17 +1043,43 @@ export function CreateBulkCampaignDialog({
                             />
                           </div>
                         </div>
+                        
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-500">Inactive hours</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              value={inactiveHoursStart}
+                              onChange={(e) => setInactiveHoursStart(e.target.value)}
+                              className="h-10 rounded-xl dark:text-white"
+                              disabled={!activeHoursEnabled}
+                            />
+                            <span className="text-xs text-slate-500">to</span>
+                            <Input
+                              type="time"
+                              value={inactiveHoursEnd}
+                              onChange={(e) => setInactiveHoursEnd(e.target.value)}
+                              className="h-10 rounded-xl dark:text-white"
+                              disabled={!activeHoursEnabled}
+                            />
+                          </div>
+                        </div>
                       </div>
                       {!activeHoursPairOk ? (
                         <p className="text-xs text-red-600 dark:text-red-400">
                           Set both active-hours start and end, or leave both empty.
                         </p>
                       ) : null}
+                      {!inactiveHoursPairOk ? (
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          Set both inactive-hours start and end, or leave both empty.
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-6 lg:sticky lg:top-0">
+                <div className="space-y-6 lg:sticky lg:top-0 w-full md:w-[35%]">
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold">
                       Selection method

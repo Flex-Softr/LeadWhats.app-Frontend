@@ -70,22 +70,22 @@ export function StatCard({
         className
       )}
     >
-      <CardContent className="flex items-center gap-4 p-5 sm:gap-5 sm:p-6">
+      <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
         <div
           className={cn(
-            "flex size-12 shrink-0 items-center justify-center rounded-2xl sm:size-[3.25rem]",
+            "flex size-10 shrink-0 items-center justify-center rounded-xl sm:size-11",
             a.icon
           )}
         >
-          <Icon className="size-5 sm:size-[22px]" />
+          <Icon className="size-[18px] sm:size-5" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium leading-snug text-slate-500 sm:text-[15px] dark:text-slate-400">
+          <p className="truncate text-xs font-medium leading-tight text-slate-500 sm:text-sm dark:text-slate-400">
             {label}
           </p>
           <p
             className={cn(
-              "mt-1.5 text-2xl font-semibold tabular-nums sm:text-3xl",
+              "mt-1 text-2xl font-semibold tabular-nums sm:text-[30px]",
               a.value
             )}
           >

@@ -82,6 +82,14 @@ export function ChatbotClient() {
     void loadFlows();
   }, [loadFlows, userId, workspaceId, routeKey]);
 
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void loadFlows({ silent: true });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [loadFlows]);
+
   const stats = React.useMemo(() => {
     const total = flows.length;
     const active = flows.filter((f) => f.active).length;

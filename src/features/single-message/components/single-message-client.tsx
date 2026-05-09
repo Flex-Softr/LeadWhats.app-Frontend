@@ -13,6 +13,13 @@ import type {
 } from "@/types/single-message-api";
 import { MessageTypeCards } from "@/features/single-message/components/message-type-cards";
 import type { MessageFormType } from "@/features/single-message/components/message-type-cards";
+import { PhoneNumberWithCountryInput } from "@/features/shared/components/phone-number-with-country-input";
+import {
+  buildE164Phone,
+  DEFAULT_PHONE_COUNTRY_ISO2,
+  findCountryByIso2,
+  splitE164Phone,
+} from "@/features/shared/lib/phone-country-prefixes";
 import { useSessionIdentity } from "@/hooks/use-session-identity";
 import { ApiError, apiJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -23,7 +30,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -34,11 +40,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-function deviceLabel(d: DeviceApiRecord): string {
-  const bits = [d.name];
-  if (d.phone) bits.push(d.phone);
-  else if (d.status === "qr_ready") bits.push("not connected");
-  return bits.join(" · ");
+function deviceName(d: DeviceApiRecord): string {
+  const name = (d.name ?? "").trim();
+  return name || "Unnamed device";
 }
 
 export function SingleMessageClient() {
@@ -50,7 +54,10 @@ export function SingleMessageClient() {
   >([]);
 
   const [deviceId, setDeviceId] = React.useState<string>("");
-  const [phone, setPhone] = React.useState("");
+  const [phoneCountryIso2, setPhoneCountryIso2] = React.useState(
+    DEFAULT_PHONE_COUNTRY_ISO2
+  );
+  const [localPhoneNumber, setLocalPhoneNumber] = React.useState("");
   const [messageType, setMessageType] = React.useState<MessageFormType>("text");
   const [messageText, setMessageText] = React.useState("");
   const [templateId, setTemplateId] = React.useState<string>("");
@@ -105,9 +112,18 @@ export function SingleMessageClient() {
     [connected, deviceId]
   );
 
+  const selectedCountry = React.useMemo(
+    () => findCountryByIso2(phoneCountryIso2),
+    [phoneCountryIso2]
+  );
+  const phone = React.useMemo(
+    () => buildE164Phone(selectedCountry?.dialCode ?? "+", localPhoneNumber),
+    [localPhoneNumber, selectedCountry?.dialCode]
+  );
+
   const canSend =
     deviceId.length > 0 &&
-    phone.trim().length > 0 &&
+    localPhoneNumber.trim().length > 0 &&
     (messageType === "template"
       ? templateId.length > 0
       : messageText.trim().length > 0);
@@ -116,7 +132,7 @@ export function SingleMessageClient() {
     const trimmed = phone.trim();
     if (!trimmed) {
       toast.error("Enter a phone number", {
-        description: "Use international format, e.g. +1234567890",
+        description: "Select country prefix, then enter the phone number.",
       });
       return;
     }
@@ -131,10 +147,12 @@ export function SingleMessageClient() {
         }
       );
       if (data.valid) {
+        const parsed = splitE164Phone(data.e164);
         toast.success("Number looks valid", {
           description: `Normalized: ${data.e164}`,
         });
-        setPhone(data.e164);
+        setPhoneCountryIso2(parsed.iso2);
+        setLocalPhoneNumber(parsed.localNumber);
       } else {
         toast.error("Invalid number", {
           description: data.message,
@@ -191,6 +209,12 @@ export function SingleMessageClient() {
           description: out.note ?? `${out.status} · ${out.toPhone}`,
         });
       }
+
+      setPhoneCountryIso2(DEFAULT_PHONE_COUNTRY_ISO2);
+      setLocalPhoneNumber("");
+      setMessageType("text");
+      setMessageText("");
+      setTemplateId("");
     } catch (err) {
       const msg =
         err instanceof ApiError ? err.message : "Send request failed.";
@@ -254,9 +278,9 @@ export function SingleMessageClient() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-[1fr_1fr_auto] md:items-end md:gap-7">
-              <div className="space-y-2 md:col-span-1">
-                <Label htmlFor="device">Select Device / Instance</Label>
+            <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-start sm:gap-7">
+              <div className="space-y-2 sm:col-span-1">
+                <Label htmlFor="device">Select Device</Label>
                 <Select
                   value={deviceId}
                   onValueChange={(v) => setDeviceId(v ?? "")}
@@ -266,12 +290,14 @@ export function SingleMessageClient() {
                     size="default"
                     className="h-11 w-full min-w-0"
                   >
-                    <SelectValue placeholder="Choose a connected device…" />
+                    <SelectValue placeholder="Choose a connected device…">
+                      {selectedDevice ? deviceName(selectedDevice) : null}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {connected.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {deviceLabel(d)}
+                        {deviceName(d)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -283,21 +309,23 @@ export function SingleMessageClient() {
                   </p>
                 ) : null}
               </div>
-              <div className="space-y-2 md:col-span-1">
+              <div className="space-y-2 sm:col-span-1">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input
+                <PhoneNumberWithCountryInput
                   id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter phone number (e.g., +1234567890)"
-                  className="h-11"
+                  countryIso2={phoneCountryIso2}
+                  onCountryIso2Change={setPhoneCountryIso2}
+                  localNumber={localPhoneNumber}
+                  onLocalNumberChange={setLocalPhoneNumber}
+                  placeholder="Enter phone number"
                 />
               </div>
-              <div className="flex md:pb-0.5">
+              <div className="space-y-2">
+                <Label className="invisible">Check Number</Label>
                 <Button
                   type="button"
                   variant="secondary"
-                  className="h-11 w-full md:w-auto"
+                  className="h-11 w-full sm:w-auto"
                   disabled={checking}
                   onClick={() => void handleCheckNumber()}
                 >
@@ -387,7 +415,7 @@ export function SingleMessageClient() {
             </CardTitle>
             {selectedDevice ? (
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                From: {selectedDevice.name}
+                From: {deviceName(selectedDevice)}
               </p>
             ) : null}
           </div>

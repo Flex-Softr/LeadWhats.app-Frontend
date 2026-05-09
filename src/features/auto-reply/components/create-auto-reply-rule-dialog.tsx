@@ -64,10 +64,15 @@ const MESSAGE_MODES: {
 ];
 
 function deviceOptionLabel(d: DeviceApiRecord): string {
-  const bits = [d.name];
+  const bits = [deviceName(d)];
   if (d.phone) bits.push(d.phone);
   const status = d.status === "connected" ? "Connected" : "QR ready";
   return `${bits.join(" · ")} · ${status}`;
+}
+
+function deviceName(d: DeviceApiRecord): string {
+  const name = (d.name ?? "").trim();
+  return name || "Unnamed device";
 }
 
 function openAiDefaults() {
@@ -277,6 +282,7 @@ export function CreateAutoReplyRuleDialog({
     deviceId.length > 0 &&
     contentOk &&
     openAiOk;
+  const selectedDevice = devices.find((d) => d.id === deviceId);
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -422,7 +428,9 @@ export function CreateAutoReplyRuleDialog({
                         onValueChange={(v) => setDeviceId(v ?? "")}
                       >
                         <SelectTrigger id="ar-device" className="h-11 w-full rounded-xl">
-                          <SelectValue placeholder="Select device" />
+                          <SelectValue placeholder="Select device">
+                            {selectedDevice ? deviceName(selectedDevice) : null}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {devices.map((d) => (

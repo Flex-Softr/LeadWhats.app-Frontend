@@ -83,6 +83,11 @@ function aggregate(groups: GrabbedGroup[]) {
   };
 }
 
+function deviceName(name: string | null | undefined): string {
+  const safe = (name ?? "").trim();
+  return safe || "Unnamed device";
+}
+
 export function GroupGrabberClient() {
   const { userId, workspaceId, routeKey } = useSessionIdentity();
   const [devices, setDevices] = React.useState<DevicesListResponse["devices"]>(
@@ -209,7 +214,7 @@ export function GroupGrabberClient() {
 
   const selectedDevice = devices.find((d) => d.id === deviceId);
   const deviceLabel = selectedDevice
-    ? `${selectedDevice.name}${selectedDevice.phone ? ` (${selectedDevice.phone})` : ""}`
+    ? `${deviceName(selectedDevice.name)}${selectedDevice.phone ? ` (${selectedDevice.phone})` : ""}`
     : "Session";
 
   const visible = React.useMemo(() => {
@@ -292,12 +297,14 @@ export function GroupGrabberClient() {
                   placeholder={
                     devicesLoading ? "Loading…" : "Choose a session…"
                   }
-                />
+                >
+                  {selectedDevice ? deviceName(selectedDevice.name) : null}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {devices.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
-                    {d.name}
+                    {deviceName(d.name)}
                     {d.phone ? ` · ${d.phone}` : ""} ·{" "}
                     {d.status === "connected" ? "Connected" : "QR ready"}
                   </SelectItem>

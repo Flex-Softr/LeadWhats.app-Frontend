@@ -206,8 +206,8 @@ export function BulkCampaignDetailPageClient({
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-16 lg:space-y-10">
-        <Button variant="ghost" className="-ml-2 gap-2" asChild>
-          <Link href="/bulk-messages">
+        <Button variant="ghost" className="-ml-2 gap-2">
+          <Link href="/bulk-messages" className="flex items-center gap-2">
             <ArrowLeft className="size-4" />
             Back to bulk messages
           </Link>
@@ -222,7 +222,7 @@ export function BulkCampaignDetailPageClient({
           <Card className="border-destructive/40 bg-destructive/5">
             <CardContent className="px-6 py-8 text-center">
               <p className="text-destructive">{loadError}</p>
-              <Button className="mt-6" asChild variant="outline">
+              <Button className="mt-6" variant="outline">
                 <Link href="/bulk-messages">Return to list</Link>
               </Button>
             </CardContent>
@@ -415,6 +415,15 @@ export function BulkCampaignDetailPageClient({
                           campaign.antiBlock.activeHoursEnd
                             ? `${campaign.antiBlock.activeHoursStart} - ${campaign.antiBlock.activeHoursEnd}`
                             : "Any time"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Inactive time</span>
+                        <span className="text-right tabular-nums">
+                          {campaign.antiBlock.inactiveHoursStart &&
+                          campaign.antiBlock.inactiveHoursEnd
+                            ? `${campaign.antiBlock.inactiveHoursStart} - ${campaign.antiBlock.inactiveHoursEnd}`
+                            : "None"}
                         </span>
                       </div>
                     </>

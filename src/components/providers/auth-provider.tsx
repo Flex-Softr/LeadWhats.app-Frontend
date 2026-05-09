@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import type { AuthUser, AuthWorkspace } from "@/types/auth";
-import { refreshAccessToken, setAccessToken } from "@/lib/api";
+import {
+  getAccessToken,
+  isAccessTokenExpired,
+  refreshAccessToken,
+  setAccessToken,
+} from "@/lib/api";
+import {
+  clearAuthSessionMarker,
+  hasAuthSessionMarker,
+  markAuthSessionActive,
+} from "@/lib/auth-session";
 import {
   loginRequest,
   logoutRequest,
@@ -31,21 +41,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [workspace, setWorkspace] = React.useState<AuthWorkspace | null>(null);
   const [isBootstrapping, setIsBootstrapping] = React.useState(true);
 
+  const logout = React.useCallback(async () => {
+    await logoutRequest();
+    clearAuthSessionMarker();
+    setAccessToken(null);
+    setUser(null);
+    setWorkspace(null);
+  }, []);
+
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
+        if (!hasAuthSessionMarker()) {
+          setUser(null);
+          setWorkspace(null);
+          return;
+        }
+
         const data = await refreshAccessToken();
         if (cancelled) return;
         if (data) {
+          markAuthSessionActive();
           setUser(data.user);
           setWorkspace(data.workspace);
         } else {
+          clearAuthSessionMarker();
           setUser(null);
           setWorkspace(null);
         }
       } catch {
         if (!cancelled) {
+          clearAuthSessionMarker();
           setUser(null);
           setWorkspace(null);
         }
@@ -58,8 +85,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (isBootstrapping || !user) return;
+
+    const checkTokenExpiry = () => {
+      const token = getAccessToken();
+      if (!token || isAccessTokenExpired(token)) {
+        void logout();
+      }
+    };
+
+    const intervalId = window.setInterval(checkTokenExpiry, 60_000);
+    return () => window.clearInterval(intervalId);
+  }, [isBootstrapping, user, logout]);
+
   const login = React.useCallback(async (email: string, password: string) => {
     const data = await loginRequest(email, password);
+    markAuthSessionActive();
     setUser(data.user);
     setWorkspace(data.workspace);
   }, []);
@@ -67,18 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = React.useCallback(
     async (input: { email: string; password: string; name?: string }) => {
       const data = await registerRequest(input);
+      markAuthSessionActive();
       setUser(data.user);
       setWorkspace(data.workspace);
     },
     []
   );
-
-  const logout = React.useCallback(async () => {
-    await logoutRequest();
-    setAccessToken(null);
-    setUser(null);
-    setWorkspace(null);
-  }, []);
 
   const value = React.useMemo(
     () => ({

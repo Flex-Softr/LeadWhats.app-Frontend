@@ -12,7 +12,13 @@ import {
   RefreshCw,
   Users,
 } from "lucide-react";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CreateBulkCampaignDialog } from "@/features/bulk-messages/components/create-bulk-campaign-dialog";
 import {
   bulkSelectionLabel,
@@ -41,6 +47,28 @@ import {
 } from "@/components/ui/table";
 import { usePagination } from "@/hooks/use-pagination";
 
+// function statusBadge(status: BulkCampaignListItemApi["status"]) {
+//   if (status === "completed") {
+//     return (
+//       <Badge className="border-emerald-200 bg-emerald-50 font-normal text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+//         Completed
+//       </Badge>
+//     );
+//   }
+//   if (status === "failed") {
+//     return (
+//       <Badge className="border-red-200 bg-red-50 font-normal text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+//         Failed
+//       </Badge>
+//     );
+//   }
+//   return (
+//     <Badge className="border-amber-200 bg-amber-50 font-normal text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+//       Scheduled
+//     </Badge>
+//   );
+// }
+
 function statusBadge(status: BulkCampaignListItemApi["status"]) {
   if (status === "completed") {
     return (
@@ -49,6 +77,7 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
       </Badge>
     );
   }
+
   if (status === "failed") {
     return (
       <Badge className="border-red-200 bg-red-50 font-normal text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
@@ -56,12 +85,31 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
       </Badge>
     );
   }
+
+  if (status === "running") {
+    return (
+      <Badge className="border-blue-200 bg-blue-50 font-normal text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
+        Running
+      </Badge>
+    );
+  }
+
+  if (status === "pending") {
+    return (
+      <Badge className="border-orange-200 bg-orange-50 font-normal text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200">
+        Pending
+      </Badge>
+    );
+  }
+
   return (
     <Badge className="border-amber-200 bg-amber-50 font-normal text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
       Scheduled
     </Badge>
   );
 }
+
+
 
 export function BulkMessagesClient() {
   const { userId, workspaceId, routeKey } = useSessionIdentity();
@@ -71,6 +119,7 @@ export function BulkMessagesClient() {
   );
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [statusFilter, setStatusFilter] = React.useState("all");
 
   const loadCampaigns = React.useCallback(async (opts?: { silent?: boolean }) => {
     const silent = opts?.silent === true;
@@ -83,8 +132,11 @@ export function BulkMessagesClient() {
       const data = await apiJson<BulkCampaignsListResponse>("/v1/bulk-campaigns");
       setCampaigns(data.campaigns);
     } catch (err) {
+      //console.error(err);
+    
       const msg =
         err instanceof ApiError ? err.message : "Could not load campaigns.";
+    
       toast.error("Load failed", { description: msg });
     } finally {
       if (silent) {
@@ -111,11 +163,39 @@ export function BulkMessagesClient() {
       failed,
     };
   }, [campaigns]);
+
+  const runningCampaigns = React.useMemo(
+    () => campaigns.filter((c) => c.status === "running"),
+    [campaigns]
+  );
+  
+  const pendingCampaigns = React.useMemo(
+    () =>
+      campaigns.filter(
+        (c) => c.status === "pending" || c.status === "scheduled"
+      ),
+    [campaigns]
+  );
+  
+  const historyCampaigns = React.useMemo(() => {
+    let data = campaigns.filter(
+      (c) =>
+        c.status !== "running" &&
+        c.status !== "pending"
+    );
+  
+    if (statusFilter !== "all") {
+      data = data.filter((c) => c.status === statusFilter);
+    }
+  
+    return data;
+  }, [campaigns, statusFilter]);
+
   const pagination = usePagination({
-    totalItems: campaigns.length,
+    totalItems: historyCampaigns.length,
     initialPageSize: 10,
   });
-  const pagedCampaigns = pagination.slice(campaigns);
+  const pagedCampaigns = pagination.slice(historyCampaigns);
 
   return (
     <>
@@ -183,6 +263,75 @@ export function BulkMessagesClient() {
           />
         </div>
 
+
+        {(runningCampaigns.length > 0 || pendingCampaigns.length > 0) && (
+  <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+    <CardContent className="p-0">
+      <div className="border-b px-6 py-4">
+        <h3 className="text-lg font-semibold">
+          Active Campaigns
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Running and queued campaigns
+        </p>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Campaign</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Recipients</TableHead>
+            <TableHead className="hidden md:table-cell">
+              Schedule
+            </TableHead>
+            <TableHead className="hidden sm:table-cell">
+              Created
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {[...runningCampaigns, ...pendingCampaigns].map((c) => (
+            <TableRow key={c.id}>
+              <TableCell>
+                <Link
+                  href={`/bulk-messages/${c.id}`}
+                  className="block w-full rounded-md text-left transition-colors hover:bg-muted/50"
+                >
+                  <div className="font-medium text-primary underline-offset-4 hover:underline">
+                    {c.name}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    {c.kind === "text" ? "Text" : "Template"} ·{" "}
+                    {deviceModeLabel(c.deviceMode)}
+                  </div>
+                </Link>
+              </TableCell>
+
+              <TableCell>{statusBadge(c.status)}</TableCell>
+
+              <TableCell>{c.recipientCount}</TableCell>
+
+              <TableCell className="hidden md:table-cell text-muted-foreground">
+                {c.scheduleType === "scheduled" && c.scheduledAt
+                  ? formatBulkCampaignWhen(c.scheduledAt)
+                  : "Immediate"}
+              </TableCell>
+
+              <TableCell className="hidden sm:table-cell text-muted-foreground">
+                {formatBulkCampaignWhen(c.createdAt)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </CardContent>
+  </Card>
+)}
+
+
         <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
           <CardContent className="p-0 sm:rounded-3xl">
             {loading ? (
@@ -199,6 +348,33 @@ export function BulkMessagesClient() {
                 />
               </div>
             ) : (
+              <>
+              <div className="flex items-center justify-between border-b px-6 py-4">
+  <div>
+    <h3 className="text-lg font-semibold">
+      Campaign History
+    </h3>
+    <p className="text-sm text-muted-foreground">
+      Completed, failed and archived campaigns
+    </p>
+  </div>
+
+  <Select
+    value={statusFilter}
+    onValueChange={(value) => setStatusFilter(value ?? "all")}
+  >
+    <SelectTrigger className="w-[180px]">
+      <SelectValue placeholder="Filter status" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="all">All</SelectItem>
+      <SelectItem value="completed">Completed</SelectItem>
+      <SelectItem value="failed">Failed</SelectItem>
+      <SelectItem value="scheduled">Scheduled</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -267,6 +443,7 @@ export function BulkMessagesClient() {
                   ))}
                 </TableBody>
               </Table>
+              </>
             )}
             {!loading && campaigns.length > 0 ? (
               <TablePagination {...pagination} />

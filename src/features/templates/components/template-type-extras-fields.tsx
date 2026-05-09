@@ -41,6 +41,8 @@ export function TemplateTypeExtrasFields({
   extras,
   setExtras,
 }: TemplateTypeExtrasFieldsProps) {
+  const asInputValue = (value: string | null | undefined) => value ?? "";
+
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     setExtras((prev) => {
@@ -104,7 +106,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-media-url">Public media URL (optional)</Label>
           <Input
             id="tpl-media-url"
-            value={extras.externalMediaUrl}
+            value={asInputValue(extras.externalMediaUrl)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, externalMediaUrl: e.target.value }))
             }
@@ -125,7 +127,7 @@ export function TemplateTypeExtrasFields({
             <Input
               id="tpl-lat"
               inputMode="decimal"
-              value={extras.latitude}
+              value={asInputValue(extras.latitude)}
               onChange={(e) =>
                 setExtras((p) => ({ ...p, latitude: e.target.value }))
               }
@@ -137,7 +139,7 @@ export function TemplateTypeExtrasFields({
             <Input
               id="tpl-lng"
               inputMode="decimal"
-              value={extras.longitude}
+              value={asInputValue(extras.longitude)}
               onChange={(e) =>
                 setExtras((p) => ({ ...p, longitude: e.target.value }))
               }
@@ -149,7 +151,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-loc-name">Place name (optional)</Label>
           <Input
             id="tpl-loc-name"
-            value={extras.locationName}
+            value={asInputValue(extras.locationName)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, locationName: e.target.value }))
             }
@@ -160,7 +162,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-loc-addr">Address (optional)</Label>
           <Input
             id="tpl-loc-addr"
-            value={extras.address}
+            value={asInputValue(extras.address)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, address: e.target.value }))
             }
@@ -179,7 +181,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-cn">Display name</Label>
           <Input
             id="tpl-cn"
-            value={extras.contactName}
+            value={asInputValue(extras.contactName)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, contactName: e.target.value }))
             }
@@ -190,7 +192,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-cp">Phone</Label>
           <Input
             id="tpl-cp"
-            value={extras.contactPhone}
+            value={asInputValue(extras.contactPhone)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, contactPhone: e.target.value }))
             }
@@ -201,7 +203,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-co">Organization (optional)</Label>
           <Input
             id="tpl-co"
-            value={extras.contactOrg}
+            value={asInputValue(extras.contactOrg)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, contactOrg: e.target.value }))
             }
@@ -219,7 +221,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-poll-q">Question</Label>
           <Input
             id="tpl-poll-q"
-            value={extras.pollQuestion}
+            value={asInputValue(extras.pollQuestion)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, pollQuestion: e.target.value }))
             }
@@ -246,7 +248,7 @@ export function TemplateTypeExtrasFields({
             {extras.pollOptions.map((opt, i) => (
               <li key={i} className="flex gap-2">
                 <Input
-                  value={opt}
+                  value={asInputValue(opt)}
                   onChange={(e) =>
                     setExtras((p) => {
                       const next = [...p.pollOptions];
@@ -308,7 +310,7 @@ export function TemplateTypeExtrasFields({
           >
             <div className="flex items-center gap-2">
               <Input
-                value={sec.title}
+                value={asInputValue(sec.title)}
                 onChange={(e) =>
                   setExtras((p) => {
                     const next = [...p.listSections];
@@ -364,7 +366,7 @@ export function TemplateTypeExtrasFields({
             {sec.rows.map((row, ri) => (
               <div key={row.id} className="flex flex-col gap-2 sm:flex-row">
                 <Input
-                  value={row.title}
+                  value={asInputValue(row.title)}
                   onChange={(e) =>
                     setExtras((p) => {
                       const next = [...p.listSections];
@@ -378,7 +380,7 @@ export function TemplateTypeExtrasFields({
                   className="sm:flex-1"
                 />
                 <Input
-                  value={row.description}
+                  value={asInputValue(row.description)}
                   onChange={(e) =>
                     setExtras((p) => {
                       const next = [...p.listSections];
@@ -464,7 +466,7 @@ export function TemplateTypeExtrasFields({
               </Button>
             </div>
             <Input
-              value={card.title}
+              value={asInputValue(card.title)}
               onChange={(e) =>
                 setExtras((p) => {
                   const next = [...p.carouselCards];
@@ -475,7 +477,7 @@ export function TemplateTypeExtrasFields({
               placeholder="Card title"
             />
             <Textarea
-              value={card.body}
+              value={asInputValue(card.body)}
               onChange={(e) =>
                 setExtras((p) => {
                   const next = [...p.carouselCards];
@@ -487,7 +489,7 @@ export function TemplateTypeExtrasFields({
               className="min-h-16"
             />
             <Input
-              value={card.imageUrl}
+              value={asInputValue(card.imageUrl)}
               onChange={(e) =>
                 setExtras((p) => {
                   const next = [...p.carouselCards];
@@ -511,7 +513,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-cta-url">Destination URL</Label>
           <Input
             id="tpl-cta-url"
-            value={extras.ctaUrl}
+            value={asInputValue(extras.ctaUrl)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, ctaUrl: e.target.value }))
             }
@@ -522,7 +524,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-cta-lbl">Button label</Label>
           <Input
             id="tpl-cta-lbl"
-            value={extras.ctaButtonLabel}
+            value={asInputValue(extras.ctaButtonLabel)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, ctaButtonLabel: e.target.value }))
             }
@@ -541,7 +543,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-code">Code to copy</Label>
           <Input
             id="tpl-code"
-            value={extras.copyCode}
+            value={asInputValue(extras.copyCode)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, copyCode: e.target.value }))
             }
@@ -561,7 +563,7 @@ export function TemplateTypeExtrasFields({
           <Label htmlFor="tpl-flow">Flow ID</Label>
           <Input
             id="tpl-flow"
-            value={extras.flowId}
+            value={asInputValue(extras.flowId)}
             onChange={(e) =>
               setExtras((p) => ({ ...p, flowId: e.target.value }))
             }

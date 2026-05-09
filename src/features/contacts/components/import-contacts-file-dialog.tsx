@@ -385,8 +385,8 @@ export function ImportContactsFileDialog({
       <DialogContent
         className={cn(
           mappingStep
-            ? "flex h-[calc(100dvh-0.5rem)] w-[calc(100vw-0.5rem)] max-w-none flex-col gap-0 overflow-hidden rounded-xl p-0 sm:h-[calc(100dvh-1.25rem)] sm:w-[calc(100vw-1.25rem)]"
-            : "sm:max-w-md"
+            ? "flex !h-[min(92dvh,900px)] !w-[min(96vw,1200px)] !max-w-[1200px] flex-col gap-0 overflow-hidden rounded-xl p-0"
+            : "!w-[min(92vw,680px)] !max-w-[680px]"
         )}
         showCloseButton
       >

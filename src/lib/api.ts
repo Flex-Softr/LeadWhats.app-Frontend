@@ -11,6 +11,22 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
+export function isAccessTokenExpired(token: string, nowMs = Date.now()): boolean {
+  const parts = token.split(".");
+  if (parts.length < 2) return true;
+
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(normalized)) as { exp?: unknown };
+    if (typeof payload.exp !== "number") return true;
+
+    return payload.exp * 1000 <= nowMs;
+  } catch {
+    return true;
+  }
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
