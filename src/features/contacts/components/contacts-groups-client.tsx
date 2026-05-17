@@ -178,7 +178,7 @@ export function ContactsGroupsClient() {
         />
       </div>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="p-0 pt-2 sm:rounded-3xl">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">

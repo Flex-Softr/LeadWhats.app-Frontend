@@ -1,62 +1,71 @@
+import { DASHBOARD_BASE, dashboardPath } from "@/config/app-routes";
+
 export type PageMeta = {
   title: string;
   description: string;
 };
 
+const D = DASHBOARD_BASE;
+
 export const PAGE_META = {
   "/": {
+    title: "FlexoWhats",
+    description:
+      "WhatsApp automation for teams — devices, campaigns, chatbots, and more.",
+  },
+  [D]: {
     title: "Dashboard Overview",
     description: "WhatsApp automation performance at a glance.",
   },
-  "/devices": {
+  [dashboardPath("/devices")]: {
     title: "Devices",
     description: "Manage your WhatsApp sessions and connections.",
   },
-  "/single-message": {
+  [dashboardPath("/single-message")]: {
     title: "Single Message",
     description: "Send Test messages with different Templates.",
   },
-  "/templates": {
+  [dashboardPath("/templates")]: {
     title: "Templates",
     description: "Create and manage reusable message templates.",
   },
-  "/contacts": {
+  [dashboardPath("/contacts")]: {
     title: "Contacts",
     description: "Import, organize and manage your contacts.",
   },
-  "/bulk-messages": {
+  [dashboardPath("/bulk-messages")]: {
     title: "Bulk Messages",
     description: "Reach many recipients with compliant campaigns.",
   },
-  "/auto-reply": {
+  [dashboardPath("/auto-reply")]: {
     title: "Auto Reply",
     description: "Set up automatic keyword-based responses.",
   },
-  "/chatbot": {
+  [dashboardPath("/chatbot")]: {
     title: "Chatbot",
     description: "Configure AI-powered conversations.",
   },
-  "/call-responder": {
+  [dashboardPath("/call-responder")]: {
     title: "Call Responder",
     description: "Manage call automation responses.",
   },
-  "/live-chat": {
+  [dashboardPath("/live-chat")]: {
     title: "Live Chat",
     description: "WhatsApp Automation Platform.",
   },
-  "/group-grabber": {
+  [dashboardPath("/group-grabber")]: {
     title: "Group Grabber",
     description: "WhatsApp Automation Platform.",
   },
-  "/profile": {
+  [dashboardPath("/profile")]: {
     title: "Profile",
     description: "Your account, workspace membership, and sign-out.",
   },
-  "/billing": {
+  [dashboardPath("/billing")]: {
     title: "Plans & billing",
     description: "Upgrade your workspace or manage your subscription.",
   },
-  "/billing/success": {
+  [dashboardPath("/billing/success")]: {
     title: "Subscription confirmed",
     description: "Your plan is being activated.",
   },
@@ -80,19 +89,21 @@ export function getPageMeta(pathname: string): PageMeta {
   if (normalized in PAGE_META) {
     return PAGE_META[normalized as PagePath];
   }
+  const contactsBase = dashboardPath("/contacts");
   if (
-    normalized.startsWith("/contacts/") &&
-    normalized !== "/contacts"
+    normalized.startsWith(`${contactsBase}/`) &&
+    normalized !== contactsBase
   ) {
-    return PAGE_META["/contacts"];
+    return PAGE_META[dashboardPath("/contacts")];
   }
+  const bulkBase = dashboardPath("/bulk-messages");
   if (
-    normalized.startsWith("/bulk-messages/") &&
-    normalized !== "/bulk-messages"
+    normalized.startsWith(`${bulkBase}/`) &&
+    normalized !== bulkBase
   ) {
     return {
       title: "Campaign details",
-      description: PAGE_META["/bulk-messages"].description,
+      description: PAGE_META[dashboardPath("/bulk-messages")].description,
     };
   }
   return {

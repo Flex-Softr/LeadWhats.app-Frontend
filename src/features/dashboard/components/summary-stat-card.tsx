@@ -14,7 +14,7 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
   const Icon = summaryIcons[data.icon];
 
   return (
-    <Card className="rounded-xl border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-2xl">
+    <Card className="rounded-lg border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 pb-1 pt-4 sm:px-5 sm:pt-5">
         <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           {data.title}

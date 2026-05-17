@@ -249,7 +249,7 @@ export function DevicesClient() {
         </div>
         <Button
           type="button"
-          className="h-11 w-full shrink-0 gap-2 px-5 sm:w-auto"
+          className="h-11 w-full shrink-0 gap-2 px-5 sm:w-auto rounded-md"
           onClick={() => setAddOpen(true)}
         >
           <Plus className="size-4" />
@@ -258,7 +258,7 @@ export function DevicesClient() {
       </div>
 
       {devices.length === 0 ? (
-        <Card className="rounded-3xl border border-dashed border-slate-200/90 bg-white/90 dark:border-slate-800 dark:bg-slate-950/80">
+        <Card className="rounded-lg border border-dashed border-slate-200/90 bg-white/90 dark:border-slate-800 dark:bg-slate-950/80">
           <CardHeader className="sr-only">
             <CardTitle>Connected devices</CardTitle>
             <CardDescription>List of WhatsApp sessions</CardDescription>

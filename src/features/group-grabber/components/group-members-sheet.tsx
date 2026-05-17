@@ -13,6 +13,7 @@ import type {
 } from "@/types/contacts-api";
 import type { GroupGrabberScrapeResponse } from "@/types/group-grabber-api";
 import { ApiError, apiJson } from "@/lib/api";
+import { dashboardPath } from "@/config/app-routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -396,7 +397,7 @@ export function GroupMembersSheet({
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Imports use your{" "}
                     <Link
-                      href="/contacts"
+                      href={dashboardPath("/contacts")}
                       className="font-medium text-violet-600 underline dark:text-violet-400"
                     >
                       Contacts

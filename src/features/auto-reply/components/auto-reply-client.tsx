@@ -210,7 +210,7 @@ export function AutoReplyClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, keyword, response, session…"
-              className="h-11 rounded-xl pl-10"
+              className="h-11 rounded-md pl-10"
               aria-label="Search rules"
             />
           </div>
@@ -218,7 +218,7 @@ export function AutoReplyClient() {
             value={filter}
             onValueChange={(v) => setFilter((v ?? "all") as RuleFilter)}
           >
-            <SelectTrigger className="h-11 w-full rounded-xl sm:w-[200px]">
+            <SelectTrigger className="h-11 w-full rounded-sm py-4 sm:w-[200px]">
               <SelectValue placeholder="All rules" />
             </SelectTrigger>
             <SelectContent>
@@ -256,7 +256,7 @@ export function AutoReplyClient() {
           />
         </div>
 
-        <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
           <CardContent className="p-0 sm:rounded-3xl">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">

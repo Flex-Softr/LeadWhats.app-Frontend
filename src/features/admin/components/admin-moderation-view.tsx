@@ -139,7 +139,7 @@ export function AdminModerationView({ module }: AdminModerationViewProps) {
               <Badge
                 key={k.label}
                 variant="secondary"
-                className="rounded-lg px-3 py-1.5 text-xs font-normal"
+                className="rounded-sm px-3 py-3 text-xs font-normal"
               >
                 <span className="font-semibold text-slate-800 dark:text-slate-100">
                   {k.label}:{" "}
@@ -153,7 +153,7 @@ export function AdminModerationView({ module }: AdminModerationViewProps) {
           </div>
 
           {data.scope === "platform" && data.topFailedWorkspaces.length > 0 ? (
-            <Card className="rounded-2xl border-slate-200/90 dark:border-slate-800">
+            <Card className="rounded-lg border-slate-200/90 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="text-base">
                   Workspaces by failed sends (30d)
@@ -189,7 +189,7 @@ export function AdminModerationView({ module }: AdminModerationViewProps) {
             </Card>
           ) : null}
 
-          <Card className="rounded-2xl border-slate-200/90 dark:border-slate-800">
+          <Card className="rounded-lg border-slate-200/90 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="text-base">Recent failed sends</CardTitle>
               <CardDescription>

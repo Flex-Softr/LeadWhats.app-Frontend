@@ -26,6 +26,7 @@ import { formatSkippedSummary } from "@/features/contacts/lib/import-skip-summar
 import { PasteContactsDialog } from "@/features/contacts/components/paste-contacts-dialog";
 import { usePathname } from "next/navigation";
 
+import { dashboardPath } from "@/config/app-routes";
 import { useContacts } from "@/features/contacts/contacts-provider";
 import type { ContactRow, ContactRowStatus } from "@/types/contacts";
 import { ApiError } from "@/lib/api";
@@ -135,7 +136,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
           This group could not be found.
         </p>
         <Link
-          href="/contacts"
+          href={dashboardPath("/contacts")}
           className="cursor-pointer text-sm font-medium text-primary hover:underline"
         >
           Back to groups
@@ -150,7 +151,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
       <div>
         <Link
-          href="/contacts"
+          href={dashboardPath("/contacts")}
           className="inline-flex cursor-pointer items-center text-sm font-medium text-primary hover:underline"
         >
           <ArrowLeft className="mr-1.5 size-4" />

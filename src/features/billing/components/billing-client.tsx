@@ -2,13 +2,19 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Check, CreditCard, Sparkles } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Check, CreditCard, ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { BILLING_PLANS, isPaidPlan } from "@/config/plans";
+import { dashboardPath } from "@/config/app-routes";
 import { useSubscription } from "@/features/billing/subscription-context";
 import type { PaymentGatewayId, PlanId } from "@/types/billing";
-import { ApiError, apiJson } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import {
+  postBillingCheckout,
+  postStripeBillingPortal,
+} from "@/services/billing.service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,11 +29,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-type CheckoutResponse =
-  | { url: string; gateway?: string }
-  | { demo: true; planId: PlanId };
-
 export function BillingClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     planId,
     refreshPlan,
@@ -36,15 +40,19 @@ export function BillingClient() {
     currentPeriodEnd,
     paymentGateways,
     hydrated,
+    stripePortalEligible,
   } = useSubscription();
   const [loading, setLoading] = React.useState<PlanId | null>(null);
   const [resetting, setResetting] = React.useState(false);
   const [gateway, setGateway] = React.useState<PaymentGatewayId>("sslcommerz");
   const [customerPhone, setCustomerPhone] = React.useState("");
+  const [portalLoading, setPortalLoading] = React.useState(false);
 
   const sslReady = paymentGateways.find((g) => g.id === "sslcommerz")?.configured;
+  const stripeReady = paymentGateways.find((g) => g.id === "stripe")?.configured;
   const canCheckoutPaid =
-    gateway === "stripe" || (gateway === "sslcommerz" && sslReady);
+    (gateway === "stripe" && Boolean(stripeReady)) ||
+    (gateway === "sslcommerz" && Boolean(sslReady));
 
   React.useEffect(() => {
     const ssl = paymentGateways.find((g) => g.id === "sslcommerz");
@@ -53,12 +61,83 @@ export function BillingClient() {
     else if (st?.configured) setGateway("stripe");
   }, [paymentGateways]);
 
+  React.useEffect(() => {
+    const payment = searchParams.get("payment");
+    const canceled = searchParams.get("canceled");
+    if (canceled === "1") {
+      toast.message("Checkout canceled", {
+        id: "billing-return-canceled",
+        description: "No charge was made. You can try again whenever you like.",
+      });
+      router.replace(dashboardPath("/billing"), { scroll: false });
+      return;
+    }
+    if (!payment) return;
+
+    const id = `billing-return-${payment}`;
+    const lower = payment.toLowerCase();
+    if (lower === "confirm_failed") {
+      toast.error("Could not confirm payment", {
+        id,
+        description:
+          "The gateway returned success but validation failed. Contact support if you were charged.",
+      });
+    } else if (lower === "invalid") {
+      toast.error("Invalid return", {
+        id,
+        description: "Missing transaction reference from the payment gateway.",
+      });
+    } else if (lower === "failed" || lower === "expired" || lower === "unattempted") {
+      toast.error("Payment not completed", {
+        id,
+        description: `Status: ${payment}. You can try checkout again.`,
+      });
+    } else if (lower === "canceled" || lower === "cancelled") {
+      toast.message("Checkout canceled", {
+        id,
+        description: "No charge was made.",
+      });
+    } else if (lower === "unknown") {
+      toast.error("Payment status unknown", {
+        id,
+        description: "Try again or contact support if a charge appears on your statement.",
+      });
+    } else {
+      toast.message("Returned from checkout", {
+        id,
+        description: `Payment status: ${payment}`,
+      });
+    }
+    router.replace(dashboardPath("/billing"), { scroll: false });
+  }, [searchParams, router]);
+
+  async function openStripePortal() {
+    setPortalLoading(true);
+    try {
+      const { url } = await postStripeBillingPortal();
+      window.location.href = url;
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not open the billing portal.";
+      toast.error("Portal unavailable", { description: msg });
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
   async function startUpgrade(target: PlanId) {
     if (!isPaidPlan(target)) return;
     if (gateway === "sslcommerz" && !sslReady) {
       toast.error("SSLCommerz not configured", {
         description:
           "Set SSLCOMMERZ_STORE_ID and SSLCOMMERZ_STORE_PASSWORD on the API (sandbox for testing).",
+      });
+      return;
+    }
+    if (gateway === "stripe" && !stripeReady) {
+      toast.error("Stripe not fully configured", {
+        description:
+          "Set STRIPE_SECRET_KEY plus STRIPE_PRICE_PRO_MONTHLY and STRIPE_PRICE_BUSINESS_MONTHLY (Stripe price_… / prod_…, or a decimal amount with STRIPE_CURRENCY) on the API.",
       });
       return;
     }
@@ -71,23 +150,19 @@ export function BillingClient() {
     }
     setLoading(target);
     try {
-      const data = await apiJson<CheckoutResponse>("/v1/billing/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId: target,
-          gateway,
-          ...(gateway === "sslcommerz"
-            ? { customerPhone: customerPhone.trim() }
-            : {}),
-        }),
+      const data = await postBillingCheckout({
+        planId: target as Exclude<PlanId, "free">,
+        gateway,
+        ...(gateway === "sslcommerz"
+          ? { customerPhone: customerPhone.trim() }
+          : {}),
       });
 
       if ("demo" in data && data.demo) {
         await refreshPlan();
         toast.success("Plan upgraded (demo mode)", {
           description:
-            "Stripe is not configured on the API, or prices are missing. Plan saved on your workspace.",
+            "The API treated this as a demo upgrade. Check Stripe keys and price IDs if you expected live checkout.",
         });
         return;
       }
@@ -162,16 +237,42 @@ export function BillingClient() {
             ) : null}
           </p>
         ) : null}
-        <p className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
+        <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
           <strong className="font-semibold">Payments:</strong>{" "}
           {anyGatewayReady
             ? "At least one gateway is configured on the API — you can complete checkout below."
-            : "Configure SSLCommerz (sandbox) and/or Stripe in the API .env to enable live checkouts."}{" "}
-          Stripe-only demo upgrades still apply when Stripe keys are absent and you pick Stripe.
+            : "Configure SSLCommerz and/or Stripe in the API environment (store credentials, Stripe price IDs, APP_PUBLIC_URL, API_PUBLIC_URL) to enable checkout."}{" "}
+          Use SSLCommerz for hosted pay in Bangladesh; use Stripe for card subscriptions and the customer portal.
         </p>
       </div>
 
-      <Card className="rounded-2xl border border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40">
+      {stripePortalEligible ? (
+        <Card className="rounded-lg border border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <ExternalLink className="size-5 text-violet-600 dark:text-violet-400" />
+              Stripe subscription
+            </CardTitle>
+            <CardDescription>
+              Update your payment method, view invoices, or cancel renewal in
+              Stripe&apos;s secure customer portal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              variant="secondary"
+              className="rounded-xl"
+              disabled={portalLoading}
+              onClick={() => void openStripePortal()}
+            >
+              {portalLoading ? "Opening portal…" : "Open Stripe billing portal"}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Card className="rounded-lg border border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-lg">
             <CreditCard className="size-5 text-violet-600 dark:text-violet-400" />
@@ -190,7 +291,7 @@ export function BillingClient() {
                 type="button"
                 onClick={() => setGateway(g.id)}
                 className={cn(
-                  "rounded-2xl border p-4 text-left transition-colors",
+                  "rounded-lg border p-4 text-left transition-colors",
                   gateway === g.id
                     ? "border-violet-500 bg-violet-50/80 ring-2 ring-violet-500/30 dark:border-violet-600 dark:bg-violet-950/40"
                     : "border-slate-200 bg-slate-50/50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/30",
@@ -228,7 +329,7 @@ export function BillingClient() {
                 placeholder="e.g. 01712345678"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="max-w-md rounded-xl"
+                className="max-w-md rounded-md py-4"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Required by SSLCommerz for receipts. Use a real number in
@@ -248,7 +349,7 @@ export function BillingClient() {
             <Card
               key={plan.id}
               className={cn(
-                "relative flex flex-col rounded-2xl border bg-white/90 shadow-sm backdrop-blur-md dark:bg-slate-950/60",
+                "relative flex flex-col rounded-lg border bg-white/90 shadow-sm backdrop-blur-md dark:bg-slate-950/60",
                 plan.highlight && "overflow-visible",
                 plan.highlight
                   ? "border-violet-400/60 shadow-md shadow-violet-500/10 dark:border-violet-600/50"
@@ -300,11 +401,11 @@ export function BillingClient() {
               </CardContent>
               <CardFooter className="mt-auto flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800">
                 {current ? (
-                  <Button type="button" variant="outline" className="w-full" disabled>
+                  <Button type="button" variant="outline" className="w-full rounded-sm py-5" disabled>
                     Your current plan
                   </Button>
                 ) : !isPaid ? (
-                  <Button type="button" variant="outline" className="w-full" disabled>
+                  <Button type="button" variant="outline" className="w-full rounded-sm py-5" disabled>
                     Downgrade via support
                   </Button>
                 ) : (
@@ -313,7 +414,7 @@ export function BillingClient() {
                     className={cn(
                       "w-full",
                       plan.highlight &&
-                        "bg-violet-600 text-white hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500"
+                        "bg-violet-600 text-white hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500 rounded-sm py-5"
                     )}
                     disabled={loading !== null || !hydrated || !canCheckoutPaid}
                     onClick={() => startUpgrade(plan.id)}
@@ -340,7 +441,7 @@ export function BillingClient() {
             type="button"
             variant="outline"
             size="sm"
-            className="shrink-0"
+            className="shrink-0 rounded-sm py-4"
             disabled={resetting}
             onClick={() => void onResetFree()}
           >
@@ -351,7 +452,7 @@ export function BillingClient() {
 
       <p className="text-center text-xs text-slate-500 dark:text-slate-400">
         Questions?{" "}
-        <Link href="/" className="font-medium text-primary hover:underline">
+        <Link href={dashboardPath()} className="font-medium text-primary hover:underline">
           Contact sales
         </Link>{" "}
         — prices exclude applicable taxes.

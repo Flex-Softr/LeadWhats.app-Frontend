@@ -138,7 +138,7 @@ export function AdminFleetView({ module }: AdminFleetViewProps) {
               <Badge
                 key={k.label}
                 variant="secondary"
-                className="rounded-lg px-3 py-1.5 text-xs font-normal"
+                className="rounded-sm px-3 py-3 text-xs font-normal"
               >
                 <span className="font-semibold text-slate-800 dark:text-slate-100">
                   {k.label}:{" "}
@@ -152,7 +152,7 @@ export function AdminFleetView({ module }: AdminFleetViewProps) {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="rounded-2xl border-slate-200/90 dark:border-slate-800">
+            <Card className="rounded-lg border-slate-200/90 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="text-base">By status</CardTitle>
                 <CardDescription>
@@ -192,7 +192,7 @@ export function AdminFleetView({ module }: AdminFleetViewProps) {
             </Card>
           </div>
 
-          <Card className="rounded-2xl border-slate-200/90 dark:border-slate-800">
+          <Card className="rounded-lg border-slate-200/90 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="text-base">Devices</CardTitle>
               <CardDescription>

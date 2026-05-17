@@ -7,6 +7,7 @@ import { useTheme } from "@/components/providers/theme-provider";
 import * as React from "react";
 
 import { getAdminNavMeta } from "@/config/admin-navigation";
+import { dashboardPath } from "@/config/app-routes";
 import { Button } from "@/components/ui/button";
 
 export function AdminHeader() {
@@ -20,7 +21,7 @@ export function AdminHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 px-5 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/50 sm:px-7 sm:py-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
             {meta.title}
@@ -29,31 +30,31 @@ export function AdminHeader() {
             {meta.description}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="size-10 rounded-xl"
+            className="size-8 rounded-md shadow-sm shadow-white/30"
           >
             {mounted ? (
               isDark ? (
-                <SunMedium className="size-[18px]" />
+                <SunMedium className="size-[20px]" />
               ) : (
-                <Moon className="size-[18px]" />
+                <Moon className="size-[20px]" />
               )
             ) : (
-              <Moon className="size-[18px]" />
+              <Moon className="size-[20px]" />
             )}
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl border-slate-200 dark:border-slate-700"
+            className="rounded-sm border-slate-200 dark:border-slate-700 py-4"
             render={
-              <Link href="/" className="inline-flex items-center gap-2" />
+              <Link href={dashboardPath()} className="inline-flex items-center gap-2" />
             }
           >
             <ArrowLeft className="size-4" />

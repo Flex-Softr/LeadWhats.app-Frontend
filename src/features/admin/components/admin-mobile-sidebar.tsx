@@ -23,12 +23,12 @@ export function AdminMobileSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden p-2 shadow-sm border-1"
             aria-label="Open admin navigation"
           />
         }
       >
-        <Menu className="size-5" />
+        <Menu className="size-" />
       </SheetTrigger>
       <SheetContent
         side="left"

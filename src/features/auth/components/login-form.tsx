@@ -15,6 +15,8 @@ import { GoogleBrandIcon } from "@/features/auth/components/google-brand-icon";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api";
+import { getGoogleOAuthStartUrl } from "@/lib/auth-google";
+import { dashboardPath } from "@/config/app-routes";
 import { isSafeInternalPath } from "@/lib/safe-redirect";
 
 export function LoginForm() {
@@ -25,7 +27,7 @@ export function LoginForm() {
   React.useEffect(() => {
     if (!isBootstrapping && user) {
       const next = searchParams.get("next");
-      router.replace(isSafeInternalPath(next) ? next : "/");
+      router.replace(isSafeInternalPath(next) ? next : dashboardPath());
     }
   }, [isBootstrapping, user, router, searchParams]);
 
@@ -40,7 +42,7 @@ export function LoginForm() {
       await login(email, password);
       toast.success("Signed in");
       const next = searchParams.get("next");
-      router.replace(isSafeInternalPath(next) ? next : "/");
+      router.replace(isSafeInternalPath(next) ? next : dashboardPath());
     } catch (err) {
       const msg =
         err instanceof ApiError
@@ -111,11 +113,12 @@ export function LoginForm() {
         type="button"
         variant="outline"
         className="h-11 w-full rounded-xl border-slate-200/90 bg-white font-medium dark:border-slate-700 dark:bg-slate-950/50"
-        onClick={() =>
-          toast.message("Google sign-in", {
-            description: "OAuth is not configured for this environment yet.",
-          })
-        }
+        onClick={() => {
+          const next = searchParams.get("next");
+          window.location.href = getGoogleOAuthStartUrl(
+            isSafeInternalPath(next) ? next : undefined
+          );
+        }}
       >
         <GoogleBrandIcon className="mr-2 size-5 shrink-0" />
         Continue with Google

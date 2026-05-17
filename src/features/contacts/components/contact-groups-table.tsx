@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Folder, Pencil, Trash2 } from "lucide-react";
 
 import type { ContactGroupRecord } from "@/types/contacts";
+import { dashboardPath } from "@/config/app-routes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +52,7 @@ export function ContactGroupsTable({
             <TableRow key={g.id}>
               <TableCell>
                 <Link
-                  href={`/contacts/${g.id}`}
+                  href={`${dashboardPath("/contacts")}/${g.id}`}
                   className="flex cursor-pointer items-start gap-2 rounded-md text-left font-medium text-primary hover:underline"
                 >
                   <Folder className="mt-0.5 size-4 shrink-0 text-blue-600" />

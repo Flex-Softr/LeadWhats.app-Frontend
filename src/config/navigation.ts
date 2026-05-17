@@ -14,6 +14,8 @@ import {
   FileText,
 } from "lucide-react";
 
+import { dashboardPath } from "@/config/app-routes";
+
 export type NavItem = {
   title: string;
   description: string;
@@ -25,73 +27,73 @@ export const NAV_ITEMS: NavItem[] = [
   {
     title: "Overview",
     description: "Dashboard & analytics",
-    href: "/",
+    href: dashboardPath(),
     icon: LayoutDashboard,
   },
   {
     title: "Billing",
     description: "Plans & upgrades",
-    href: "/billing",
+    href: dashboardPath("/billing"),
     icon: CreditCard,
   },
   {
     title: "Devices",
     description: "WhatsApp Sessions",
-    href: "/devices",
+    href: dashboardPath("/devices"),
     icon: Smartphone,
   },
   {
     title: "Single Message",
     description: "Test Messages",
-    href: "/single-message",
+    href: dashboardPath("/single-message"),
     icon: MessageSquare,
   },
   {
     title: "Templates",
     description: "Message Templates",
-    href: "/templates",
+    href: dashboardPath("/templates"),
     icon: FileText,
   },
   {
     title: "Contacts",
     description: "Contact Management",
-    href: "/contacts",
+    href: dashboardPath("/contacts"),
     icon: UserRound,
   },
   {
     title: "Bulk Messages",
     description: "Mass Messaging",
-    href: "/bulk-messages",
+    href: dashboardPath("/bulk-messages"),
     icon: MessagesSquare,
   },
   {
     title: "Auto Reply",
     description: "Automated Responses",
-    href: "/auto-reply",
+    href: dashboardPath("/auto-reply"),
     icon: Reply,
   },
   {
     title: "Chatbot",
     description: "Flows & assistants",
-    href: "/chatbot",
+    href: dashboardPath("/chatbot"),
     icon: Bot,
   },
   {
     title: "Call Responder",
     description: "Call automation",
-    href: "/call-responder",
+    href: dashboardPath("/call-responder"),
     icon: Phone,
   },
   {
     title: "Live Chat",
     description: "Inbox & conversations",
-    href: "/live-chat",
+    href: dashboardPath("/live-chat"),
     icon: MessageCircle,
   },
   {
     title: "Group Grabber",
     description: "Extract groups & communities",
-    href: "/group-grabber",
+    href: dashboardPath("/group-grabber"),
     icon: Users,
   },
 ];

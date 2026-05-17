@@ -30,6 +30,7 @@ import type {
   BulkCampaignsListResponse,
 } from "@/types/bulk-campaign-api";
 import { useSessionIdentity } from "@/hooks/use-session-identity";
+import { dashboardPath } from "@/config/app-routes";
 import { ApiError, apiJson } from "@/lib/api";
 import { ListEmptyState } from "@/features/shared/components/list-empty-state";
 import { StatCard } from "@/features/shared/components/stat-card";
@@ -265,7 +266,7 @@ export function BulkMessagesClient() {
 
 
         {(runningCampaigns.length > 0 || pendingCampaigns.length > 0) && (
-  <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+  <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
     <CardContent className="p-0">
       <div className="border-b px-6 py-4">
         <h3 className="text-lg font-semibold">
@@ -296,7 +297,7 @@ export function BulkMessagesClient() {
             <TableRow key={c.id}>
               <TableCell>
                 <Link
-                  href={`/bulk-messages/${c.id}`}
+                  href={`${dashboardPath("/bulk-messages")}/${c.id}`}
                   className="block w-full rounded-md text-left transition-colors hover:bg-muted/50"
                 >
                   <div className="font-medium text-primary underline-offset-4 hover:underline">
@@ -332,8 +333,8 @@ export function BulkMessagesClient() {
 )}
 
 
-        <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-          <CardContent className="p-0 sm:rounded-3xl">
+        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+          <CardContent className="p-0 sm:rounded-lg">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
                 <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
@@ -363,7 +364,7 @@ export function BulkMessagesClient() {
     value={statusFilter}
     onValueChange={(value) => setStatusFilter(value ?? "all")}
   >
-    <SelectTrigger className="w-[180px]">
+    <SelectTrigger className="w-[180px] rounded-sm">
       <SelectValue placeholder="Filter status" />
     </SelectTrigger>
 
@@ -391,7 +392,7 @@ export function BulkMessagesClient() {
                     <TableRow key={c.id}>
                       <TableCell>
                         <Link
-                          href={`/bulk-messages/${c.id}`}
+                          href={`${dashboardPath("/bulk-messages")}/${c.id}`}
                           className="block w-full rounded-md text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <div className="font-medium text-primary underline-offset-4 hover:underline">

@@ -123,7 +123,7 @@ export function AdminOverview() {
         {data.kpis.map((k) => (
           <Card
             key={k.id}
-            className="rounded-2xl border-slate-200/90 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40"
+            className="rounded-lg border-slate-200/90 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40"
           >
             <CardHeader className="pb-2">
               <CardDescription className="text-xs font-medium uppercase tracking-wide">
@@ -178,7 +178,7 @@ export function AdminOverview() {
                         : undefined;
                     return (
                       <Link key={item.href} href={item.href} className="group">
-                        <Card className="h-full rounded-2xl border-slate-200/90 bg-white/90 transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:shadow-slate-900/40">
+                        <Card className="h-full rounded-lg border-slate-200/90 bg-white/90 transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:shadow-slate-900/40">
                           <CardHeader className="pb-2">
                             <div className="flex items-start justify-between gap-2">
                               <CardTitle className="text-base font-semibold leading-snug">

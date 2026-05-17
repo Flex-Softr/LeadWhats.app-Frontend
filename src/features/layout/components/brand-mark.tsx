@@ -1,8 +1,14 @@
+import Link from "next/link";
 import { Sparkles } from "lucide-react";
+
+import { dashboardPath } from "@/config/app-routes";
 
 export function BrandMark() {
   return (
-    <div className="flex items-center gap-3.5 py-1">
+    <Link
+      href={dashboardPath()}
+      className="flex items-center gap-3.5 py-1 outline-none ring-offset-2 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-violet-500"
+    >
       <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25">
         <Sparkles className="size-[22px]" strokeWidth={2} />
       </div>
@@ -14,6 +20,6 @@ export function BrandMark() {
           WhatsApp Studio
         </p>
       </div>
-    </div>
+    </Link>
   );
 }

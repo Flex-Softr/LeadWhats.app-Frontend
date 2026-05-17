@@ -25,6 +25,7 @@ import type {
   UpdateContactResponse,
 } from "@/types/contacts-api";
 import { useAuth } from "@/components/providers/auth-provider";
+import { isUnderContacts } from "@/config/app-routes";
 import { ApiError, apiJson } from "@/lib/api";
 
 type ContactsState = {
@@ -135,7 +136,7 @@ export function ContactsProvider({ children }: { children: React.ReactNode }) {
     const prev = prevPathForContactsRef.current;
     prevPathForContactsRef.current = pathname;
     if (prev === null) return;
-    if (!pathname.startsWith("/contacts")) return;
+    if (!isUnderContacts(pathname)) return;
 
     let cancelled = false;
     void (async () => {

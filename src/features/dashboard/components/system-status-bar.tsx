@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import type { SystemStatus } from "@/types/dashboard";
+import { dashboardPath } from "@/config/app-routes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -36,7 +37,7 @@ export function SystemStatusBar({ status, lastUpdated }: SystemStatusBarProps) {
   const cfg = statusCopy[status];
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-white/70 bg-white/80 px-4 py-3 text-xs shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/50 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
+    <div className="flex flex-col gap-2 rounded-lg border border-white/70 bg-white/80 px-4 py-3 text-xs shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/50 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-slate-700 dark:text-slate-200">
           System Status:
@@ -54,7 +55,7 @@ export function SystemStatusBar({ status, lastUpdated }: SystemStatusBarProps) {
           <Button
             variant="link"
             className="h-auto rounded-md p-0 text-xs sm:text-sm"
-            render={<Link href="/billing" />}
+            render={<Link href={dashboardPath("/billing")} />}
           >
             License
           </Button>

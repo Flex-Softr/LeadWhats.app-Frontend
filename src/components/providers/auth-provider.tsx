@@ -31,6 +31,8 @@ type AuthContextValue = {
     password: string;
     name?: string;
   }) => Promise<void>;
+  /** Loads user/workspace from the httpOnly refresh cookie (used after Google OAuth redirect). */
+  syncAuthFromApi: () => Promise<boolean>;
   logout: () => Promise<void>;
 };
 
@@ -116,6 +118,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const syncAuthFromApi = React.useCallback(async () => {
+    try {
+      const data = await refreshAccessToken();
+      if (data) {
+        markAuthSessionActive();
+        setUser(data.user);
+        setWorkspace(data.workspace);
+        return true;
+      }
+      clearAuthSessionMarker();
+      setUser(null);
+      setWorkspace(null);
+      return false;
+    } catch {
+      clearAuthSessionMarker();
+      setUser(null);
+      setWorkspace(null);
+      return false;
+    }
+  }, []);
+
   const value = React.useMemo(
     () => ({
       user,
@@ -124,9 +147,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: !!user,
       login,
       register,
+      syncAuthFromApi,
       logout,
     }),
-    [user, workspace, isBootstrapping, login, register, logout]
+    [user, workspace, isBootstrapping, login, register, syncAuthFromApi, logout]
   );
 
   return (

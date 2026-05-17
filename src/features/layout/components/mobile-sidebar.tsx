@@ -23,12 +23,12 @@ export function MobileSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden size-[40px] shrink-0 gap-1.5 rounded-lg border-slate-200/90 bg-white/80 px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
             aria-label="Open navigation"
           />
         }
       >
-        <Menu />
+        <Menu  className="size-[20px]"/>
       </SheetTrigger>
       <SheetContent
         side="left"

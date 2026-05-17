@@ -18,6 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { dashboardPath } from "@/config/app-routes";
 import { StatCard } from "@/features/shared/components/stat-card";
 import {
   bulkSelectionLabel,
@@ -207,7 +208,7 @@ export function BulkCampaignDetailPageClient({
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-16 lg:space-y-10">
         <Button variant="ghost" className="-ml-2 gap-2">
-          <Link href="/bulk-messages" className="flex items-center gap-2">
+          <Link href={dashboardPath("/bulk-messages")} className="flex items-center gap-2">
             <ArrowLeft className="size-4" />
             Back to bulk messages
           </Link>
@@ -223,7 +224,7 @@ export function BulkCampaignDetailPageClient({
             <CardContent className="px-6 py-8 text-center">
               <p className="text-destructive">{loadError}</p>
               <Button className="mt-6" variant="outline">
-                <Link href="/bulk-messages">Return to list</Link>
+                <Link href={dashboardPath("/bulk-messages")}>Return to list</Link>
               </Button>
             </CardContent>
           </Card>

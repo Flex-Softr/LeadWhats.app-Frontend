@@ -43,7 +43,7 @@ export function PhoneNumberWithCountryInput({
   return (
     <div
       className={cn(
-        "flex h-11 w-full items-stretch overflow-hidden rounded-lg border border-input bg-transparent transition-colors",
+        "flex h-11 w-full items-stretch overflow-hidden rounded-sm border border-input bg-transparent transition-colors",
         "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         "dark:bg-input/30 dark:hover:bg-input/50",
         disabled && "cursor-not-allowed opacity-60"

@@ -48,7 +48,7 @@ export function AdminSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                     href={item.href}
                     onClick={onNavigate}
                     className={cn(
-                      "group flex min-h-[3rem] cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200",
+                      "group flex min-h-[3rem] cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200",
                       active
                         ? "bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-md shadow-slate-900/25 dark:from-slate-700 dark:to-slate-800"
                         : "text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100"

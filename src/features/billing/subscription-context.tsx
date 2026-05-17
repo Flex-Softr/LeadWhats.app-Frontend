@@ -3,23 +3,19 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 
-import { useAuth } from "@/components/providers/auth-provider";
 import { licenseFromPlan } from "@/features/billing/lib/license-from-plan";
-import { apiJson } from "@/lib/api";
+import {
+  fetchBillingSnapshot,
+  postBillingResetToFree,
+} from "@/services/billing.service";
+import { useAuth } from "@/components/providers/auth-provider";
 import {
   isPlanId,
+  type BillingSnapshot,
   type PaymentGatewayMeta,
   type PlanId,
 } from "@/types/billing";
 import type { UserLicense } from "@/types/dashboard";
-
-type BillingApiResponse = {
-  planId: string;
-  subscriptionStatus: string | null;
-  currentPeriodEnd: string | null;
-  stripeConfigured: boolean;
-  paymentGateways: PaymentGatewayMeta[];
-};
 
 type SubscriptionContextValue = {
   planId: PlanId;
@@ -27,6 +23,8 @@ type SubscriptionContextValue = {
   /** True after auth + billing snapshot loaded (or skipped when logged out). */
   hydrated: boolean;
   stripeConfigured: boolean;
+  /** True when workspace can open Stripe Customer Portal (Stripe subscription on file). */
+  stripePortalEligible: boolean;
   subscriptionStatus: string | null;
   currentPeriodEnd: string | null;
   /** Reload plan from API (after checkout, webhook delay, etc.). */
@@ -52,6 +50,8 @@ export function SubscriptionProvider({
   const [planId, setPlanId] = React.useState<PlanId>("free");
   const [hydrated, setHydrated] = React.useState(false);
   const [stripeConfigured, setStripeConfigured] = React.useState(false);
+  const [stripePortalEligible, setStripePortalEligible] =
+    React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<
     string | null
   >(null);
@@ -62,11 +62,12 @@ export function SubscriptionProvider({
     PaymentGatewayMeta[]
   >([]);
 
-  const applyBillingPayload = React.useCallback((data: BillingApiResponse) => {
+  const applyBillingPayload = React.useCallback((data: BillingSnapshot) => {
     if (isPlanId(data.planId)) {
       setPlanId(data.planId);
     }
     setStripeConfigured(data.stripeConfigured);
+    setStripePortalEligible(Boolean(data.stripePortalEligible));
     setSubscriptionStatus(data.subscriptionStatus);
     setCurrentPeriodEnd(data.currentPeriodEnd);
     setPaymentGateways(data.paymentGateways ?? []);
@@ -76,12 +77,13 @@ export function SubscriptionProvider({
     if (!user) {
       setPlanId("free");
       setStripeConfigured(false);
+      setStripePortalEligible(false);
       setSubscriptionStatus(null);
       setCurrentPeriodEnd(null);
       setPaymentGateways([]);
       return;
     }
-    const data = await apiJson<BillingApiResponse>("/v1/billing");
+    const data = await fetchBillingSnapshot();
     applyBillingPayload(data);
   }, [user, applyBillingPayload]);
 
@@ -94,6 +96,7 @@ export function SubscriptionProvider({
         if (!cancelled) {
           setPlanId("free");
           setStripeConfigured(false);
+          setStripePortalEligible(false);
           setSubscriptionStatus(null);
           setCurrentPeriodEnd(null);
           setPaymentGateways([]);
@@ -103,7 +106,7 @@ export function SubscriptionProvider({
       }
 
       try {
-        const data = await apiJson<BillingApiResponse>("/v1/billing");
+        const data = await fetchBillingSnapshot();
         if (!cancelled) {
           applyBillingPayload(data);
         }
@@ -128,7 +131,7 @@ export function SubscriptionProvider({
   }, []);
 
   const resetToFreeDemo = React.useCallback(async () => {
-    await apiJson("/v1/billing/reset-to-free", { method: "POST" });
+    await postBillingResetToFree();
     await refreshPlan();
   }, [refreshPlan]);
 
@@ -140,6 +143,7 @@ export function SubscriptionProvider({
       license,
       hydrated,
       stripeConfigured,
+      stripePortalEligible,
       subscriptionStatus,
       currentPeriodEnd,
       refreshPlan,
@@ -152,6 +156,7 @@ export function SubscriptionProvider({
       license,
       hydrated,
       stripeConfigured,
+      stripePortalEligible,
       subscriptionStatus,
       currentPeriodEnd,
       refreshPlan,

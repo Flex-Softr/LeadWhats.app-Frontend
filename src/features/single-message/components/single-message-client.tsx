@@ -21,6 +21,7 @@ import {
   splitE164Phone,
 } from "@/features/shared/lib/phone-country-prefixes";
 import { useSessionIdentity } from "@/hooks/use-session-identity";
+import { dashboardPath } from "@/config/app-routes";
 import { ApiError, apiJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -225,7 +226,7 @@ export function SingleMessageClient() {
   }
 
   const cardClass =
-    "rounded-3xl border border-white/70 bg-white/90 shadow-md " +
+    "rounded-lg border border-white/70 bg-white/90 shadow-md " +
     "shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 " +
     "dark:bg-slate-950/60";
 
@@ -268,7 +269,7 @@ export function SingleMessageClient() {
               <p className="mt-1 text-amber-900/90 dark:text-amber-200/90">
                 Link your phone under{" "}
                 <Link
-                  href="/devices"
+                  href={dashboardPath("/devices")}
                   className="font-semibold underline underline-offset-2"
                 >
                   Devices
@@ -288,7 +289,7 @@ export function SingleMessageClient() {
                   <SelectTrigger
                     id="device"
                     size="default"
-                    className="h-11 w-full min-w-0"
+                    className="h-11 w-full min-w-0 rounded-sm"
                   >
                     <SelectValue placeholder="Choose a connected device…">
                       {selectedDevice ? deviceName(selectedDevice) : null}
@@ -325,7 +326,7 @@ export function SingleMessageClient() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="h-11 w-full sm:w-auto"
+                  className="h-11 w-full sm:w-auto rounded-sm"
                   disabled={checking}
                   onClick={() => void handleCheckNumber()}
                 >
@@ -379,7 +380,7 @@ export function SingleMessageClient() {
               {templates.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No templates yet. Create one on the{" "}
-                  <Link href="/templates" className="underline underline-offset-2">
+                  <Link href={dashboardPath("/templates")} className="underline underline-offset-2">
                     Templates
                   </Link>{" "}
                   page — template mode sends the full template on WhatsApp

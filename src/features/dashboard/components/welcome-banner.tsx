@@ -21,7 +21,7 @@ export function WelcomeBanner({
   const who = user ? userDisplayName(user) : "…";
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/60 bg-gradient-to-r from-violet-600/95 via-fuchsia-600/90 to-indigo-600/95 px-5 py-5 text-white shadow-md shadow-violet-500/15 backdrop-blur-sm sm:rounded-2xl sm:px-6 sm:py-6 dark:border-violet-500/20">
+    <div className="relative overflow-hidden rounded-lg border border-white/60 bg-gradient-to-r from-violet-600/95 via-fuchsia-600/90 to-indigo-600/95 px-5 py-5 text-white shadow-md shadow-violet-500/15 backdrop-blur-sm sm:rounded-lg sm:px-6 sm:py-6 dark:border-violet-500/20">
       <div className="relative z-10 max-w-2xl space-y-3">
         <h2 className="text-base font-semibold leading-snug tracking-tight sm:text-lg">
           Welcome back — here&apos;s your automation pulse today.

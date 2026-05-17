@@ -167,7 +167,7 @@ export function TemplatesClient() {
         </div>
         <Button
           type="button"
-          className="h-11 w-full gap-2 px-5 sm:w-auto"
+          className="h-11 w-full gap-2 px-5 sm:w-auto rounded-sm"
           onClick={() => {
             setEditingTemplate(null);
             setFormOpen(true);
@@ -191,7 +191,7 @@ export function TemplatesClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, slug, or body…"
-              className="h-11 rounded-xl border-slate-200 bg-white/90 pl-10 dark:border-slate-700 dark:bg-slate-950/60"
+              className="h-11 rounded-sm border-slate-200 bg-white/90 pl-10 dark:border-slate-700 dark:bg-slate-950/60"
             />
           </div>
           <div className="w-full space-y-1.5 sm:w-52">
@@ -206,7 +206,7 @@ export function TemplatesClient() {
             >
               <SelectTrigger
                 id="tpl-type-filter"
-                className="h-11 w-full rounded-xl"
+                className="h-11 w-full rounded-sm py-4"
               >
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
@@ -223,8 +223,8 @@ export function TemplatesClient() {
         </div>
       ) : null}
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-        <CardContent className="p-4 sm:p-6 sm:rounded-3xl">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+        <CardContent className="p-2 sm:p-6 sm:rounded-3xl">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
               <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
@@ -259,10 +259,10 @@ export function TemplatesClient() {
               </Button>
             </div>
           ) : (
-            <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 justify-center">
               {pagedTemplates.map((t) => (
-                <li key={t.id}>
-                  <div className="flex h-full flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
+                <li key={t.id} className="">
+                  <div className="flex h-full flex-col rounded-lg border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
                     <div className="flex flex-col gap-3 p-4">
                       <div className="flex min-w-0 items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -293,7 +293,7 @@ export function TemplatesClient() {
                       <button
                         type="button"
                         onClick={() => openDetail(t)}
-                        className="flex w-full justify-center rounded-xl bg-slate-100/90 py-4 outline-none transition hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-violet-500 dark:bg-slate-900/60 dark:hover:bg-slate-900/80"
+                        className="flex w-full justify-center rounded-lg bg-slate-100/90 py-4 outline-none transition hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-violet-500 dark:bg-slate-900/60 dark:hover:bg-slate-900/80"
                       >
                         <WhatsAppMessagePreview
                           compact

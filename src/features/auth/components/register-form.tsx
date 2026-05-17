@@ -12,9 +12,11 @@ import {
   AuthPasswordField,
 } from "@/features/auth/components/auth-form-primitives";
 import { GoogleBrandIcon } from "@/features/auth/components/google-brand-icon";
+import { dashboardPath } from "@/config/app-routes";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api";
+import { getGoogleOAuthStartUrl } from "@/lib/auth-google";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -22,7 +24,7 @@ export function RegisterForm() {
 
   React.useEffect(() => {
     if (!isBootstrapping && user) {
-      router.replace("/");
+      router.replace(dashboardPath());
     }
   }, [isBootstrapping, user, router]);
 
@@ -50,7 +52,7 @@ export function RegisterForm() {
         name: name.trim() || undefined,
       });
       toast.success("Account created");
-      router.replace("/");
+      router.replace(dashboardPath());
     } catch (err) {
       const msg =
         err instanceof ApiError
@@ -149,11 +151,9 @@ export function RegisterForm() {
         type="button"
         variant="outline"
         className="h-11 w-full rounded-xl border-slate-200/90 bg-white font-medium dark:border-slate-700 dark:bg-slate-950/50"
-        onClick={() =>
-          toast.message("Google sign-in", {
-            description: "OAuth is not configured for this environment yet.",
-          })
-        }
+        onClick={() => {
+          window.location.href = getGoogleOAuthStartUrl();
+        }}
       >
         <GoogleBrandIcon className="mr-2 size-5 shrink-0" />
         Continue with Google

@@ -7,16 +7,12 @@ import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getPlanById } from "@/config/plans";
+import { dashboardPath } from "@/config/app-routes";
 import { useSubscription } from "@/features/billing/subscription-context";
-import type { PlanId } from "@/types/billing";
 import { isPlanId } from "@/types/billing";
-import { ApiError, apiJson } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import { getBillingConfirm } from "@/services/billing.service";
 import { Button } from "@/components/ui/button";
-
-type ConfirmResponse = {
-  planId: PlanId;
-  demo: boolean;
-};
 
 export function BillingSuccessClient() {
   const router = useRouter();
@@ -65,9 +61,7 @@ export function BillingSuccessClient() {
     (async () => {
       setStatus("syncing");
       try {
-        const data = await apiJson<ConfirmResponse>(
-          `/v1/billing/confirm?session_id=${encodeURIComponent(sessionId)}`
-        );
+        const data = await getBillingConfirm(sessionId);
 
         if (cancelled) return;
 
@@ -123,7 +117,7 @@ export function BillingSuccessClient() {
       <Button
         type="button"
         className="rounded-xl"
-        onClick={() => router.push("/")}
+        onClick={() => router.push(dashboardPath())}
       >
         Back to dashboard
       </Button>
@@ -131,12 +125,12 @@ export function BillingSuccessClient() {
         type="button"
         variant="outline"
         className="rounded-xl"
-        onClick={() => router.push("/billing")}
+        onClick={() => router.push(dashboardPath("/billing"))}
       >
         View plans
       </Button>
       <Link
-        href="/billing"
+        href={dashboardPath("/billing")}
         className="text-xs text-muted-foreground hover:text-foreground hover:underline"
       >
         Manage billing

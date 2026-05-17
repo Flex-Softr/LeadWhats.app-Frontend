@@ -133,12 +133,12 @@ export function AdminBillingView({ module }: AdminBillingViewProps) {
         <>
           <AdminNoDataBanner meta={data.meta} />
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 overflow-scroll">
             {data.kpis.map((k) => (
               <Badge
                 key={k.label}
                 variant="secondary"
-                className="rounded-lg px-3 py-1.5 text-xs font-normal"
+                className="rounded-sm px-3 py-3 text-xs font-normal"
               >
                 <span className="font-semibold text-slate-800 dark:text-slate-100">
                   {k.label}:{" "}
@@ -151,7 +151,7 @@ export function AdminBillingView({ module }: AdminBillingViewProps) {
             ))}
           </div>
 
-          <Card className="rounded-2xl border-slate-200/90 dark:border-slate-800">
+          <Card className="rounded-lg border-slate-200/90 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="text-base">
                 {data.scope === "platform"

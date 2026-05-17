@@ -128,7 +128,7 @@ export function AdminScreenView({ module }: AdminScreenViewProps) {
                 <Badge
                   key={k.label}
                   variant="secondary"
-                  className="rounded-lg px-3 py-1.5 text-xs font-normal"
+                  className="rounded-sm px-3 py-3 text-xs font-normal"
                 >
                   <span className="font-semibold text-slate-800 dark:text-slate-100">
                     {k.label}:{" "}
@@ -147,7 +147,7 @@ export function AdminScreenView({ module }: AdminScreenViewProps) {
           {data.tables.map((tbl) => (
             <Card
               key={tbl.id}
-              className="rounded-2xl border-slate-200/90 dark:border-slate-800"
+              className="rounded-lg border-slate-200/90 dark:border-slate-800"
             >
               <CardHeader>
                 <CardTitle className="text-base">{tbl.title}</CardTitle>

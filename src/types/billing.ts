@@ -13,6 +13,16 @@ export type PaymentGatewayMeta = {
   configured: boolean;
 };
 
+/** GET /v1/billing snapshot (workspace plan + gateway availability). */
+export type BillingSnapshot = {
+  planId: string;
+  subscriptionStatus: string | null;
+  currentPeriodEnd: string | null;
+  stripeConfigured: boolean;
+  stripePortalEligible: boolean;
+  paymentGateways: PaymentGatewayMeta[];
+};
+
 export function isPaymentGatewayId(value: string): value is PaymentGatewayId {
   return value === "stripe" || value === "sslcommerz";
 }

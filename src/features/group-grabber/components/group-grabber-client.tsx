@@ -23,6 +23,7 @@ import type { DevicesListResponse } from "@/types/device";
 import type { GrabbedGroup } from "@/types/group-grabber";
 import type { GroupGrabberListResponse } from "@/types/group-grabber-api";
 import { useSessionIdentity } from "@/hooks/use-session-identity";
+import { dashboardPath } from "@/config/app-routes";
 import { ApiError, apiJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -272,7 +273,7 @@ export function GroupGrabberClient() {
           Pull groups your linked WhatsApp session is in, scrape member lists,
           and import numbers into{" "}
           <Link
-            href="/contacts"
+            href={dashboardPath("/contacts")}
             className="font-medium text-violet-600 underline dark:text-violet-400"
           >
             Contacts
@@ -281,7 +282,7 @@ export function GroupGrabberClient() {
         </p>
       </div>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:p-6">
           <div className="min-w-0 flex-1 space-y-2">
             <Label htmlFor="gg-device" className="text-sm font-semibold">
@@ -292,7 +293,7 @@ export function GroupGrabberClient() {
               onValueChange={(v) => setDeviceId(v ?? "")}
               disabled={devicesLoading || devices.length === 0}
             >
-              <SelectTrigger id="gg-device" className="h-11 w-full rounded-xl sm:max-w-md">
+              <SelectTrigger id="gg-device" className="h-11 w-full rounded-md sm:max-w-md">
                 <SelectValue
                   placeholder={
                     devicesLoading ? "Loading…" : "Choose a session…"
@@ -315,7 +316,7 @@ export function GroupGrabberClient() {
               <p className="text-sm text-amber-700 dark:text-amber-400">
                 No devices yet.{" "}
                 <Link
-                  href="/devices"
+                  href={dashboardPath("/devices")}
                   className="font-medium underline"
                 >
                   Add a device
@@ -417,13 +418,13 @@ export function GroupGrabberClient() {
         />
       </div>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="p-5 sm:p-6 lg:p-7">
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
             Quick Analytics
           </h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Average group size
               </p>
@@ -434,7 +435,7 @@ export function GroupGrabberClient() {
                 </span>
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Admin ratio
               </p>
@@ -442,7 +443,7 @@ export function GroupGrabberClient() {
                 {stats.adminRatio}%
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Largest group
               </p>
@@ -457,11 +458,11 @@ export function GroupGrabberClient() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="space-y-5 p-4 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col items-start gap-2">
-              <div className="inline-flex rounded-xl border border-slate-200/90 bg-slate-50/80 p-1 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="inline-flex rounded-lg border border-slate-200/90 bg-slate-50/80 p-1 dark:border-slate-800 dark:bg-slate-900/50">
                 <button
                   type="button"
                   onClick={() => setViewMode("groups")}
@@ -505,7 +506,7 @@ export function GroupGrabberClient() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search groups…"
-                  className="h-11 rounded-xl pl-10"
+                  className="h-11 rounded-md pl-10"
                   aria-label="Search groups"
                 />
               </div>
@@ -513,7 +514,7 @@ export function GroupGrabberClient() {
                 value={roleFilter}
                 onValueChange={(v) => setRoleFilter((v ?? "all") as RoleFilter)}
               >
-                <SelectTrigger className="h-11 w-full shrink-0 rounded-xl sm:w-[130px]">
+                <SelectTrigger className="h-11 w-full shrink-0 rounded-sm sm:w-[130px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -528,7 +529,7 @@ export function GroupGrabberClient() {
                   setSortKey((v ?? "name") as SortKey)
                 }
               >
-                <SelectTrigger className="h-11 w-full shrink-0 rounded-xl sm:w-[140px]">
+                <SelectTrigger className="h-11 w-full shrink-0 rounded-sm sm:w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

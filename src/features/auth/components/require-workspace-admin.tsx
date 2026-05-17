@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { dashboardPath } from "@/config/app-routes";
 import { useAuth } from "@/components/providers/auth-provider";
 
 type WorkspaceRole = "OWNER" | "ADMIN" | "MEMBER";
@@ -33,7 +34,7 @@ export function RequireWorkspaceAdmin({
       description:
         "The admin console is only available to workspace owners and admins.",
     });
-    router.replace("/");
+    router.replace(dashboardPath());
   }, [denied, router]);
 
   if (isBootstrapping) {

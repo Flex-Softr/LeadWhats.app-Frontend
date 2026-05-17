@@ -71,7 +71,7 @@ export function GroupGrabberList({
       </div>
 
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-14 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-400">
+        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 py-14 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-400">
           No {modeLabel.toLowerCase()} match your filters.
         </p>
       ) : (
@@ -80,7 +80,7 @@ export function GroupGrabberList({
             <li
               key={g.id}
               className={cn(
-                "flex gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50",
+                "flex gap-3 rounded-lg border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50",
                 "sm:gap-4 sm:p-5"
               )}
             >
