@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { CanonicalRouteProvider } from "@/components/providers/canonical-route-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -42,8 +43,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
-            <Toaster position="top-right" richColors closeButton />
+            <CanonicalRouteProvider>
+              {children}
+              <Toaster position="top-right" richColors closeButton />
+            </CanonicalRouteProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

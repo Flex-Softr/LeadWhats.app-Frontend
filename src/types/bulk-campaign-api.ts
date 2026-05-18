@@ -3,7 +3,8 @@ export type BulkCampaignStatusApi =
   | "completed"
   | "failed"
   | "pending"
-  | "running";
+  | "running"
+  | "paused";
 
 export type BulkCampaignDeviceModeApi =
   | "single"

@@ -3,7 +3,7 @@ import type { BulkCampaignListItemApi } from "@/types/bulk-campaign-api";
 export function formatBulkCampaignWhen(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     dateStyle: "medium",
-    timeStyle: "short",
+    timeStyle: "medium",
   });
 }
 

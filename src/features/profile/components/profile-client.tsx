@@ -57,7 +57,7 @@ export function ProfileClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8">
+    <div className="mx-auto w-full max-w-5xl space-y-8">
       <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardHeader>
           <CardTitle className="text-xl">Account</CardTitle>

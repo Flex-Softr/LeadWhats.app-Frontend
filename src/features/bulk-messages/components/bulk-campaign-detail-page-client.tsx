@@ -12,9 +12,12 @@ import {
   FlaskConical,
   Loader2,
   MessageSquare,
+  Pause,
   Phone,
+  Play,
   Server,
   Smartphone,
+  Trash2,
   XCircle,
 } from "lucide-react";
 
@@ -26,6 +29,7 @@ import {
 } from "@/features/bulk-messages/lib/bulk-campaign-format";
 import type { BulkCampaignDetailApi } from "@/types/bulk-campaign-api";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { ApiError, apiFetch, apiJson } from "@/lib/api";
 import { toast } from "sonner";
@@ -48,6 +52,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { usePagination } from "@/hooks/use-pagination";
+import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
 
 type BulkCampaignDetailPageClientProps = {
   campaignId: string;
@@ -62,12 +69,24 @@ function statusBadgeClass(
   if (status === "failed") {
     return "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200";
   }
+  if (status === "running") {
+    return "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200";
+  }
+  if (status === "pending") {
+    return "border-orange-200 bg-orange-50 text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200";
+  }
+  if (status === "paused") {
+    return "border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200";
+  }
   return "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200";
 }
 
 function statusLabel(status: BulkCampaignDetailApi["campaign"]["status"]) {
   if (status === "completed") return "Completed";
   if (status === "failed") return "Failed";
+  if (status === "running") return "Running";
+  if (status === "pending") return "Pending";
+  if (status === "paused") return "Paused";
   return "Scheduled";
 }
 
@@ -137,10 +156,35 @@ export function BulkCampaignDetailPageClient({
   campaignId,
 }: BulkCampaignDetailPageClientProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [downloading, setDownloading] = React.useState(false);
   const [detail, setDetail] = React.useState<BulkCampaignDetailApi | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [actionBusy, setActionBusy] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+
+  const loadDetail = React.useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoading(true);
+    }
+    setLoadError(null);
+    try {
+      const data = await apiJson<BulkCampaignDetailApi>(
+        `/v1/bulk-campaigns/${campaignId}`
+      );
+      setDetail(data);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not load campaign.";
+      setLoadError(msg);
+      setDetail(null);
+    } finally {
+      if (!opts?.silent) {
+        setLoading(false);
+      }
+    }
+  }, [campaignId]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -165,6 +209,43 @@ export function BulkCampaignDetailPageClient({
       cancelled = true;
     };
   }, [campaignId, pathname]);
+
+  React.useEffect(() => {
+    const id = window.setInterval(() => {
+      void loadDetail({ silent: true });
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [loadDetail]);
+
+  async function updateCampaignStatus(action: "pause" | "resume") {
+    setActionBusy(true);
+    try {
+      await apiJson(`/v1/bulk-campaigns/${campaignId}/${action}`, {
+        method: "PATCH",
+      });
+      await loadDetail({ silent: true });
+      toast.success(action === "pause" ? "Campaign paused" : "Campaign resumed");
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : `Could not ${action} campaign.`;
+      toast.error("Action failed", { description: msg });
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function deleteCampaign() {
+    try {
+      await apiJson(`/v1/bulk-campaigns/${campaignId}`, { method: "DELETE" });
+      toast.success("Campaign deleted");
+      router.push("/bulk-messages");
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not delete campaign.";
+      toast.error("Delete failed", { description: msg });
+      throw err;
+    }
+  }
 
   async function downloadAttachment() {
     const c = detail?.campaign;
@@ -203,6 +284,11 @@ export function BulkCampaignDetailPageClient({
     target > 0 && stats
       ? Math.min(100, Math.round((stats.totalOutboundRows / target) * 100))
       : 0;
+  const messagePagination = usePagination({
+    totalItems: detail?.recentMessages.length ?? 0,
+    initialPageSize: 10,
+  });
+  const pagedMessages = messagePagination.slice(detail?.recentMessages ?? []);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-16 lg:space-y-10">
@@ -229,14 +315,51 @@ export function BulkCampaignDetailPageClient({
           </Card>
         ) : campaign && stats && detail ? (
           <>
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-                {campaign.name}
-              </h1>
-              <p className="max-w-3xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Delivery breakdown, devices, message content, and recent
-                outbound rows for this campaign.
-              </p>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-2">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
+                  {campaign.name}
+                </h1>
+                <p className="max-w-3xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Delivery breakdown, devices, message content, and recent
+                  outbound rows for this campaign.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {campaign.status === "paused" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-2"
+                    disabled={actionBusy}
+                    onClick={() => void updateCampaignStatus("resume")}
+                  >
+                    <Play className="size-4" />
+                    Resume
+                  </Button>
+                ) : campaign.status === "completed" || campaign.status === "failed" ? null : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-2"
+                    disabled={actionBusy}
+                    onClick={() => void updateCampaignStatus("pause")}
+                  >
+                    <Pause className="size-4" />
+                    Pause
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="gap-2"
+                  disabled={actionBusy}
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </Button>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -612,7 +735,7 @@ export function BulkCampaignDetailPageClient({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {detail.recentMessages.map((m) => (
+                        {pagedMessages.map((m) => (
                           <TableRow key={m.id}>
                             <TableCell className="align-top font-mono text-xs">
                               {m.toPhone}
@@ -640,12 +763,29 @@ export function BulkCampaignDetailPageClient({
                         ))}
                       </TableBody>
                     </Table>
+                    <TablePagination
+                      {...messagePagination}
+                      className="px-4 sm:px-4"
+                    />
                   </div>
                 )}
               </CardContent>
             </Card>
           </>
         ) : null}
+      <ConfirmDestructiveDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete campaign?"
+        description={
+          <>
+            Delete <span className="font-medium">{campaign?.name}</span> and
+            remove it from campaign history.
+          </>
+        }
+        confirmLabel="Delete campaign"
+        onConfirm={deleteCampaign}
+      />
     </div>
   );
 }

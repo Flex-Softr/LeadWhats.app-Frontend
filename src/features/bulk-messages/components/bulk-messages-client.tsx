@@ -8,8 +8,11 @@ import {
   CheckCircle2,
   Loader2,
   Megaphone,
+  Pause,
+  Play,
   Plus,
   RefreshCw,
+  Trash2,
   Users,
 } from "lucide-react";
 import {
@@ -32,6 +35,7 @@ import type {
 import { useSessionIdentity } from "@/hooks/use-session-identity";
 import { ApiError, apiJson } from "@/lib/api";
 import { ListEmptyState } from "@/features/shared/components/list-empty-state";
+import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
 import { StatCard } from "@/features/shared/components/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,6 +98,14 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
     );
   }
 
+  if (status === "paused") {
+    return (
+      <Badge className="border-slate-200 bg-slate-100 font-normal text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+        Paused
+      </Badge>
+    );
+  }
+
   if (status === "pending") {
     return (
       <Badge className="border-orange-200 bg-orange-50 font-normal text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200">
@@ -120,6 +132,9 @@ export function BulkMessagesClient() {
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState("all");
+  const [actionBusyId, setActionBusyId] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    React.useState<BulkCampaignListItemApi | null>(null);
 
   const loadCampaigns = React.useCallback(async (opts?: { silent?: boolean }) => {
     const silent = opts?.silent === true;
@@ -151,6 +166,51 @@ export function BulkMessagesClient() {
     void loadCampaigns();
   }, [loadCampaigns, userId, workspaceId, routeKey]);
 
+  React.useEffect(() => {
+    const id = window.setInterval(() => {
+      void loadCampaigns({ silent: true });
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [loadCampaigns]);
+
+  async function updateCampaignStatus(
+    campaign: BulkCampaignListItemApi,
+    action: "pause" | "resume"
+  ) {
+    setActionBusyId(campaign.id);
+    try {
+      const out = await apiJson<{ campaign: BulkCampaignListItemApi }>(
+        `/v1/bulk-campaigns/${campaign.id}/${action}`,
+        { method: "PATCH" }
+      );
+      setCampaigns((prev) =>
+        prev.map((item) => (item.id === campaign.id ? out.campaign : item))
+      );
+      toast.success(action === "pause" ? "Campaign paused" : "Campaign resumed", {
+        description: campaign.name,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : `Could not ${action} campaign.`;
+      toast.error("Action failed", { description: msg });
+    } finally {
+      setActionBusyId(null);
+    }
+  }
+
+  async function deleteCampaign(campaign: BulkCampaignListItemApi) {
+    try {
+      await apiJson(`/v1/bulk-campaigns/${campaign.id}`, { method: "DELETE" });
+      setCampaigns((prev) => prev.filter((item) => item.id !== campaign.id));
+      toast.success("Campaign deleted", { description: campaign.name });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not delete campaign.";
+      toast.error("Delete failed", { description: msg });
+      throw err;
+    }
+  }
+
   const stats = React.useMemo(() => {
     const totalRecipients = campaigns.reduce((a, c) => a + c.recipientCount, 0);
     const completed = campaigns.filter((c) => c.status === "completed").length;
@@ -172,7 +232,10 @@ export function BulkMessagesClient() {
   const pendingCampaigns = React.useMemo(
     () =>
       campaigns.filter(
-        (c) => c.status === "pending" || c.status === "scheduled"
+        (c) =>
+          c.status === "pending" ||
+          c.status === "scheduled" ||
+          c.status === "paused"
       ),
     [campaigns]
   );
@@ -181,7 +244,9 @@ export function BulkMessagesClient() {
     let data = campaigns.filter(
       (c) =>
         c.status !== "running" &&
-        c.status !== "pending"
+        c.status !== "pending" &&
+        c.status !== "scheduled" &&
+        c.status !== "paused"
     );
   
     if (statusFilter !== "all") {
@@ -288,6 +353,7 @@ export function BulkMessagesClient() {
             <TableHead className="hidden sm:table-cell">
               Created
             </TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -322,6 +388,43 @@ export function BulkMessagesClient() {
 
               <TableCell className="hidden sm:table-cell text-muted-foreground">
                 {formatBulkCampaignWhen(c.createdAt)}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  {c.status === "paused" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label="Resume campaign"
+                      disabled={actionBusyId === c.id}
+                      onClick={() => void updateCampaignStatus(c, "resume")}
+                    >
+                      <Play className="size-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label="Pause campaign"
+                      disabled={actionBusyId === c.id}
+                      onClick={() => void updateCampaignStatus(c, "pause")}
+                    >
+                      <Pause className="size-4" />
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label="Delete campaign"
+                    disabled={actionBusyId === c.id}
+                    onClick={() => setDeleteTarget(c)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -371,7 +474,6 @@ export function BulkMessagesClient() {
       <SelectItem value="all">All</SelectItem>
       <SelectItem value="completed">Completed</SelectItem>
       <SelectItem value="failed">Failed</SelectItem>
-      <SelectItem value="scheduled">Scheduled</SelectItem>
     </SelectContent>
   </Select>
 </div>
@@ -384,6 +486,7 @@ export function BulkMessagesClient() {
                     <TableHead className="hidden md:table-cell">Audience</TableHead>
                     <TableHead className="hidden lg:table-cell">Schedule</TableHead>
                     <TableHead className="hidden sm:table-cell">Created</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -439,6 +542,17 @@ export function BulkMessagesClient() {
                       <TableCell className="hidden text-muted-foreground sm:table-cell">
                         {formatBulkCampaignWhen(c.createdAt)}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon-sm"
+                          aria-label="Delete campaign"
+                          onClick={() => setDeleteTarget(c)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -456,6 +570,24 @@ export function BulkMessagesClient() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={() => void loadCampaigns({ silent: true })}
+      />
+      <ConfirmDestructiveDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="Delete campaign?"
+        description={
+          <>
+            Delete <span className="font-medium">{deleteTarget?.name}</span> and
+            remove it from campaign history.
+          </>
+        }
+        confirmLabel="Delete campaign"
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await deleteCampaign(deleteTarget);
+        }}
       />
     </>
   );
