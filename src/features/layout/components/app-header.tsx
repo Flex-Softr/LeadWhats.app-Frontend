@@ -48,7 +48,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-40 rounded-t-[1.75rem] border-b border-white/50 bg-white/55 px-5 py-4 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/40 sm:px-7 sm:py-5 lg:px-9 lg:py-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-7">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          <MobileSidebar />
+         
           <div className="min-w-0 pt-1 lg:pt-0.5">
             <h1 className="truncate text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
               {meta.title}
@@ -64,37 +64,42 @@ export function AppHeader() {
             <Search className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search..."
-              className="h-12 w-full rounded-2xl border-slate-200/80 bg-white/70 pl-12 text-[15px] shadow-inner shadow-slate-900/5 dark:border-slate-700/80 dark:bg-slate-900/50"
+              className="h-12 w-full rounded-lg border-slate-200/80 bg-white/70 pl-12 text-[15px] shadow-inner shadow-slate-900/5 dark:border-slate-700/80 dark:bg-slate-900/50"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 sm:gap-2.5">
+        <div className="flex items-center justify-between md:justify-end gap-2 sm:gap-2.5">
+        <div>
+          <MobileSidebar />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 sm:gap-2.5">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="size-10 rounded-xl text-slate-600 dark:text-slate-300"
+            className="size-10 rounded-lg text-slate-600 dark:text-slate-300 shadow-xs shadow-[#9b18d1]"
           >
             {mounted ? (
               isDark ? (
-                <SunMedium className="size-[18px]" />
+                <SunMedium className="size-[20px]" />
               ) : (
-                <Moon className="size-[18px]" />
+                <Moon className="size-[20px]" />
               )
             ) : (
-              <Moon className="size-[18px]" />
+              <Moon className="size-[20px]" />
             )}
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="size-10 rounded-xl text-slate-600 dark:text-slate-300"
+            className="size-10 rounded-lg text-slate-600 dark:text-slate-300 shadow-xs shadow-[#9b18d1]"
             aria-label="Notifications"
           >
-            <Bell className="size-[18px]" />
+            <Bell className="size-[20px]" />
           </Button>
 
           <div className="hidden flex-col items-end px-1 text-right sm:flex">
@@ -120,7 +125,7 @@ export function AppHeader() {
               render={
                 <Button
                   variant="outline"
-                  className="h-11 shrink-0 gap-1.5 rounded-2xl border-slate-200/90 bg-white/80 px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
+                  className="h-11 shrink-0 gap-1.5 rounded-lg border-slate-200/90 bg-white/80 px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
                   aria-label="Open account menu"
                   aria-haspopup="menu"
                 />
@@ -137,7 +142,7 @@ export function AppHeader() {
               align="end"
               side="bottom"
               sideOffset={8}
-              className="min-w-[13.5rem] rounded-xl p-1.5"
+              className="min-w-[13.5rem] rounded-lg p-1.5"
             >
               <DropdownMenuLabel className="px-3 py-2">
                 <div className="flex flex-col gap-1">
@@ -185,6 +190,7 @@ export function AppHeader() {
           </DropdownMenu>
         </div>
       </div>
+    </div> 
     </header>
   );
 }

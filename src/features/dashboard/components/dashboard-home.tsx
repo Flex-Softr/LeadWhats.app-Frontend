@@ -79,7 +79,7 @@ export function DashboardHome() {
   if (loading && !data) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 lg:gap-6">
-        <div className="h-14 animate-pulse rounded-xl bg-slate-200/80 dark:bg-slate-800/80" />
+        <div className="h-14 animate-pulse rounded-lg bg-slate-200/80 dark:bg-slate-800/80" />
         <div className="h-28 animate-pulse rounded-2xl bg-violet-200/40 dark:bg-violet-950/40" />
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (

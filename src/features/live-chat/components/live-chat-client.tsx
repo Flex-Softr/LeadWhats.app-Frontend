@@ -605,7 +605,7 @@ export function LiveChatClient() {
   return (
     <div
       className={cn(
-        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md",
+        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md",
         "dark:border-slate-800/80 dark:bg-slate-950/60"
       )}
     >
@@ -628,7 +628,7 @@ export function LiveChatClient() {
             </p>
           ) : (
             <Select value={deviceId} onValueChange={(v) => setDeviceId(v ?? "")}>
-              <SelectTrigger className="h-10 w-full rounded-xl sm:w-[min(100%,320px)]">
+              <SelectTrigger className="h-10 w-full rounded-sm sm:w-[min(100%,320px)]">
                 <SelectValue placeholder="Select session…">
                   {selectedDevice ? deviceName(selectedDevice) : null}
                 </SelectValue>
@@ -702,7 +702,7 @@ export function LiveChatClient() {
                 value={listQuery}
                 onChange={(e) => setListQuery(e.target.value)}
                 placeholder="Search conversations..."
-                className="h-10 rounded-xl pl-10"
+                className="h-10 rounded-sm pl-10"
                 disabled={threads.length === 0 && !threadsLoading}
                 aria-label="Search conversations"
               />

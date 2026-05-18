@@ -32,7 +32,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "group flex min-h-[3.25rem] cursor-pointer items-center gap-3.5 rounded-2xl px-4 py-3 transition-all duration-200 sm:min-h-[3.5rem] sm:py-3.5",
+                "group flex min-h-[3.25rem] cursor-pointer items-center gap-3.5 rounded-lg px-4 py-3 transition-all duration-200 sm:min-h-[3.5rem] sm:py-3.5",
                 active
                   ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/30"
                   : "text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100"

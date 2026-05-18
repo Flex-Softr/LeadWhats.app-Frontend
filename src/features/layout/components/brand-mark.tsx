@@ -2,7 +2,7 @@ import { Sparkles } from "lucide-react";
 
 export function BrandMark() {
   return (
-    <div className="flex items-center gap-3.5 py-1">
+    <div className="flex items-center gap-3.5 py-1 px-3">
       <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25">
         <Sparkles className="size-[22px]" strokeWidth={2} />
       </div>

@@ -57,7 +57,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
 
   return (
     <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-      <Card className="rounded-xl border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-2xl">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-lg">
         <CardHeader className="flex flex-col gap-2 space-y-0 px-4 pb-1 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:pt-5">
           <div className="space-y-0.5">
             <CardTitle className="text-sm font-semibold sm:text-base">

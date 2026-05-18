@@ -49,7 +49,7 @@ export function DeviceCard({
   }, [device.name]);
 
   return (
-    <Card className="border-slate-200/90 shadow-sm dark:border-slate-800">
+    <Card className="border-slate-200/90 shadow-sm dark:border-slate-800 rounded-lg">
       <CardHeader className="space-y-3 pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-3">
@@ -148,7 +148,7 @@ export function DeviceCard({
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col gap-2 pt-0">
+      <CardFooter className="flex flex-col gap-2 pt-4">
         {isReady ? (
           <>
             <Button
@@ -162,7 +162,7 @@ export function DeviceCard({
             </Button>
             <Button
               type="button"
-              className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+              className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-sm"
               disabled={busy}
               onClick={() => onPairingCode(device)}
             >
@@ -173,7 +173,7 @@ export function DeviceCard({
           <>
             <Button
               type="button"
-              className="w-full gap-2 bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500"
+              className="w-full rounded-sm gap-2 bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500"
               disabled={busy}
               onClick={() => void onDisconnect(device)}
             >
@@ -183,7 +183,7 @@ export function DeviceCard({
             <Button
               type="button"
               variant="destructive"
-              className="w-full gap-2"
+              className="w-full gap-2 rounded-sm"
               disabled={busy}
               onClick={() => void onDelete(device)}
             >

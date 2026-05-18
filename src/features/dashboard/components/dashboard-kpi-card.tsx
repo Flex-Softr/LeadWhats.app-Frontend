@@ -65,7 +65,7 @@ export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
     <Card
       className={cn(
         "border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60",
-        "rounded-xl transition-shadow duration-200 hover:shadow-md hover:shadow-violet-500/10 sm:rounded-2xl",
+        "rounded-lg transition-shadow duration-200 hover:shadow-md hover:shadow-violet-500/10 sm:rounded-lg",
         className
       )}
     >

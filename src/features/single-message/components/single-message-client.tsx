@@ -225,7 +225,7 @@ export function SingleMessageClient() {
   }
 
   const cardClass =
-    "rounded-3xl border border-white/70 bg-white/90 shadow-md " +
+    "rounded-lg border border-white/70 bg-white/90 shadow-md " +
     "shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 " +
     "dark:bg-slate-950/60";
 
@@ -288,7 +288,7 @@ export function SingleMessageClient() {
                   <SelectTrigger
                     id="device"
                     size="default"
-                    className="h-11 w-full min-w-0"
+                    className="h-11 w-full min-w-0 rounded-sm"
                   >
                     <SelectValue placeholder="Choose a connected device…">
                       {selectedDevice ? deviceName(selectedDevice) : null}
@@ -325,7 +325,7 @@ export function SingleMessageClient() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="h-11 w-full sm:w-auto"
+                  className="h-11 w-full sm:w-auto rounded-sm"
                   disabled={checking}
                   onClick={() => void handleCheckNumber()}
                 >

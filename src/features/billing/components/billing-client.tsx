@@ -162,7 +162,7 @@ export function BillingClient() {
             ) : null}
           </p>
         ) : null}
-        <p className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
+        <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
           <strong className="font-semibold">Payments:</strong>{" "}
           {anyGatewayReady
             ? "At least one gateway is configured on the API — you can complete checkout below."
@@ -171,7 +171,7 @@ export function BillingClient() {
         </p>
       </div>
 
-      <Card className="rounded-2xl border border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40">
+      <Card className="rounded-lg border border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-lg">
             <CreditCard className="size-5 text-violet-600 dark:text-violet-400" />
@@ -190,7 +190,7 @@ export function BillingClient() {
                 type="button"
                 onClick={() => setGateway(g.id)}
                 className={cn(
-                  "rounded-2xl border p-4 text-left transition-colors",
+                  "rounded-lg border p-4 text-left transition-colors",
                   gateway === g.id
                     ? "border-violet-500 bg-violet-50/80 ring-2 ring-violet-500/30 dark:border-violet-600 dark:bg-violet-950/40"
                     : "border-slate-200 bg-slate-50/50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/30",
@@ -228,7 +228,7 @@ export function BillingClient() {
                 placeholder="e.g. 01712345678"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="max-w-md rounded-xl"
+                className="max-w-md rounded-md"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Required by SSLCommerz for receipts. Use a real number in
@@ -248,7 +248,7 @@ export function BillingClient() {
             <Card
               key={plan.id}
               className={cn(
-                "relative flex flex-col rounded-2xl border bg-white/90 shadow-sm backdrop-blur-md dark:bg-slate-950/60",
+                "relative flex flex-col rounded-lg border bg-white/90 shadow-sm backdrop-blur-md dark:bg-slate-950/60",
                 plan.highlight && "overflow-visible",
                 plan.highlight
                   ? "border-violet-400/60 shadow-md shadow-violet-500/10 dark:border-violet-600/50"
@@ -329,7 +329,7 @@ export function BillingClient() {
         })}
       </div>
 
-      <Card className="rounded-2xl border border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
+      <Card className="rounded-lg border border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
         <CardContent className="flex flex-col gap-3 p-5 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between dark:text-slate-400">
           <p>
             Need the Free plan again? Resets your workspace when no active

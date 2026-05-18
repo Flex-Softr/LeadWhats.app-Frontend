@@ -80,7 +80,7 @@ export function GroupGrabberList({
             <li
               key={g.id}
               className={cn(
-                "flex gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50",
+                "flex gap-3 rounded-lg border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50",
                 "sm:gap-4 sm:p-5"
               )}
             >

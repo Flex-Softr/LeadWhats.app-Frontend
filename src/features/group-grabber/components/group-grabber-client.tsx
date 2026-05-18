@@ -281,7 +281,7 @@ export function GroupGrabberClient() {
         </p>
       </div>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:p-6">
           <div className="min-w-0 flex-1 space-y-2">
             <Label htmlFor="gg-device" className="text-sm font-semibold">
@@ -364,7 +364,7 @@ export function GroupGrabberClient() {
       </Card>
 
       {meta?.hint ? (
-        <div className="flex gap-3 rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+        <div className="flex gap-3 rounded-lg border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div>
             <p className="font-medium">Heads up</p>
@@ -417,24 +417,24 @@ export function GroupGrabberClient() {
         />
       </div>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="p-5 sm:p-6 lg:p-7">
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
             Quick Analytics
           </h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Average group size
               </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+              <p className="mt-2 text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                 {stats.avgSize}{" "}
                 <span className="text-base font-normal text-slate-500">
                   participants
                 </span>
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Admin ratio
               </p>
@@ -442,7 +442,7 @@ export function GroupGrabberClient() {
                 {stats.adminRatio}%
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Largest group
               </p>
@@ -457,11 +457,11 @@ export function GroupGrabberClient() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardContent className="space-y-5 p-4 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col items-start gap-2">
-              <div className="inline-flex rounded-xl border border-slate-200/90 bg-slate-50/80 p-1 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="inline-flex rounded-md border border-slate-200/90 bg-slate-50/80 p-1 dark:border-slate-800 dark:bg-slate-900/50">
                 <button
                   type="button"
                   onClick={() => setViewMode("groups")}
@@ -505,7 +505,7 @@ export function GroupGrabberClient() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search groups…"
-                  className="h-11 rounded-xl pl-10"
+                  className="h-11 rounded-md pl-10"
                   aria-label="Search groups"
                 />
               </div>
@@ -513,7 +513,7 @@ export function GroupGrabberClient() {
                 value={roleFilter}
                 onValueChange={(v) => setRoleFilter((v ?? "all") as RoleFilter)}
               >
-                <SelectTrigger className="h-11 w-full shrink-0 rounded-xl sm:w-[130px]">
+                <SelectTrigger className="h-11 w-full shrink-0 rounded-sm sm:w-[130px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -528,7 +528,7 @@ export function GroupGrabberClient() {
                   setSortKey((v ?? "name") as SortKey)
                 }
               >
-                <SelectTrigger className="h-11 w-full shrink-0 rounded-xl sm:w-[140px]">
+                <SelectTrigger className="h-11 w-full shrink-0 rounded-sm sm:w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -58,7 +58,7 @@ export function ProfileClient() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8">
-      <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md dark:border-slate-800/80 dark:bg-slate-950/60">
         <CardHeader>
           <CardTitle className="text-xl">Account</CardTitle>
           <CardDescription>
@@ -95,7 +95,7 @@ export function ProfileClient() {
       </Card>
 
       {workspace ? (
-        <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md dark:border-slate-800/80 dark:bg-slate-950/60">
+        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md dark:border-slate-800/80 dark:bg-slate-950/60">
           <CardHeader>
             <CardTitle className="text-xl">Workspace</CardTitle>
             <CardDescription>
@@ -103,7 +103,7 @@ export function ProfileClient() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="flex items-start gap-3 rounded-lg border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
               <Building2 className="mt-0.5 size-5 shrink-0 text-violet-600 dark:text-violet-400" />
               <div className="min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-slate-50">
@@ -121,7 +121,7 @@ export function ProfileClient() {
               href="/billing"
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "inline-flex w-full items-center justify-center gap-2"
+                "inline-flex rounded-sm w-full items-center justify-center gap-2"
               )}
             >
               <CreditCard className="size-4" />
@@ -131,7 +131,7 @@ export function ProfileClient() {
         </Card>
       ) : null}
 
-      <Card className="rounded-3xl border border-red-200/60 bg-red-50/30 dark:border-red-900/40 dark:bg-red-950/20">
+      <Card className="rounded-lg border border-red-200/60 bg-red-50/30 dark:border-red-900/40 dark:bg-red-950/20">
         <CardHeader>
           <CardTitle className="text-lg text-slate-900 dark:text-slate-50">
             Session
@@ -144,7 +144,7 @@ export function ProfileClient() {
           <Button
             type="button"
             variant="destructive"
-            className="w-full gap-2 sm:w-auto"
+            className="w-full gap-2 sm:w-auto rounded-sm"
             onClick={() => setLogoutConfirmOpen(true)}
           >
             <LogOut className="size-4" />

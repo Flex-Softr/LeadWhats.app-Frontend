@@ -227,7 +227,7 @@ export function ChatbotClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search flows..."
-              className="h-11 rounded-xl pl-10"
+              className="h-11 rounded-md pl-10"
               aria-label="Search flows"
             />
           </div>
@@ -235,7 +235,7 @@ export function ChatbotClient() {
             value={filter}
             onValueChange={(v) => setFilter((v ?? "all") as FlowFilter)}
           >
-            <SelectTrigger className="h-11 w-full rounded-xl sm:w-[200px]">
+            <SelectTrigger className="h-11 w-full rounded-sm sm:w-[200px]">
               <SelectValue placeholder="All Flows" />
             </SelectTrigger>
             <SelectContent>
@@ -279,7 +279,7 @@ export function ChatbotClient() {
           />
         </div>
 
-        <Card className="rounded-3xl border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
           <CardContent className="p-0 sm:rounded-3xl">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
