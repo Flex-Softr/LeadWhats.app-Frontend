@@ -32,7 +32,7 @@ export async function loginRequest(
   } catch {
     throw new ApiError(
       0,
-      "Cannot reach the API. Start the server in /server (npm run dev) on port 4000.",
+      "Cannot reach the API. Start the server in /server (npm run dev) on port 5001.",
       "NETWORK_ERROR"
     );
   }
@@ -60,7 +60,7 @@ export async function registerRequest(input: {
   } catch {
     throw new ApiError(
       0,
-      "Cannot reach the API. Start the server in /server (npm run dev) on port 4000.",
+      "Cannot reach the API. Start the server in /server (npm run dev) on port 5001.",
       "NETWORK_ERROR"
     );
   }
@@ -100,7 +100,7 @@ export async function forgotPasswordRequest(email: string): Promise<{
   } catch {
     throw new ApiError(
       0,
-      "Cannot reach the API. Start the server in /server (npm run dev) on port 4000.",
+      "Cannot reach the API. Start the server in /server (npm run dev) on port 5001.",
       "NETWORK_ERROR"
     );
   }
@@ -129,7 +129,7 @@ export async function resetPasswordRequest(input: {
   } catch {
     throw new ApiError(
       0,
-      "Cannot reach the API. Start the server in /server (npm run dev) on port 4000.",
+      "Cannot reach the API. Start the server in /server (npm run dev) on port 5001.",
       "NETWORK_ERROR"
     );
   }
