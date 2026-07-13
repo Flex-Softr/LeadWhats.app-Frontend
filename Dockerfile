@@ -5,7 +5,7 @@ RUN npm ci
 
 FROM deps AS builder
 WORKDIR /app
-ARG NEXT_PUBLIC_API_URL=http://localhost:5001
+ARG NEXT_PUBLIC_API_URL=https://leadwhatsappapi.flexsoftr.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
 RUN npm run build
