@@ -1,19 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { Loader2, Plus } from "lucide-react";
 
 import { NodeMessageTypeCards } from "@/features/chatbot/components/node-message-type-cards";
 import type { MessageFormType } from "@/features/single-message/components/message-type-cards";
-import {
-  DEMO_MESSAGE_TEMPLATES,
-  DEMO_MESSAGING_DEVICES,
-} from "@/lib/demo-messaging";
 import type {
   CallResponderCallType,
   CallResponderRule,
 } from "@/types/call-responder";
+import type { DeviceApiRecord } from "@/types/device";
+import type { MessageTemplateApiRecord } from "@/types/templates-api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -43,26 +40,28 @@ const CALL_TYPE_OPTIONS: {
   { value: "rejected", label: "Rejected calls" },
 ];
 
-let fallbackIdSeq = 0;
-
-function newRuleId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  fallbackIdSeq += 1;
-  return `cr_rule_${fallbackIdSeq}`;
-}
-
 type CreateCallResponderRuleDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (rule: CallResponderRule) => void;
+  devices: DeviceApiRecord[];
+  templates: MessageTemplateApiRecord[];
+  onCreate: (input: {
+    name: string;
+    deviceId: string;
+    callTypes: CallResponderCallType[];
+    responseDelayMinutes: number;
+    messageFormType: "text" | "template";
+    messageBody?: string | null;
+    templateId?: string | null;
+  }) => Promise<CallResponderRule>;
 };
 
 export function CreateCallResponderRuleDialog({
   open,
   onOpenChange,
-  onCreated,
+  devices,
+  templates,
+  onCreate,
 }: CreateCallResponderRuleDialogProps) {
   const [name, setName] = React.useState("");
   const [deviceId, setDeviceId] = React.useState<string | null>(null);
@@ -74,17 +73,19 @@ export function CreateCallResponderRuleDialog({
     React.useState<MessageFormType>("text");
   const [messageBody, setMessageBody] = React.useState("");
   const [templateId, setTemplateId] = React.useState<string | null>(null);
+  const [pending, setPending] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
     setName("");
-    setDeviceId(DEMO_MESSAGING_DEVICES[0]?.id ?? null);
+    setDeviceId(devices[0]?.id ?? null);
     setCallTypes(new Set(["missed", "rejected"]));
     setDelayMinutes("1");
     setMessageFormType("text");
     setMessageBody("");
     setTemplateId(null);
-  }, [open]);
+    setPending(false);
+  }, [devices, open]);
 
   React.useEffect(() => {
     if (messageFormType === "text") setTemplateId(null);
@@ -110,32 +111,26 @@ export function CreateCallResponderRuleDialog({
     callTypes.size > 0 &&
     messageOk;
 
-  function handleCreate() {
+  async function handleCreate() {
     if (!canSubmit || !deviceId) return;
-    const device = DEMO_MESSAGING_DEVICES.find((d) => d.id === deviceId);
-    const template = templateId
-      ? DEMO_MESSAGE_TEMPLATES.find((t) => t.id === templateId)
-      : null;
-    const rule: CallResponderRule = {
-      id: newRuleId(),
+    setPending(true);
+    try {
+      const rule = await onCreate({
       name: name.trim(),
       deviceId,
-      deviceLabel: device?.label ?? deviceId,
       callTypes: Array.from(callTypes),
       responseDelayMinutes: Math.max(0, Number.parseInt(delayMinutes, 10) || 0),
       messageFormType,
       messageBody:
         messageFormType === "text" ? messageBody.trim() : undefined,
       templateId: messageFormType === "template" ? templateId : null,
-      templateName:
-        messageFormType === "template" ? (template?.name ?? null) : null,
-      active: true,
-      responsesSent: 0,
-      callsToday: 0,
-    };
-    onCreated(rule);
-    toast.success("Rule created", { description: `“${rule.name}” is active.` });
-    onOpenChange(false);
+      });
+      if (rule.id) {
+        onOpenChange(false);
+      }
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -186,9 +181,9 @@ export function CreateCallResponderRuleDialog({
                   <SelectValue placeholder="Select a session" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DEMO_MESSAGING_DEVICES.map((d) => (
+                  {devices.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
-                      {d.label}
+                      {d.phone ? `${d.name} · ${d.phone}` : d.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -287,7 +282,7 @@ export function CreateCallResponderRuleDialog({
                   <SelectValue placeholder="Select a template…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DEMO_MESSAGE_TEMPLATES.map((t) => (
+                  {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.name}
                     </SelectItem>
@@ -320,12 +315,16 @@ export function CreateCallResponderRuleDialog({
           </Button>
           <Button
             type="button"
-            disabled={!canSubmit}
+            disabled={!canSubmit || pending}
             className="h-11 gap-2 rounded-xl bg-blue-600 px-6 text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-500"
             onClick={handleCreate}
           >
-            <Plus className="size-4" />
-            Create Rule
+            {pending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
+            {pending ? "Creating…" : "Create Rule"}
           </Button>
         </div>
       </DialogContent>

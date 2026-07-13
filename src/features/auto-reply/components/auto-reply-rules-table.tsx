@@ -64,7 +64,7 @@ export function AutoReplyRulesTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow>
+        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
           <TableHead>Rule</TableHead>
           <TableHead>Triggers</TableHead>
           <TableHead>Type</TableHead>
@@ -77,7 +77,7 @@ export function AutoReplyRulesTable({
       </TableHeader>
       <TableBody>
         {rules.map((r) => (
-          <TableRow key={r.id}>
+          <TableRow key={r.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
             <TableCell>
               <div className="min-w-0">
                 <p className="font-medium text-foreground">{r.name}</p>
@@ -99,7 +99,7 @@ export function AutoReplyRulesTable({
             <TableCell className="max-w-[min(100vw,280px)] align-top">
               <Badge
                 variant="secondary"
-                className="inline-flex max-w-full whitespace-normal text-left font-normal leading-snug"
+                className="inline-flex max-w-full rounded-md whitespace-normal text-left font-medium leading-snug"
               >
                 {r.keyword}
               </Badge>
@@ -112,7 +112,7 @@ export function AutoReplyRulesTable({
             <TableCell className="align-top text-muted-foreground">
               <div className="flex flex-col gap-1 text-xs">
                 <span>{triggerLabel(r.triggerType)}</span>
-                <Badge variant="outline" className="w-fit font-normal">
+                <Badge variant="outline" className="w-fit rounded-md font-medium">
                   {modeLabel(r.messageMode)}
                 </Badge>
               </div>
@@ -131,7 +131,7 @@ export function AutoReplyRulesTable({
                   aria-label={
                     r.active ? `Deactivate ${r.name}` : `Activate ${r.name}`
                   }
-                  className="size-4 rounded border-input text-primary focus:ring-ring/50 disabled:opacity-50"
+                  className="size-4 rounded border-input accent-violet-600 focus:ring-violet-500/50 disabled:opacity-50"
                 />
               </label>
             </TableCell>
@@ -142,7 +142,7 @@ export function AutoReplyRulesTable({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="text-muted-foreground"
+                  className="rounded-md text-muted-foreground hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/30"
                   onClick={() => onEdit(r)}
                   aria-label={`Edit ${r.name}`}
                 >
@@ -152,7 +152,7 @@ export function AutoReplyRulesTable({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="rounded-md text-destructive hover:bg-red-50 hover:text-destructive dark:hover:bg-red-950/30"
                   onClick={() => onDelete(r)}
                   aria-label={`Delete ${r.name}`}
                 >

@@ -64,28 +64,27 @@ export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
   return (
     <Card
       className={cn(
-        "border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60",
-        "rounded-lg transition-shadow duration-200 hover:shadow-md hover:shadow-violet-500/10 sm:rounded-lg",
+        "rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] transition-transform duration-200 hover:-translate-y-0.5 dark:bg-slate-900",
         className
       )}
     >
-      <CardContent className="flex gap-3 p-4 sm:gap-4 sm:p-5">
+      <CardContent className="flex gap-4 p-5">
         <div
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-xl sm:size-10",
+            "flex size-10 shrink-0 items-center justify-center rounded-lg",
             iconStyle
           )}
         >
           <Icon className="size-4" strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-sm font-bold text-[#251c32] dark:text-slate-100">
             {data.label}
           </p>
-          <p className="mt-0.5 text-xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-2xl dark:text-slate-50">
+          <p className="mt-2 text-3xl font-extrabold tracking-tight text-black tabular-nums dark:text-white">
             {data.value}
           </p>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-[11px] dark:border-slate-800 sm:text-xs">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="text-muted-foreground">{data.period}</span>
             <Badge
               variant="outline"

@@ -44,7 +44,7 @@ export function CallResponderRulesTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow>
+        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
           <TableHead>Rule</TableHead>
           <TableHead>Session</TableHead>
           <TableHead>Call types</TableHead>
@@ -56,7 +56,7 @@ export function CallResponderRulesTable({
       </TableHeader>
       <TableBody>
         {rules.map((r) => (
-          <TableRow key={r.id}>
+          <TableRow key={r.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
             <TableCell>
               <div className="min-w-0">
                 <p className="font-medium text-foreground">{r.name}</p>
@@ -76,7 +76,7 @@ export function CallResponderRulesTable({
                   <Badge
                     key={t}
                     variant="secondary"
-                    className="font-normal text-xs"
+                    className="rounded-md text-xs font-medium"
                   >
                     {callTypeShort(t)}
                   </Badge>
@@ -93,7 +93,7 @@ export function CallResponderRulesTable({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className="rounded-md text-destructive hover:bg-red-50 hover:text-destructive dark:hover:bg-red-950/30"
                 onClick={() => onDelete(r)}
                 aria-label={`Delete ${r.name}`}
               >

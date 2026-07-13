@@ -23,7 +23,7 @@ export function MobileSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden size-[40px] shrink-0 gap-1.5 rounded-lg border-slate-200/90 bg-white/80 px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
+            className="lg:hidden size-10 shrink-0 rounded-full bg-white text-[#6d45c8] shadow-[0_10px_24px_rgba(66,48,106,0.1)] dark:bg-slate-900 dark:text-violet-300"
             aria-label="Open navigation"
           />
         }
@@ -34,9 +34,9 @@ export function MobileSidebar() {
         side="left"
         className="w-[300px] gap-0 border-white/50 bg-white/95 p-0 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 sm:w-[308px]"
       >
-        <div className="flex h-full flex-col px-1 py-7 sm:px-6 sm:py-8">
+        <div className="flex h-full flex-col px-4 py-6">
           <BrandMark />
-          <div className="my-5 h-px bg-gradient-to-r from-transparent via-violet-200/80 to-transparent dark:via-violet-900/60" />
+          <div className="my-4 h-px bg-violet-100 dark:bg-slate-800" />
           <SidebarNav onNavigate={() => setOpen(false)} />
           <SidebarFooter />
         </div>

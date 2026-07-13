@@ -25,6 +25,7 @@ export type BulkCampaignAntiBlockApi = {
   activeHoursEnd: string | null;
   inactiveHoursStart: string | null;
   inactiveHoursEnd: string | null;
+  timezone: string | null;
 };
 
 export type BulkCampaignListItemApi = {
@@ -36,6 +37,7 @@ export type BulkCampaignListItemApi = {
   deviceMode: BulkCampaignDeviceModeApi;
   scheduleType: "immediate" | "scheduled";
   scheduledAt: string | null;
+  timezone: string | null;
   recipientCount: number;
   delayMinSec: number;
   delayMaxSec: number;
@@ -44,6 +46,16 @@ export type BulkCampaignListItemApi = {
   attachmentAssetId: string | null;
   attachmentFileName: string | null;
   antiBlock: BulkCampaignAntiBlockApi;
+  progress: {
+    sent: number;
+    failed: number;
+    pending: number;
+    sending: number;
+    replied: number;
+    total: number;
+    percent: number;
+    etaSeconds: number | null;
+  };
   createdAt: string;
   updatedAt: string;
 };
@@ -83,11 +95,14 @@ export type BulkCampaignOutboundStatsApi = {
   failed: number;
   queued: number;
   simulated: number;
+  delivered: number;
+  seen: number;
+  replied: number;
+  noReply: number;
   pendingInQueue: number;
   notDispatchedYet: number;
-  delivered: number;
-  readReceiptsTracked: false;
-  seenCount: null;
+  readReceiptsTracked: true;
+  seenCount: number;
 };
 
 export type BulkCampaignRecentMessageApi = {
@@ -101,6 +116,42 @@ export type BulkCampaignRecentMessageApi = {
   createdAt: string;
 };
 
+export type BulkCampaignRecipientApi = {
+  id: string;
+  phone: string;
+  status:
+    | "pending"
+    | "queued"
+    | "sending"
+    | "sent"
+    | "failed"
+    | "simulated"
+    | "skipped"
+    | "canceled";
+  deviceId: string | null;
+  deviceName: string | null;
+  attempts: number;
+  lastError: string | null;
+  queuedAt: string | null;
+  sentAt: string | null;
+  deliveredAt: string | null;
+  seenAt: string | null;
+  repliedAt: string | null;
+  lastReplyAt: string | null;
+  lastReplyText: string | null;
+  failedAt: string | null;
+  createdAt: string;
+};
+
+export type BulkCampaignRecipientStatusApi = BulkCampaignRecipientApi["status"];
+
+export type BulkCampaignRecipientsResponse = {
+  recipients: BulkCampaignRecipientApi[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
 export type BulkCampaignDetailApi = {
   campaign: BulkCampaignListItemApi;
   template: { id: string; name: string; typeId: string } | null;
@@ -109,4 +160,5 @@ export type BulkCampaignDetailApi = {
   deviceSendStats: BulkCampaignDeviceSendStatsApi[];
   stats: BulkCampaignOutboundStatsApi;
   recentMessages: BulkCampaignRecentMessageApi[];
+  recentRecipients: BulkCampaignRecipientApi[];
 };

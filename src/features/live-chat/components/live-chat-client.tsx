@@ -605,14 +605,14 @@ export function LiveChatClient() {
   return (
     <div
       className={cn(
-        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md",
-        "dark:border-slate-800/80 dark:bg-slate-950/60"
+        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm",
+        "dark:border-slate-800 dark:bg-slate-950"
       )}
     >
-      <div className="flex flex-col gap-3 border-b border-slate-200/90 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
+      <div className="flex flex-col gap-3 border-b border-violet-100 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
               <Smartphone className="size-4" />
             </div>
             <span className="whitespace-nowrap text-sm font-semibold">Live Chat</span>
@@ -620,7 +620,7 @@ export function LiveChatClient() {
           {devicesLoading ? (
             <div className="flex h-10 items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
-              Loading sessions…
+              Loading sessions...
             </div>
           ) : devices.length === 0 ? (
             <p className="text-sm text-muted-foreground">
@@ -628,8 +628,8 @@ export function LiveChatClient() {
             </p>
           ) : (
             <Select value={deviceId} onValueChange={(v) => setDeviceId(v ?? "")}>
-              <SelectTrigger className="h-10 w-full rounded-sm sm:w-[min(100%,320px)]">
-                <SelectValue placeholder="Select session…">
+              <SelectTrigger className="h-10 w-full rounded-md sm:w-[min(100%,320px)]">
+                <SelectValue placeholder="Select session...">
                   {selectedDevice ? deviceName(selectedDevice) : null}
                 </SelectValue>
               </SelectTrigger>
@@ -648,7 +648,7 @@ export function LiveChatClient() {
             type="button"
             variant="outline"
             size="sm"
-            className="h-9 gap-1.5 rounded-lg"
+            className="h-9 rounded-md"
             disabled={!deviceId || threadsLoading || threadsRefreshing}
             onClick={() => void loadThreads({ silent: true })}
           >
@@ -687,7 +687,7 @@ export function LiveChatClient() {
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/50"
+              className="rounded-md text-violet-700 hover:bg-violet-50 hover:text-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/40"
               disabled={!deviceId || devices.length === 0}
               onClick={() => setNewThreadOpen(true)}
               aria-label="New chat"
@@ -702,7 +702,7 @@ export function LiveChatClient() {
                 value={listQuery}
                 onChange={(e) => setListQuery(e.target.value)}
                 placeholder="Search conversations..."
-                className="h-10 rounded-sm pl-10"
+                className="h-10 rounded-md pl-10"
                 disabled={threads.length === 0 && !threadsLoading}
                 aria-label="Search conversations"
               />
@@ -716,7 +716,7 @@ export function LiveChatClient() {
             ) : threadsLoading ? (
               <div className="flex flex-col items-center gap-2 py-16 text-sm text-muted-foreground">
                 <Loader2 className="size-8 animate-spin text-violet-600" />
-                Loading conversations…
+                Loading conversations...
               </div>
             ) : filteredThreads.length === 0 ? (
               <p className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -734,9 +734,9 @@ export function LiveChatClient() {
                         type="button"
                         onClick={() => setSelectedThreadId(t.id)}
                         className={cn(
-                          "w-full rounded-xl px-3 py-2.5 text-left transition-colors",
+                          "w-full rounded-lg px-3 py-2.5 text-left transition-colors",
                           active
-                            ? "bg-blue-600/10 ring-1 ring-blue-600/25 dark:bg-blue-500/10"
+                            ? "bg-violet-50 ring-1 ring-violet-200 dark:bg-violet-950/30 dark:ring-violet-900"
                             : "hover:bg-slate-100/90 dark:hover:bg-slate-900/60"
                         )}
                       >
@@ -766,8 +766,8 @@ export function LiveChatClient() {
               className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center"
               aria-live="polite"
             >
-              <div className="flex size-16 items-center justify-center rounded-full bg-slate-200/80 dark:bg-slate-800">
-                <MessageCircle className="size-8 text-slate-400" />
+              <div className="flex size-16 items-center justify-center rounded-lg bg-violet-50 text-violet-600 ring-1 ring-violet-100 dark:bg-violet-950/50 dark:text-violet-200 dark:ring-violet-900">
+                <MessageCircle className="size-8" />
               </div>
               <div className="space-y-1">
                 <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
@@ -796,7 +796,7 @@ export function LiveChatClient() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="shrink-0 gap-1.5 rounded-lg"
+                  className="shrink-0 rounded-md"
                   onClick={() => setRenameOpen(true)}
                 >
                   <Pencil className="size-3.5" />
@@ -822,7 +822,7 @@ export function LiveChatClient() {
                     {messagesCursor || loadingOlder ? (
                       <div className="flex justify-center">
                         <p className="text-xs text-muted-foreground">
-                          {loadingOlder ? "Loading older messages…" : "Scroll up for older messages"}
+                          {loadingOlder ? "Loading older messages..." : "Scroll up for older messages"}
                         </p>
                       </div>
                     ) : null}
@@ -847,9 +847,9 @@ export function LiveChatClient() {
                         >
                           <div
                             className={cn(
-                              "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed shadow-sm",
+                              "max-w-[85%] rounded-lg px-3.5 py-2.5 text-[15px] leading-relaxed shadow-sm",
                               outbound
-                                ? "bg-blue-600 text-white dark:bg-blue-600"
+                                ? "bg-violet-600 text-white"
                                 : "border border-slate-200/90 bg-white text-foreground dark:border-slate-700 dark:bg-slate-950"
                             )}
                           >
@@ -883,7 +883,7 @@ export function LiveChatClient() {
                                 className={cn(
                                   "mt-2 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm",
                                   outbound
-                                    ? "border-blue-300/60 text-white/95"
+                                    ? "border-violet-300/60 text-white/95"
                                     : "border-slate-300 text-slate-700 dark:border-slate-700 dark:text-slate-200"
                                 )}
                               >
@@ -902,7 +902,7 @@ export function LiveChatClient() {
                               className={cn(
                                 "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]",
                                 outbound
-                                  ? "text-blue-100/90"
+                                  ? "text-violet-100/90"
                                   : "text-muted-foreground"
                               )}
                             >
@@ -923,7 +923,7 @@ export function LiveChatClient() {
                     <Button
                       type="button"
                       size="sm"
-                      className="pointer-events-auto h-9 rounded-full bg-blue-600 px-3 text-white shadow-md hover:bg-blue-700"
+                      className="pointer-events-auto h-9 rounded-md bg-violet-600 px-3 text-white shadow-md hover:bg-violet-700"
                       onClick={jumpToBottom}
                     >
                       <ChevronDown className="mr-1 size-4" />
@@ -950,9 +950,9 @@ export function LiveChatClient() {
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       onKeyDown={onComposerKeyDown}
-                      placeholder="Type a message…"
+                      placeholder="Type a message..."
                       rows={2}
-                      className="min-h-[44px] w-full resize-none rounded-xl text-[15px]"
+                      className="min-h-[44px] w-full resize-none rounded-md text-[15px]"
                       disabled={sending}
                       aria-label="Message text"
                     />
@@ -960,7 +960,7 @@ export function LiveChatClient() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-11 shrink-0 rounded-xl px-3"
+                        className="h-10 shrink-0 rounded-md px-3"
                         disabled={sending}
                         onClick={() => setEmojiOpen((v) => !v)}
                       >
@@ -969,7 +969,7 @@ export function LiveChatClient() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-11 shrink-0 gap-2 rounded-xl"
+                        className="h-10 shrink-0 rounded-md"
                         disabled={sending || attachmentUploading}
                         onClick={() => attachmentInputRef.current?.click()}
                       >
@@ -983,7 +983,7 @@ export function LiveChatClient() {
                       <Button
                         type="button"
                         variant={recording ? "destructive" : "outline"}
-                        className="h-11 shrink-0 gap-2 rounded-xl"
+                        className="h-10 shrink-0 rounded-md"
                         disabled={sending || attachmentUploading}
                         onClick={() =>
                           recording ? stopVoiceRecording() : void startVoiceRecording()
@@ -1003,7 +1003,7 @@ export function LiveChatClient() {
                       </Button>
                       <Button
                         type="button"
-                        className="h-11 shrink-0 gap-2 rounded-xl bg-blue-600 px-5 text-white hover:bg-blue-700 disabled:opacity-50"
+                        className="h-10 shrink-0 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
                         disabled={!canSend}
                         onClick={() => void handleSend()}
                       >
@@ -1016,7 +1016,7 @@ export function LiveChatClient() {
                       </Button>
                     </div>
                     {attachmentAssetId ? (
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-800 dark:bg-slate-900/40">
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-800 dark:bg-slate-900/40">
                         {attachmentMimeType.startsWith("image/") && attachmentPreviewUrl ? (
                           <img
                             src={attachmentPreviewUrl}

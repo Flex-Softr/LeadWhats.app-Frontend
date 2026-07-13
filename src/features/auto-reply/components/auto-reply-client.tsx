@@ -165,24 +165,26 @@ export function AutoReplyClient() {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-              Auto Reply
-            </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-              Each rule stores several keywords (comma / line separated). We load
-              active rules in priority order (lowest number first); the first rule
-              whose keywords match the message text is the one that runs. Connect
-              your bridge for inbound traffic.
-            </p>
+      <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+        <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+              <MessageSquare className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                Auto Reply
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                Match inbound messages by keyword and send text, media, or templates.
+              </p>
+            </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <Button
               type="button"
               variant="outline"
-              className="h-11 gap-2 border-blue-200 bg-white px-5 text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:bg-slate-950 dark:text-blue-300 dark:hover:bg-blue-950/40"
+              className="h-10 rounded-md px-4"
               disabled={loading || refreshing}
               onClick={() => void loadRules({ silent: true })}
             >
@@ -193,7 +195,7 @@ export function AutoReplyClient() {
             </Button>
             <Button
               type="button"
-              className="h-11 gap-2 bg-blue-600 px-5 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
+              className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
               disabled={loading}
               onClick={() => openCreate()}
             >
@@ -203,14 +205,14 @@ export function AutoReplyClient() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:gap-4">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, keyword, response, session…"
-              className="h-11 rounded-md pl-10"
+              className="h-10 rounded-md pl-10"
               aria-label="Search rules"
             />
           </div>
@@ -218,7 +220,7 @@ export function AutoReplyClient() {
             value={filter}
             onValueChange={(v) => setFilter((v ?? "all") as RuleFilter)}
           >
-            <SelectTrigger className="h-11 w-full rounded-sm sm:w-[200px]">
+            <SelectTrigger className="h-10 w-full rounded-md sm:w-[200px]">
               <SelectValue placeholder="All rules" />
             </SelectTrigger>
             <SelectContent>
@@ -229,7 +231,7 @@ export function AutoReplyClient() {
           </Select>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Total rules"
             value={stats.total}
@@ -256,8 +258,8 @@ export function AutoReplyClient() {
           />
         </div>
 
-        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-          <CardContent className="p-0 sm:rounded-3xl">
+        <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <CardContent className="p-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
                 <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
@@ -274,7 +276,7 @@ export function AutoReplyClient() {
                 <div className="flex justify-center">
                   <Button
                     type="button"
-                    className="h-11 gap-2 bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
+                    className="h-10 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700"
                     onClick={() => openCreate()}
                   >
                     <Plus className="size-4" />

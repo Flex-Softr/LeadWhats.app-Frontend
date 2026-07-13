@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, QrCode, Plus } from "lucide-react";
+import { CheckCircle2, Clock3, Loader2, Plus, QrCode, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 import type {
@@ -57,6 +57,10 @@ export function DevicesClient() {
   );
   const [disconnectTarget, setDisconnectTarget] =
     React.useState<WhatsAppDevice | null>(null);
+
+  const totalDevices = devices.length;
+  const connectedDevices = devices.filter((d) => d.status === "connected").length;
+  const qrReadyDevices = devices.filter((d) => d.status === "qr_ready").length;
 
   const loadDevices = React.useCallback(async () => {
     setLoading(true);
@@ -223,84 +227,172 @@ export function DevicesClient() {
 
   if (loading) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center gap-4 py-24 text-slate-500 dark:text-slate-400">
-        <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
-        <p className="text-sm">Loading devices…</p>
+      <div className="mx-auto flex min-h-[420px] w-full max-w-6xl flex-col items-center justify-center gap-4 rounded-lg border border-violet-100 bg-white/85 px-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-400">
+        <div className="flex size-16 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
+          <Loader2 className="size-8 animate-spin" />
+        </div>
+        <p className="text-sm font-medium">Loading WhatsApp devices...</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+      <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-            WhatsApp Devices
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-            Each device is a session you link from{" "}
-            <span className="font-medium text-slate-700 dark:text-slate-300">
-              your WhatsApp app
-            </span>{" "}
-            (WhatsApp or WhatsApp Business on your phone). We show the same kind
-            of QR code as WhatsApp Web — scan it under Linked devices to connect
-            FlexoWhats to that number.
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+              <Smartphone className="size-5" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                WhatsApp Devices
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Connect, scan, disconnect, and manage all WhatsApp sessions.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="grid grid-cols-3 gap-2 sm:w-[270px]">
+            <div className="rounded-lg bg-violet-50 px-3 py-2 text-center text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+              <p className="text-lg font-bold tabular-nums">{totalDevices}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
+                Total
+              </p>
+            </div>
+            <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+              <p className="text-lg font-bold tabular-nums">{connectedDevices}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
+                Online
+              </p>
+            </div>
+            <div className="rounded-lg bg-amber-50 px-3 py-2 text-center text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+              <p className="text-lg font-bold tabular-nums">{qrReadyDevices}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
+                QR
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
+            onClick={() => setAddOpen(true)}
+          >
+            <Plus className="size-4" />
+            New Device
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+              <CheckCircle2 className="size-4" />
+            </span>
+            <span className="truncate font-medium text-slate-700 dark:text-slate-200">
+              Connected sessions
+            </span>
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {connectedDevices} ready
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+              <Clock3 className="size-4" />
+            </span>
+            <span className="truncate font-medium text-slate-700 dark:text-slate-200">
+              Waiting for scan
+            </span>
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {qrReadyDevices} pending
+          </span>
         </div>
         <Button
           type="button"
-          className="h-11 w-full shrink-0 gap-2 px-5 sm:w-auto rounded-md"
-          onClick={() => setAddOpen(true)}
+          variant="outline"
+          className="h-auto min-h-14 justify-between rounded-lg border-violet-100 bg-white px-4 py-3 text-violet-700 shadow-sm hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200"
+          onClick={() => {
+            const nextReady = devices.find((d) => d.status === "qr_ready");
+            if (nextReady) {
+              handleShowQr(nextReady);
+            } else {
+              setAddOpen(true);
+            }
+          }}
         >
-          <Plus className="size-4" />
-          Add Device
+          <span className="flex items-center gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+              <QrCode className="size-4" />
+            </span>
+            <span className="font-semibold">
+              {qrReadyDevices > 0 ? "Scan pending QR" : "Create QR session"}
+            </span>
+          </span>
+          <span className="text-xs text-slate-400">Open</span>
         </Button>
       </div>
 
-      {devices.length === 0 ? (
-        <Card className="rounded-sm border border-dashed border-slate-200/90 bg-white/90 dark:border-slate-800 dark:bg-slate-950/80">
-          <CardHeader className="sr-only">
-            <CardTitle>Connected devices</CardTitle>
-            <CardDescription>List of WhatsApp sessions</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center gap-6 px-6 py-20 text-center sm:px-8 sm:py-24">
-            <div className="flex size-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 sm:size-[4.75rem]">
-              <QrCode className="size-8 text-slate-400 sm:size-10" />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-                No devices connected
-              </h3>
-              <p className="max-w-md text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Add your first WhatsApp device to connect a session and start
-                sending automated messages.
-              </p>
-            </div>
-            <Button
-              type="button"
-              className="gap-2"
-              onClick={() => setAddOpen(true)}
-            >
-              <Plus className="size-4" />
-              Add Device
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-2">
-          {devices.map((device) => (
-            <DeviceCard
-              key={device.id}
-              device={device}
-              busy={pendingId === device.id}
-              onShowQr={handleShowQr}
-              onPairingCode={handlePairingCode}
-              onDisconnect={(d) => setDisconnectTarget(d)}
-              onDelete={(d) => setDeleteTarget(d)}
-            />
-          ))}
+      <div>
+        <div className="mb-3">
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+            Device list
+          </h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Keep only active business numbers connected for reliable messaging.
+          </p>
         </div>
-      )}
+
+        {devices.length === 0 ? (
+          <Card className="rounded-lg border border-dashed border-violet-200 bg-white/95 shadow-sm dark:border-violet-900/60 dark:bg-slate-950/80">
+            <CardHeader className="sr-only">
+              <CardTitle>Connected devices</CardTitle>
+              <CardDescription>List of WhatsApp sessions</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center gap-6 px-6 py-14 text-center sm:px-8 sm:py-16">
+              <div className="flex size-[4.5rem] items-center justify-center rounded-lg bg-violet-50 text-violet-600 ring-1 ring-violet-100 dark:bg-violet-950/50 dark:text-violet-200 dark:ring-violet-900">
+                <QrCode className="size-8" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+                  No WhatsApp devices yet
+                </h3>
+                <p className="max-w-md text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Create your first session, scan the QR from your phone, and
+                  keep this number ready for campaigns and automation.
+                </p>
+              </div>
+              <Button
+                type="button"
+                className="h-11 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700"
+                onClick={() => setAddOpen(true)}
+              >
+                <Plus className="size-4" />
+                Add Device
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {devices.map((device) => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                busy={pendingId === device.id}
+                onShowQr={handleShowQr}
+                onPairingCode={handlePairingCode}
+                onDisconnect={(d) => setDisconnectTarget(d)}
+                onDelete={(d) => setDeleteTarget(d)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       <AddDeviceDialog
         open={addOpen}

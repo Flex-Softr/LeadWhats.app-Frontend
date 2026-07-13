@@ -18,32 +18,34 @@ export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
         type="button"
         onClick={() => onChange("text")}
         className={cn(
-          "flex flex-col items-start gap-2 rounded-md border-2 p-4 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30",
+          "flex min-h-32 flex-col items-start gap-2 rounded-lg border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30",
           value === "text"
-            ? "border-blue-500 bg-blue-50/80 text-blue-950 shadow-sm dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-slate-700"
+            ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
+            : "border-slate-100 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
         )}
       >
-        <MessageSquare
+        <span
           className={cn(
-            "size-6",
+            "flex size-10 items-center justify-center rounded-lg",
             value === "text"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-400"
+              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
           )}
-        />
+        >
+          <MessageSquare className="size-5" />
+        </span>
         <span
           className={cn(
             "font-semibold",
             value === "text"
-              ? "text-blue-900 dark:text-blue-100"
+              ? "text-violet-900 dark:text-violet-100"
               : "text-slate-900 dark:text-slate-100"
           )}
         >
           Text Message
         </span>
-        <span className="text-sm opacity-90">
-          Text with optional attachment
+        <span className="text-sm leading-5 text-slate-500 dark:text-slate-400">
+          Write a direct one-off WhatsApp message.
         </span>
       </button>
 
@@ -51,20 +53,22 @@ export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
         type="button"
         onClick={() => onChange("template")}
         className={cn(
-          "flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30",
+          "flex min-h-32 flex-col items-start gap-2 rounded-lg border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30",
           value === "template"
-            ? "border-violet-500 bg-violet-50/80 text-violet-950 shadow-sm dark:border-violet-400 dark:bg-violet-950/40 dark:text-violet-100"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-slate-700"
+            ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
+            : "border-slate-100 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
         )}
       >
-        <FileText
+        <span
           className={cn(
-            "size-6",
+            "flex size-10 items-center justify-center rounded-lg",
             value === "template"
-              ? "text-violet-600 dark:text-violet-400"
-              : "text-slate-400"
+              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
           )}
-        />
+        >
+          <FileText className="size-5" />
+        </span>
         <span
           className={cn(
             "font-semibold",
@@ -75,7 +79,9 @@ export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
         >
           Template Message
         </span>
-        <span className="text-sm opacity-90">Use saved template</span>
+        <span className="text-sm leading-5 text-slate-500 dark:text-slate-400">
+          Send from your saved template library.
+        </span>
       </button>
     </div>
   );

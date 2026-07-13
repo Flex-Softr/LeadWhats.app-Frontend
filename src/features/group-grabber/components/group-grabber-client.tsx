@@ -263,25 +263,21 @@ export function GroupGrabberClient() {
     selectedDevice?.status === "connected" && meta?.socketOpen;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-8">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
+    <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+      <div className="rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
           Group Grabber
         </h2>
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-          Pull groups your linked WhatsApp session is in, scrape member lists,
-          and import numbers into{" "}
-          <Link
-            href="/contacts"
-            className="font-medium text-violet-600 underline dark:text-violet-400"
-          >
+        <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+          Pull WhatsApp groups, inspect members, and import numbers into{" "}
+          <Link href="/contacts" className="font-semibold text-violet-700 underline dark:text-violet-300">
             Contacts
-          </Link>{" "}
-          groups for campaigns.
+          </Link>
+          .
         </p>
       </div>
 
-      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:p-6">
           <div className="min-w-0 flex-1 space-y-2">
             <Label htmlFor="gg-device" className="text-sm font-semibold">
@@ -292,10 +288,10 @@ export function GroupGrabberClient() {
               onValueChange={(v) => setDeviceId(v ?? "")}
               disabled={devicesLoading || devices.length === 0}
             >
-              <SelectTrigger id="gg-device" className="h-11 w-full rounded-xl sm:max-w-md">
+              <SelectTrigger id="gg-device" className="h-10 w-full rounded-md sm:max-w-md">
                 <SelectValue
                   placeholder={
-                    devicesLoading ? "Loading…" : "Choose a session…"
+                    devicesLoading ? "Loading..." : "Choose a session..."
                   }
                 >
                   {selectedDevice ? deviceName(selectedDevice.name) : null}
@@ -328,7 +324,7 @@ export function GroupGrabberClient() {
             <Button
               type="button"
               variant="secondary"
-              className="gap-2"
+              className="h-10 rounded-md"
               disabled={!deviceId || groupsLoading}
               onClick={() => void loadGroups({ silent: false })}
             >
@@ -417,7 +413,7 @@ export function GroupGrabberClient() {
         />
       </div>
 
-      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="p-5 sm:p-6 lg:p-7">
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
             Quick Analytics
@@ -457,7 +453,7 @@ export function GroupGrabberClient() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="space-y-5 p-4 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col items-start gap-2">
@@ -505,7 +501,7 @@ export function GroupGrabberClient() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search groups…"
-                  className="h-11 rounded-md pl-10"
+                  className="h-10 rounded-md pl-10"
                   aria-label="Search groups"
                 />
               </div>
@@ -513,7 +509,7 @@ export function GroupGrabberClient() {
                 value={roleFilter}
                 onValueChange={(v) => setRoleFilter((v ?? "all") as RoleFilter)}
               >
-                <SelectTrigger className="h-11 w-full shrink-0 rounded-sm sm:w-[130px]">
+                <SelectTrigger className="h-10 w-full shrink-0 rounded-md sm:w-[130px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -528,7 +524,7 @@ export function GroupGrabberClient() {
                   setSortKey((v ?? "name") as SortKey)
                 }
               >
-                <SelectTrigger className="h-11 w-full shrink-0 rounded-sm sm:w-[140px]">
+                <SelectTrigger className="h-10 w-full shrink-0 rounded-md sm:w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

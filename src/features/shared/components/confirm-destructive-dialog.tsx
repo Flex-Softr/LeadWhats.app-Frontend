@@ -61,12 +61,12 @@ export function ConfirmDestructiveDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton>
-        <DialogHeader>
+      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
+        <DialogHeader className="pb-1">
           <div className="flex items-start gap-3">
             <div
               className={cn(
-                "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                "flex size-11 shrink-0 items-center justify-center rounded-lg",
                 destructive
                   ? "bg-destructive/15 text-destructive"
                   : "bg-amber-500/15 text-amber-700 dark:text-amber-400"
@@ -79,8 +79,8 @@ export function ConfirmDestructiveDialog({
               )}
             </div>
             <div className="min-w-0 space-y-1.5">
-              <DialogTitle className="text-left">{title}</DialogTitle>
-              <DialogDescription className="text-left">
+              <DialogTitle className="text-left text-lg">{title}</DialogTitle>
+              <DialogDescription className="text-left leading-6">
                 {description}
               </DialogDescription>
             </div>
@@ -90,6 +90,7 @@ export function ConfirmDestructiveDialog({
           <Button
             type="button"
             variant="secondary"
+            className="rounded-md"
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
@@ -98,11 +99,14 @@ export function ConfirmDestructiveDialog({
           <Button
             type="button"
             variant={destructive ? "destructive" : "default"}
-            className={cn(!destructive && "bg-amber-600 text-white hover:bg-amber-700")}
+            className={cn(
+              "rounded-md font-semibold",
+              !destructive && "bg-amber-600 text-white hover:bg-amber-700"
+            )}
             onClick={() => void submit()}
             disabled={busy}
           >
-            {busy ? "Please wait…" : confirmLabel}
+            {busy ? "Please wait..." : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -407,29 +407,31 @@ export function WhatsAppMessagePreview({
 
   const listOrCarousel =
     typeId === "message_list" || typeId === "message_carousel";
+  const ctaButtonLabel = media?.ctaButtonLabel;
+  const copyCodeValue = media?.copyCodeValue;
 
   const effectiveButtons = React.useMemo((): TemplateInteractiveButton[] => {
     if (buttons?.length) return buttons;
-    if (typeId === "cta_button" && media?.ctaButtonLabel) {
+    if (typeId === "cta_button" && ctaButtonLabel) {
       return [
         {
           id: "cta_preview",
           kind: "cta_url",
-          label: media.ctaButtonLabel,
+          label: ctaButtonLabel,
         },
       ];
     }
-    if (typeId === "copy_code" && media?.copyCodeValue) {
+    if (typeId === "copy_code" && copyCodeValue) {
       return [
         {
           id: "copy_preview",
           kind: "copy_code",
-          label: media.copyCodeValue,
+          label: copyCodeValue,
         },
       ];
     }
     return [];
-  }, [buttons, typeId, media?.ctaButtonLabel, media?.copyCodeValue]);
+  }, [buttons, typeId, ctaButtonLabel, copyCodeValue]);
 
   return (
     <div

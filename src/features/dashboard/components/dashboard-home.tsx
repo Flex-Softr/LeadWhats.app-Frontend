@@ -140,30 +140,41 @@ export function DashboardHome() {
     data.lineSeries.length > 0 ? data.lineSeries : emptyLine;
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 lg:gap-6">
+    <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 lg:gap-6">
       <SystemStatusBar
         status={data.systemStatus}
         lastUpdated={data.lastUpdatedLabel}
       />
 
-      <WelcomeBanner
-        devicesOnline={data.devicesOnline}
-        messagesToday={data.messagesToday}
-      />
-
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
-        {data.kpis.map((k) => (
-          <DashboardKpiCard key={k.id} data={k} />
-        ))}
+      <div className="grid gap-5 xl:grid-cols-12">
+        <div className="xl:col-span-7">
+          <WelcomeBanner
+            devicesOnline={data.devicesOnline}
+            messagesToday={data.messagesToday}
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:col-span-5">
+          {data.kpis.slice(0, 4).map((k) => (
+            <DashboardKpiCard key={k.id} data={k} />
+          ))}
+        </div>
       </div>
 
-      <DashboardChartsLazy barSeries={barSeries} lineSeries={lineSeries} />
+      {data.kpis.length > 4 ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {data.kpis.slice(4).map((k) => (
+            <DashboardKpiCard key={k.id} data={k} />
+          ))}
+        </div>
+      ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {data.summaries.map((s) => (
           <SummaryStatCard key={s.id} data={s} />
         ))}
       </div>
+
+      <DashboardChartsLazy barSeries={barSeries} lineSeries={lineSeries} />
 
       {error ? (
         <p className="text-center text-xs text-amber-600 dark:text-amber-400">

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import {
   CheckCircle2,
   Clock,
+  Loader2,
   QrCode,
   Trash2,
   Unplug,
@@ -49,8 +50,8 @@ export function DeviceCard({
   }, [device.name]);
 
   return (
-    <Card className="border-slate-200/90 shadow-sm dark:border-slate-800 rounded-lg">
-      <CardHeader className="space-y-3 pb-4">
+    <Card className="overflow-hidden rounded-lg border-violet-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
+      <CardHeader className="space-y-3 border-b border-slate-100 bg-gradient-to-br from-white to-violet-50/80 pb-4 dark:border-slate-800 dark:from-slate-950 dark:to-violet-950/20">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-3">
             <div className="relative shrink-0">
@@ -65,7 +66,7 @@ export function DeviceCard({
                   size="lg"
                   className="ring-2 ring-amber-400/70 ring-offset-2 ring-offset-white dark:ring-offset-slate-950"
                 >
-                  <AvatarFallback className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                  <AvatarFallback className="bg-violet-100 font-semibold text-violet-700 dark:bg-violet-950 dark:text-violet-200">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -81,20 +82,20 @@ export function DeviceCard({
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-50">
+                <h3 className="max-w-[190px] truncate font-semibold text-slate-900 dark:text-slate-50">
                   {device.name}
                 </h3>
                 {isReady ? (
-                  <Badge className="border-amber-200 bg-amber-100 font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-                    Link with phone app
+                  <Badge className="rounded-md border-amber-200 bg-amber-100 font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                    QR ready
                   </Badge>
                 ) : (
-                  <Badge className="border-emerald-200 bg-emerald-100 font-medium text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+                  <Badge className="rounded-md border-emerald-200 bg-emerald-100 font-medium text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
                     Connected
                   </Badge>
                 )}
               </div>
-              <p className="mt-1 font-mono text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 max-w-[230px] truncate font-mono text-xs text-slate-500 dark:text-slate-400">
                 {device.sessionId}
               </p>
             </div>
@@ -115,8 +116,8 @@ export function DeviceCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-2 pb-4 text-sm">
-        <div className="flex justify-between gap-4">
+      <CardContent className="space-y-3 px-5 py-5 text-sm">
+        <div className="flex justify-between gap-4 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/70">
           <span className="text-slate-500 dark:text-slate-400">Status</span>
           <span className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200">
             {isReady ? (
@@ -133,36 +134,37 @@ export function DeviceCard({
           </span>
         </div>
         {isConnected && device.phone ? (
-          <div className="flex justify-between gap-4">
+          <div className="flex justify-between gap-4 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/70">
             <span className="text-slate-500 dark:text-slate-400">Phone</span>
-            <span className="font-medium tabular-nums text-slate-800 dark:text-slate-200">
+            <span className="truncate font-medium tabular-nums text-slate-800 dark:text-slate-200">
               {device.phone}
             </span>
           </div>
         ) : null}
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-4 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/70">
           <span className="text-slate-500 dark:text-slate-400">Created</span>
-          <span className="text-slate-800 dark:text-slate-200">
+          <span className="truncate text-slate-800 dark:text-slate-200">
             {device.createdAtLabel}
           </span>
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col gap-2 pt-4">
+      <CardFooter className="flex flex-col gap-2 border-t border-slate-100 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-950">
         {isReady ? (
           <>
             <Button
               type="button"
-              className="w-full gap-2"
+              className="h-10 w-full rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
               disabled={busy}
               onClick={() => onShowQr(device)}
             >
-              <QrCode className="size-4" />
-              Show QR for WhatsApp app
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <QrCode className="size-4" />}
+              Show QR Code
             </Button>
             <Button
               type="button"
-              className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-sm"
+              variant="outline"
+              className="h-10 w-full rounded-md border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
               disabled={busy}
               onClick={() => onPairingCode(device)}
             >
@@ -173,17 +175,17 @@ export function DeviceCard({
           <>
             <Button
               type="button"
-              className="w-full rounded-sm gap-2 bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500"
+              className="h-10 w-full rounded-md bg-amber-500 font-semibold text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500"
               disabled={busy}
               onClick={() => void onDisconnect(device)}
             >
-              <Unplug className="size-4" />
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <Unplug className="size-4" />}
               Disconnect
             </Button>
             <Button
               type="button"
               variant="destructive"
-              className="w-full gap-2 rounded-sm"
+              className="h-10 w-full rounded-md"
               disabled={busy}
               onClick={() => void onDelete(device)}
             >

@@ -9,7 +9,8 @@
     "dev": "next dev",
     "dev:api": "npm run dev --prefix server",
     "build": "next build",
-    "start": "node .next/standalone/server.js",
+    "prepare:standalone": "node scripts/prepare-standalone.mjs",
+    "start": "npm run prepare:standalone && node .next/standalone/server.js",
     "lint": "eslint"
   },
   "dependencies": {

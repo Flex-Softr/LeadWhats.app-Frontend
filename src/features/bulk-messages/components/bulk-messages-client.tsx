@@ -4,14 +4,18 @@ import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   CalendarClock,
   CheckCircle2,
+  Clock3,
   Loader2,
   Megaphone,
+  MessageSquare,
   Pause,
   Play,
   Plus,
   RefreshCw,
+  Send,
   Trash2,
   Users,
 } from "lucide-react";
@@ -51,32 +55,10 @@ import {
 } from "@/components/ui/table";
 import { usePagination } from "@/hooks/use-pagination";
 
-// function statusBadge(status: BulkCampaignListItemApi["status"]) {
-//   if (status === "completed") {
-//     return (
-//       <Badge className="border-emerald-200 bg-emerald-50 font-normal text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-//         Completed
-//       </Badge>
-//     );
-//   }
-//   if (status === "failed") {
-//     return (
-//       <Badge className="border-red-200 bg-red-50 font-normal text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-//         Failed
-//       </Badge>
-//     );
-//   }
-//   return (
-//     <Badge className="border-amber-200 bg-amber-50 font-normal text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-//       Scheduled
-//     </Badge>
-//   );
-// }
-
 function statusBadge(status: BulkCampaignListItemApi["status"]) {
   if (status === "completed") {
     return (
-      <Badge className="border-emerald-200 bg-emerald-50 font-normal text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+      <Badge className="rounded-md border-emerald-200 bg-emerald-50 font-medium text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
         Completed
       </Badge>
     );
@@ -84,7 +66,7 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
 
   if (status === "failed") {
     return (
-      <Badge className="border-red-200 bg-red-50 font-normal text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+      <Badge className="rounded-md border-red-200 bg-red-50 font-medium text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         Failed
       </Badge>
     );
@@ -92,7 +74,7 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
 
   if (status === "running") {
     return (
-      <Badge className="border-blue-200 bg-blue-50 font-normal text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
+      <Badge className="rounded-md border-blue-200 bg-blue-50 font-medium text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
         Running
       </Badge>
     );
@@ -100,7 +82,7 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
 
   if (status === "paused") {
     return (
-      <Badge className="border-slate-200 bg-slate-100 font-normal text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+      <Badge className="rounded-md border-slate-200 bg-slate-100 font-medium text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
         Paused
       </Badge>
     );
@@ -108,20 +90,56 @@ function statusBadge(status: BulkCampaignListItemApi["status"]) {
 
   if (status === "pending") {
     return (
-      <Badge className="border-orange-200 bg-orange-50 font-normal text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200">
+      <Badge className="rounded-md border-orange-200 bg-orange-50 font-medium text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200">
         Pending
       </Badge>
     );
   }
 
   return (
-    <Badge className="border-amber-200 bg-amber-50 font-normal text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+    <Badge className="rounded-md border-amber-200 bg-amber-50 font-medium text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
       Scheduled
     </Badge>
   );
 }
 
+function formatEta(seconds: number | null): string {
+  if (seconds === null) return "ETA unavailable";
+  if (seconds < 60) return `ETA ${seconds}s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `ETA ${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return `ETA ${hours}h${rest ? ` ${rest}m` : ""}`;
+}
 
+function ActiveCampaignMetric({
+  icon: Icon,
+  label,
+  tone = "slate",
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  tone?: "slate" | "green" | "amber" | "red";
+}) {
+  const toneClass =
+    tone === "green"
+      ? "border-emerald-100 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+      : tone === "amber"
+        ? "border-amber-100 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+        : tone === "red"
+          ? "border-red-100 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200"
+          : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium tabular-nums ${toneClass}`}
+    >
+      <Icon className="size-3" />
+      {label}
+    </span>
+  );
+}
 
 export function BulkMessagesClient() {
   const { userId, workspaceId, routeKey } = useSessionIdentity();
@@ -264,23 +282,26 @@ export function BulkMessagesClient() {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-              Bulk Messages
-            </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-              Compose campaigns, rotate across WhatsApp sessions, and target
-              verified contacts or groups. Campaigns are stored and queued;
-              delivery uses your connected devices.
-            </p>
+      <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+        <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+              <Megaphone className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                Bulk Messages
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                Create, queue, pause, resume, and track WhatsApp campaigns.
+              </p>
+            </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <Button
               type="button"
               variant="secondary"
-              className="h-11 gap-2 px-5"
+              className="h-10 rounded-md px-4"
               disabled={loading || refreshing}
               onClick={() => void loadCampaigns({ silent: true })}
             >
@@ -291,17 +312,17 @@ export function BulkMessagesClient() {
             </Button>
             <Button
               type="button"
-              className="h-11 gap-2 px-5 sm:w-auto"
+              className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700 sm:w-auto"
               disabled={loading}
               onClick={() => setCreateOpen(true)}
             >
               <Plus className="size-4" />
-              Create bulk campaign
+              Create campaign
             </Button>
           </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Campaigns"
             value={campaigns.length}
@@ -330,9 +351,9 @@ export function BulkMessagesClient() {
 
 
         {(runningCampaigns.length > 0 || pendingCampaigns.length > 0) && (
-  <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
+  <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
     <CardContent className="p-0">
-      <div className="border-b px-6 py-4">
+      <div className="border-b border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/40">
         <h3 className="text-lg font-semibold">
           Active Campaigns
         </h3>
@@ -343,7 +364,7 @@ export function BulkMessagesClient() {
 
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
             <TableHead>Campaign</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Recipients</TableHead>
@@ -359,19 +380,48 @@ export function BulkMessagesClient() {
 
         <TableBody>
           {[...runningCampaigns, ...pendingCampaigns].map((c) => (
-            <TableRow key={c.id}>
+            <TableRow key={c.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
               <TableCell>
                 <Link
                   href={`/bulk-messages/${c.id}`}
-                  className="block w-full rounded-md text-left transition-colors hover:bg-muted/50"
+                  className="block w-full rounded-md text-left transition-colors"
                 >
-                  <div className="font-medium text-primary underline-offset-4 hover:underline">
+                  <div className="font-medium text-violet-700 underline-offset-4 hover:underline dark:text-violet-300">
                     {c.name}
                   </div>
 
                   <div className="text-xs text-muted-foreground">
                     {c.kind === "text" ? "Text" : "Template"} ·{" "}
                     {deviceModeLabel(c.deviceMode)}
+                  </div>
+                  <div className="mt-2 flex max-w-xl flex-wrap gap-1.5">
+                    <ActiveCampaignMetric
+                      icon={Send}
+                      label={`${c.progress.sent + c.progress.failed}/${c.progress.total} processed`}
+                    />
+                    <ActiveCampaignMetric
+                      icon={MessageSquare}
+                      label={`${c.progress.replied} replied`}
+                      tone="green"
+                    />
+                    <ActiveCampaignMetric
+                      icon={Clock3}
+                      label={formatEta(c.progress.etaSeconds)}
+                      tone="amber"
+                    />
+                    {c.progress.failed > 0 ? (
+                      <ActiveCampaignMetric
+                        icon={AlertTriangle}
+                        label={`${c.progress.failed} failed`}
+                        tone="red"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-violet-600"
+                      style={{ width: `${c.progress.percent}%` }}
+                    />
                   </div>
                 </Link>
               </TableCell>
@@ -396,6 +446,7 @@ export function BulkMessagesClient() {
                       type="button"
                       variant="outline"
                       size="icon-sm"
+                      className="rounded-md"
                       aria-label="Resume campaign"
                       disabled={actionBusyId === c.id}
                       onClick={() => void updateCampaignStatus(c, "resume")}
@@ -407,6 +458,7 @@ export function BulkMessagesClient() {
                       type="button"
                       variant="outline"
                       size="icon-sm"
+                      className="rounded-md"
                       aria-label="Pause campaign"
                       disabled={actionBusyId === c.id}
                       onClick={() => void updateCampaignStatus(c, "pause")}
@@ -418,6 +470,7 @@ export function BulkMessagesClient() {
                     type="button"
                     variant="outline"
                     size="icon-sm"
+                    className="rounded-md border-red-100 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
                     aria-label="Delete campaign"
                     disabled={actionBusyId === c.id}
                     onClick={() => setDeleteTarget(c)}
@@ -435,8 +488,8 @@ export function BulkMessagesClient() {
 )}
 
 
-        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-          <CardContent className="p-0 sm:rounded-3xl">
+        <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <CardContent className="p-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
                 <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
@@ -452,7 +505,7 @@ export function BulkMessagesClient() {
               </div>
             ) : (
               <>
-              <div className="flex items-center justify-between border-b px-6 py-4">
+              <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between">
   <div>
     <h3 className="text-lg font-semibold">
       Campaign History
@@ -466,7 +519,7 @@ export function BulkMessagesClient() {
     value={statusFilter}
     onValueChange={(value) => setStatusFilter(value ?? "all")}
   >
-    <SelectTrigger className="w-[180px] rounded-sm">
+    <SelectTrigger className="h-10 w-full rounded-md sm:w-[180px]">
       <SelectValue placeholder="Filter status" />
     </SelectTrigger>
 
@@ -479,7 +532,7 @@ export function BulkMessagesClient() {
 </div>
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
                     <TableHead>Campaign</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="hidden sm:table-cell">Recipients</TableHead>
@@ -491,13 +544,13 @@ export function BulkMessagesClient() {
                 </TableHeader>
                 <TableBody>
                   {pagedCampaigns.map((c) => (
-                    <TableRow key={c.id}>
+                    <TableRow key={c.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
                       <TableCell>
                         <Link
                           href={`/bulk-messages/${c.id}`}
-                          className="block w-full rounded-md text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="block w-full rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                         >
-                          <div className="font-medium text-primary underline-offset-4 hover:underline">
+                          <div className="font-medium text-violet-700 underline-offset-4 hover:underline dark:text-violet-300">
                             {c.name}
                           </div>
                           <div className="text-xs text-muted-foreground">
@@ -547,6 +600,7 @@ export function BulkMessagesClient() {
                           type="button"
                           variant="outline"
                           size="icon-sm"
+                          className="rounded-md border-red-100 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
                           aria-label="Delete campaign"
                           onClick={() => setDeleteTarget(c)}
                         >

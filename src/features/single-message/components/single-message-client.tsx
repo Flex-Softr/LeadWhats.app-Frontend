@@ -3,7 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Loader2, Send, SendHorizontal } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FileText,
+  Loader2,
+  MessageSquare,
+  Send,
+  SendHorizontal,
+  Smartphone,
+} from "lucide-react";
 
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import type {
@@ -94,6 +103,8 @@ export function SingleMessageClient() {
     () => devices.filter((d) => d.status === "connected"),
     [devices]
   );
+  const totalDevices = devices.length;
+  const activeTemplates = templates.length;
 
   React.useEffect(() => {
     if (deviceId && !connected.some((d) => d.id === deviceId)) {
@@ -225,213 +236,374 @@ export function SingleMessageClient() {
   }
 
   const cardClass =
-    "rounded-lg border border-white/70 bg-white/90 shadow-md " +
-    "shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 " +
-    "dark:bg-slate-950/60";
+    "rounded-lg border border-violet-100 bg-white shadow-sm " +
+    "dark:border-slate-800 dark:bg-slate-950";
+  const fieldClass =
+    "h-12 rounded-lg border-slate-200 bg-slate-50 px-3 shadow-inner shadow-violet-950/5 transition-colors hover:bg-slate-50 focus-visible:border-violet-400 focus-visible:ring-violet-500/20 disabled:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/70 dark:hover:bg-slate-900/70";
+  const helperClass = "text-xs leading-5 text-slate-500 dark:text-slate-400";
 
   if (loading) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 py-24 text-slate-500 dark:text-slate-400 lg:max-w-4xl">
-        <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
-        <p className="text-sm">Loading devices and templates…</p>
+      <div className="mx-auto flex min-h-[420px] w-full max-w-6xl flex-col items-center justify-center gap-4 rounded-lg border border-violet-100 bg-white/85 px-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-400">
+        <div className="flex size-16 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
+          <Loader2 className="size-8 animate-spin" />
+        </div>
+        <p className="text-sm font-medium">Loading devices and templates...</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 lg:max-w-4xl lg:gap-9">
-      <Card className={cardClass}>
-        <CardHeader className="border-b border-slate-100 px-5 pb-5 pt-6 sm:px-6 sm:pb-6 sm:pt-7 dark:border-slate-800">
-          <div className="flex items-start gap-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm sm:size-14">
-              <SendHorizontal className="size-5 sm:size-6" />
-            </div>
-            <div className="min-w-0 space-y-1.5">
-              <CardTitle className="text-xl font-semibold sm:text-2xl">
-                Single Message
-              </CardTitle>
-              <CardDescription className="text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Send from a{" "}
-                <span className="font-medium text-slate-700 dark:text-slate-300">
-                  connected
-                </span>{" "}
-                device (linked under Devices). Messages go out through that
-                phone&apos;s WhatsApp when the server bridge is enabled.
-              </CardDescription>
-            </div>
+    <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+      <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <SendHorizontal className="size-5" />
           </div>
-        </CardHeader>
-        <CardContent className="px-5 pb-6 pt-6 sm:px-7 sm:pb-7 sm:pt-7">
-          {connected.length === 0 ? (
-            <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 px-4 py-5 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
-              <p className="font-medium">No connected devices</p>
+          <div className="min-w-0">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              Single Message
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Send one WhatsApp text or template from any connected session.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:w-[330px]">
+          <div className="rounded-lg bg-violet-50 px-3 py-2 text-center text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+            <p className="text-lg font-bold tabular-nums">{totalDevices}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
+              Devices
+            </p>
+          </div>
+          <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+            <p className="text-lg font-bold tabular-nums">{connected.length}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
+              Online
+            </p>
+          </div>
+          <div className="rounded-lg bg-amber-50 px-3 py-2 text-center text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+            <p className="text-lg font-bold tabular-nums">{activeTemplates}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
+              Templates
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+              <CheckCircle2 className="size-4" />
+            </span>
+            <span className="truncate font-medium text-slate-700 dark:text-slate-200">
+              Ready sessions
+            </span>
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {connected.length} connected
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+              <FileText className="size-4" />
+            </span>
+            <span className="truncate font-medium text-slate-700 dark:text-slate-200">
+              Template library
+            </span>
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {activeTemplates} active
+          </span>
+        </div>
+        <Link
+          href="/devices"
+          className="flex min-h-14 items-center justify-between gap-3 rounded-lg border border-violet-100 bg-white px-4 py-3 text-sm font-semibold text-violet-700 shadow-sm transition-colors hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200 dark:hover:bg-violet-950/20"
+        >
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+              <Smartphone className="size-4" />
+            </span>
+            <span className="truncate">Manage devices</span>
+          </span>
+          <span className="text-xs text-violet-500 dark:text-violet-300">
+            Open
+          </span>
+        </Link>
+      </div>
+
+      {connected.length === 0 ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
+          <div className="flex items-start gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-200">
+              <AlertTriangle className="size-4" />
+            </span>
+            <div>
+              <p className="font-semibold">No connected WhatsApp device</p>
               <p className="mt-1 text-amber-900/90 dark:text-amber-200/90">
-                Link your phone under{" "}
+                Link a phone from{" "}
                 <Link
                   href="/devices"
                   className="font-semibold underline underline-offset-2"
                 >
                   Devices
                 </Link>{" "}
-                (scan QR so the device shows &quot;Connected&quot;), then pick
-                that device here to send.
+                before sending a single message.
               </p>
             </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-start sm:gap-7">
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="device">Select Device</Label>
-                <Select
-                  value={deviceId}
-                  onValueChange={(v) => setDeviceId(v ?? "")}
-                >
-                  <SelectTrigger
-                    id="device"
-                    size="default"
-                    className="h-11 w-full min-w-0 rounded-sm"
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-6">
+          <Card className={cardClass}>
+            <CardHeader className="border-b border-slate-100 bg-slate-50/60 px-5 pb-4 pt-5 dark:border-slate-800 dark:bg-slate-900/40 sm:px-6">
+              <CardTitle className="text-base font-semibold sm:text-lg">
+                Sender and recipient
+              </CardTitle>
+              <CardDescription>
+                Pick the WhatsApp session that will send, then enter the
+                recipient number.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-5 py-6 sm:px-6">
+              <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-start">
+                <div className="space-y-2 sm:col-span-1">
+                  <Label htmlFor="device">Sending device</Label>
+                  <Select
+                    value={deviceId}
+                    onValueChange={(v) => setDeviceId(v ?? "")}
+                    disabled={connected.length === 0}
                   >
-                    <SelectValue placeholder="Choose a connected device…">
-                      {selectedDevice ? deviceName(selectedDevice) : null}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {connected.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {deviceName(d)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    <SelectTrigger
+                      id="device"
+                      size="default"
+                      className={`${fieldClass} w-full min-w-0`}
+                    >
+                      <SelectValue placeholder="Choose a connected device...">
+                        {selectedDevice ? deviceName(selectedDevice) : null}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {connected.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {deviceName(d)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedDevice ? (
+                    <p className={helperClass}>
+                      Outgoing messages will use this WhatsApp session (
+                      {selectedDevice.phone ?? "number on file"}).
+                    </p>
+                  ) : (
+                    <p className={helperClass}>
+                      Only connected devices are available here.
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2 sm:col-span-1">
+                  <Label htmlFor="phone">Recipient WhatsApp number</Label>
+                  <PhoneNumberWithCountryInput
+                    id="phone"
+                    countryIso2={phoneCountryIso2}
+                    onCountryIso2Change={setPhoneCountryIso2}
+                    localNumber={localPhoneNumber}
+                    onLocalNumberChange={setLocalPhoneNumber}
+                    placeholder="Phone number without country code"
+                    className="h-12 rounded-lg border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 focus-within:border-violet-400 focus-within:ring-violet-500/20 dark:border-slate-800 dark:bg-slate-900/70"
+                  />
+                  <p className={helperClass}>
+                    Select country code first, then type the local number.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="invisible">Check Number</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full rounded-lg border-violet-100 bg-white px-4 font-semibold text-violet-700 shadow-sm hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200 dark:hover:bg-violet-950/20 md:w-auto"
+                    disabled={checking}
+                    onClick={() => void handleCheckNumber()}
+                  >
+                    {checking ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="size-4" />
+                    )}
+                    {checking ? "Checking" : "Check"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className={cardClass}>
+            <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="size-5 text-violet-600 dark:text-violet-300" />
+                <CardTitle className="text-base font-semibold sm:text-lg">
+                  Message format
+                </CardTitle>
+              </div>
+              <CardDescription>
+                Choose whether this send uses a typed message or a saved
+                template.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-5 pb-6 sm:px-6 sm:pb-7">
+              <MessageTypeCards value={messageType} onChange={setMessageType} />
+            </CardContent>
+          </Card>
+
+          {messageType === "text" ? (
+            <Card className={cardClass}>
+              <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
+                <CardTitle className="text-base font-semibold sm:text-lg">
+                  Text message content
+                </CardTitle>
+                <CardDescription>
+                  This text will be sent exactly as written.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 px-5 pb-6 sm:px-6 sm:pb-7">
+                <Label htmlFor="message-body">Message body</Label>
+                <Textarea
+                  id="message-body"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Write the WhatsApp message here..."
+                  className="min-h-48 resize-y rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-relaxed shadow-inner shadow-violet-950/5 focus-visible:border-violet-400 focus-visible:ring-violet-500/20 dark:border-slate-800 dark:bg-slate-900/70"
+                />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className={helperClass}>
+                    Line breaks and spacing will be preserved.
+                  </p>
+                  <p className={`${helperClass} tabular-nums`}>
+                    {messageText.trim().length} chars
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className={cardClass}>
+              <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
+                <CardTitle className="text-base font-semibold sm:text-lg">
+                  Template message
+                </CardTitle>
+                <CardDescription>
+                  Select one active template from your template library.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-5 pb-6 sm:px-6 sm:pb-7">
+                <div className="space-y-3">
+                  <Label htmlFor="template">Template to send</Label>
+                  {templates.length === 0 ? (
+                    <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300">
+                      No templates yet. Create one on the{" "}
+                      <Link
+                        href="/templates"
+                        className="font-semibold text-violet-700 underline underline-offset-2 dark:text-violet-300"
+                      >
+                        Templates
+                      </Link>{" "}
+                      page.
+                    </div>
+                  ) : (
+                    <Select
+                      value={templateId}
+                      onValueChange={(v) => setTemplateId(v ?? "")}
+                    >
+                      <SelectTrigger
+                        id="template"
+                        className={`${fieldClass} w-full`}
+                      >
+                        <SelectValue placeholder="Choose a template..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templates.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <p className={helperClass}>
+                    The selected template content and attached media will be
+                    used for this send.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <Card className={cardClass}>
+            <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
+              <CardTitle className="text-base font-semibold sm:text-lg">
+                Send summary
+              </CardTitle>
+              <CardDescription>
+                Review the active sender and message mode.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 px-5 pb-6 sm:px-6 sm:pb-7">
+              <div className="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900/60">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                  From
+                </p>
+                <p className="mt-1 truncate font-semibold text-slate-900 dark:text-slate-50">
+                  {selectedDevice
+                    ? deviceName(selectedDevice)
+                    : "No device selected"}
+                </p>
                 {selectedDevice ? (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Outgoing messages will use this WhatsApp session (
-                    {selectedDevice.phone ?? "number on file"}).
+                  <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
+                    {selectedDevice.phone ?? "Number on file"}
                   </p>
                 ) : null}
               </div>
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="phone">Phone Number</Label>
-                <PhoneNumberWithCountryInput
-                  id="phone"
-                  countryIso2={phoneCountryIso2}
-                  onCountryIso2Change={setPhoneCountryIso2}
-                  localNumber={localPhoneNumber}
-                  onLocalNumberChange={setLocalPhoneNumber}
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="invisible">Check Number</Label>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="h-11 w-full sm:w-auto rounded-sm"
-                  disabled={checking}
-                  onClick={() => void handleCheckNumber()}
-                >
-                  {checking ? "Checking…" : "Check"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className={cardClass}>
-        <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
-          <CardTitle className="text-base font-semibold sm:text-lg">
-            Message Type
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-5 pb-6 sm:px-6 sm:pb-7">
-          <MessageTypeCards value={messageType} onChange={setMessageType} />
-        </CardContent>
-      </Card>
-
-      {messageType === "text" ? (
-        <Card className={cardClass}>
-          <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
-            <CardTitle className="text-base font-semibold sm:text-lg">
-              Message Content
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-5 pb-6 sm:px-6 sm:pb-7">
-            <Label htmlFor="message-body">Message Text</Label>
-            <Textarea
-              id="message-body"
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Enter your message text..."
-              className="min-h-40 resize-y text-[15px] leading-relaxed"
-            />
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className={cardClass}>
-          <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
-            <CardTitle className="text-base font-semibold sm:text-lg">
-              Select Template
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-5 pb-6 sm:px-6 sm:pb-7">
-            <div className="space-y-3">
-              <Label htmlFor="template">Template</Label>
-              {templates.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No templates yet. Create one on the{" "}
-                  <Link href="/templates" className="underline underline-offset-2">
-                    Templates
-                  </Link>{" "}
-                  page — template mode sends the full template on WhatsApp
-                  (text, images, and other media you attached there).
+              <div className="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900/60">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                  To
                 </p>
-              ) : (
-                <Select
-                  value={templateId}
-                  onValueChange={(v) => setTemplateId(v ?? "")}
-                >
-                  <SelectTrigger id="template" className="h-11 w-full">
-                    <SelectValue placeholder="Choose a template…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {templates.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className={cardClass}>
-        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
-          <div>
-            <CardTitle className="text-base font-semibold sm:text-lg">
-              Send Message
-            </CardTitle>
-            {selectedDevice ? (
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                From: {deviceName(selectedDevice)}
-              </p>
-            ) : null}
-          </div>
-        </CardHeader>
-        <CardContent className="flex justify-end px-5 pb-6 sm:px-6 sm:pb-7">
-          <Button
-            type="button"
-            disabled={!canSend || connected.length === 0 || sending}
-            className="h-11 min-w-[10rem] gap-2 px-6 bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-60 dark:bg-violet-600 dark:hover:bg-violet-500"
-            onClick={() => void handleSend()}
-          >
-            <Send className="size-4" />
-            {sending ? "Sending…" : "Send Message"}
-          </Button>
-        </CardContent>
-      </Card>
+                <p className="mt-1 truncate font-semibold text-slate-900 dark:text-slate-50">
+                  {phone.trim() || "No recipient number"}
+                </p>
+              </div>
+              <div className="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900/60">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                  Message
+                </p>
+                <p className="mt-1 font-semibold text-slate-900 dark:text-slate-50">
+                  {messageType === "text"
+                    ? "Text message"
+                    : "Template message"}
+                </p>
+              </div>
+              <Button
+                type="button"
+                disabled={!canSend || connected.length === 0 || sending}
+                className="h-11 w-full rounded-md bg-violet-600 px-6 font-semibold text-white hover:bg-violet-700 disabled:opacity-60"
+                onClick={() => void handleSend()}
+              >
+                {sending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Send className="size-4" />
+                )}
+                {sending ? "Sending..." : "Send Message"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

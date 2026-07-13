@@ -15,6 +15,7 @@ import { GoogleBrandIcon } from "@/features/auth/components/google-brand-icon";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api";
+import { buildGoogleOAuthStartUrl } from "@/lib/auth-api";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -149,11 +150,7 @@ export function RegisterForm() {
         type="button"
         variant="outline"
         className="h-11 w-full rounded-xl border-slate-200/90 bg-white font-medium dark:border-slate-700 dark:bg-slate-950/50"
-        onClick={() =>
-          toast.message("Google sign-in", {
-            description: "OAuth is not configured for this environment yet.",
-          })
-        }
+        onClick={() => window.location.assign(buildGoogleOAuthStartUrl("/"))}
       >
         <GoogleBrandIcon className="mr-2 size-5 shrink-0" />
         Continue with Google

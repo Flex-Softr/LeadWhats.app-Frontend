@@ -53,10 +53,10 @@ export function DeleteContactDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {contact ? (
-      <DialogContent className="sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/15 text-destructive">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/15 text-destructive">
               <Trash2 className="size-4" />
             </div>
             <DialogTitle>Delete contact</DialogTitle>
@@ -73,6 +73,7 @@ export function DeleteContactDialog({
           <Button
             type="button"
             variant="secondary"
+            className="rounded-md"
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
@@ -81,10 +82,11 @@ export function DeleteContactDialog({
           <Button
             type="button"
             variant="destructive"
+            className="rounded-md font-semibold"
             onClick={() => void confirm()}
             disabled={busy}
           >
-            {busy ? "Deleting…" : "Delete"}
+            {busy ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

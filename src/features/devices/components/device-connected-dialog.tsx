@@ -55,43 +55,43 @@ export function DeviceConnectedDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-6 sm:max-w-md" showCloseButton>
-        <DialogHeader className="flex flex-row items-center gap-2 space-y-0 text-left">
-          <CircleCheck className="size-5 text-emerald-600" />
-          <DialogTitle className="text-lg font-semibold">Connected!</DialogTitle>
+      <DialogContent className="gap-6 overflow-hidden rounded-lg border-emerald-100 p-0 sm:max-w-md" showCloseButton>
+        <DialogHeader className="flex flex-row items-center gap-2 space-y-0 bg-gradient-to-br from-emerald-500 to-teal-500 px-6 py-5 pr-12 text-left text-white">
+          <CircleCheck className="size-5 text-white" />
+          <DialogTitle className="text-lg font-semibold text-white">
+            Device connected
+          </DialogTitle>
           <DialogDescription className="sr-only">
             Your WhatsApp session linked successfully.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center dark:border-emerald-900 dark:bg-emerald-950/50">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
+        <div className="space-y-4 px-6 pb-6">
+          <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-6 text-center dark:border-emerald-900 dark:bg-emerald-950/50">
+            <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm ring-8 ring-emerald-100 dark:ring-emerald-950">
               <Check className="size-6" strokeWidth={3} />
             </div>
             <p className="font-semibold text-emerald-800 dark:text-emerald-200">
-              Connected!
+              Successfully connected
             </p>
             <p className="mt-1 text-sm text-emerald-800/90 dark:text-emerald-300/90">
-              Successfully connected!
+              This WhatsApp session is ready for campaigns and automation.
             </p>
             <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">
-              Closing in {secondsLeft} second{secondsLeft === 1 ? "" : "s"}…
+              Closing in {secondsLeft} second{secondsLeft === 1 ? "" : "s"}...
             </p>
           </div>
 
           <div className="space-y-2 text-center">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
-              Successfully Connected!
-            </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Your WhatsApp session is now connected and ready to use.
+              You can disconnect or remove this device later from the same
+              device card.
             </p>
           </div>
 
           <Button
             type="button"
-            className="h-11 w-full bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            className="h-11 w-full rounded-md bg-emerald-600 font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             onClick={() => onOpenChange(false)}
           >
             Continue

@@ -55,10 +55,10 @@ export function AddContactDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
               <UserPlus className="size-4" />
             </div>
             <DialogTitle>Add contact</DialogTitle>
@@ -76,6 +76,7 @@ export function AddContactDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contact name"
+              className="h-10 rounded-md"
             />
           </div>
           <div className="space-y-2">
@@ -85,20 +86,25 @@ export function AddContactDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1234567890"
-              className="font-mono"
+              className="h-10 rounded-md font-mono"
             />
           </div>
           <DialogFooter className="gap-2 sm:justify-end">
             <Button
               type="button"
               variant="secondary"
+              className="rounded-md"
               onClick={() => onOpenChange(false)}
               disabled={saving}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!phone.trim() || saving}>
-              {saving ? "Adding…" : "Add contact"}
+            <Button
+              type="submit"
+              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
+              disabled={!phone.trim() || saving}
+            >
+              {saving ? "Adding..." : "Add contact"}
             </Button>
           </DialogFooter>
         </form>

@@ -15,9 +15,11 @@ import {
   Pause,
   Phone,
   Play,
+  RefreshCcw,
   Server,
   Smartphone,
   Trash2,
+  UserPlus,
   XCircle,
 } from "lucide-react";
 
@@ -27,7 +29,13 @@ import {
   deviceModeLabel,
   formatBulkCampaignWhen,
 } from "@/features/bulk-messages/lib/bulk-campaign-format";
-import type { BulkCampaignDetailApi } from "@/types/bulk-campaign-api";
+import type {
+  BulkCampaignDetailApi,
+  BulkCampaignRecipientApi,
+  BulkCampaignRecipientsResponse,
+  BulkCampaignRecipientStatusApi,
+  CreateBulkCampaignResponse,
+} from "@/types/bulk-campaign-api";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 
@@ -53,32 +61,52 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { usePagination } from "@/hooks/use-pagination";
+import { useControlledPagination, usePagination } from "@/hooks/use-pagination";
 import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
 
 type BulkCampaignDetailPageClientProps = {
   campaignId: string;
 };
 
+const recipientStatusFilters: Array<{
+  value: "all" | BulkCampaignRecipientStatusApi;
+  label: string;
+}> = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "sending", label: "Sending" },
+  { value: "sent", label: "Sent" },
+  { value: "failed", label: "Failed" },
+  { value: "simulated", label: "Simulated" },
+];
+
+type RecipientAudience = "failed" | "replied" | "no_reply" | "seen_no_reply";
+type RecipientActionBusy =
+  | "retry_failed"
+  | "retry_no_reply"
+  | "group_failed"
+  | "group_replied"
+  | null;
+
 function statusBadgeClass(
   status: BulkCampaignDetailApi["campaign"]["status"]
 ) {
   if (status === "completed") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200";
+    return "rounded-md border-emerald-200 bg-emerald-50 font-medium text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200";
   }
   if (status === "failed") {
-    return "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200";
+    return "rounded-md border-red-200 bg-red-50 font-medium text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200";
   }
   if (status === "running") {
-    return "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200";
+    return "rounded-md border-blue-200 bg-blue-50 font-medium text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200";
   }
   if (status === "pending") {
-    return "border-orange-200 bg-orange-50 text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200";
+    return "rounded-md border-orange-200 bg-orange-50 font-medium text-orange-900 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200";
   }
   if (status === "paused") {
-    return "border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200";
+    return "rounded-md border-slate-200 bg-slate-100 font-medium text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200";
   }
-  return "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200";
+  return "rounded-md border-amber-200 bg-amber-50 font-medium text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200";
 }
 
 function statusLabel(status: BulkCampaignDetailApi["campaign"]["status"]) {
@@ -94,34 +122,34 @@ function outboundStatusBadge(status: string) {
   const s = status.toLowerCase();
   if (s === "sent") {
     return (
-      <Badge className="border-emerald-200 bg-emerald-50 font-normal text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+      <Badge className="rounded-md border-emerald-200 bg-emerald-50 font-medium text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
         Sent
       </Badge>
     );
   }
   if (s === "failed") {
     return (
-      <Badge className="border-red-200 bg-red-50 font-normal text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+      <Badge className="rounded-md border-red-200 bg-red-50 font-medium text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         Failed
       </Badge>
     );
   }
   if (s === "queued") {
     return (
-      <Badge className="border-amber-200 bg-amber-50 font-normal text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+      <Badge className="rounded-md border-amber-200 bg-amber-50 font-medium text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
         Queued
       </Badge>
     );
   }
   if (s === "simulated") {
     return (
-      <Badge variant="secondary" className="font-normal">
+      <Badge variant="secondary" className="rounded-md font-medium">
         Simulated
       </Badge>
     );
   }
   return (
-    <Badge variant="outline" className="font-normal">
+    <Badge variant="outline" className="rounded-md font-medium">
       {status}
     </Badge>
   );
@@ -140,12 +168,12 @@ function ProgressBar({
   return (
     <div
       className={cn(
-        "h-2 w-full overflow-hidden rounded-full bg-muted",
+        "h-2 w-full overflow-hidden rounded-full bg-violet-100 dark:bg-slate-800",
         className
       )}
     >
       <div
-        className="h-full rounded-full bg-primary transition-[width] duration-300"
+        className="h-full rounded-full bg-violet-600 transition-[width] duration-300"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -158,10 +186,25 @@ export function BulkCampaignDetailPageClient({
   const pathname = usePathname();
   const router = useRouter();
   const [downloading, setDownloading] = React.useState(false);
+  const [reportDownloading, setReportDownloading] = React.useState<
+    "csv" | "xlsx" | null
+  >(null);
   const [detail, setDetail] = React.useState<BulkCampaignDetailApi | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [actionBusy, setActionBusy] = React.useState(false);
+  const [recipientActionBusy, setRecipientActionBusy] =
+    React.useState<RecipientActionBusy>(null);
+  const [recipientStatusFilter, setRecipientStatusFilter] = React.useState<
+    "all" | BulkCampaignRecipientStatusApi
+  >("all");
+  const [recipientRows, setRecipientRows] = React.useState<
+    BulkCampaignRecipientApi[]
+  >([]);
+  const [recipientTotal, setRecipientTotal] = React.useState(0);
+  const [recipientPage, setRecipientPage] = React.useState(1);
+  const [recipientPageSize, setRecipientPageSize] = React.useState(25);
+  const [recipientsLoading, setRecipientsLoading] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   const loadDetail = React.useCallback(async (opts?: { silent?: boolean }) => {
@@ -185,6 +228,34 @@ export function BulkCampaignDetailPageClient({
       }
     }
   }, [campaignId]);
+
+  const loadRecipients = React.useCallback(async () => {
+    setRecipientsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(recipientPage),
+        pageSize: String(recipientPageSize),
+      });
+      if (recipientStatusFilter !== "all") {
+        params.set("status", recipientStatusFilter);
+      }
+      const data = await apiJson<BulkCampaignRecipientsResponse>(
+        `/v1/bulk-campaigns/${campaignId}/recipients?${params.toString()}`
+      );
+      setRecipientRows(data.recipients);
+      setRecipientTotal(data.total);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not load recipients.";
+      toast.error("Recipients failed", { description: msg });
+    } finally {
+      setRecipientsLoading(false);
+    }
+  }, [campaignId, recipientPage, recipientPageSize, recipientStatusFilter]);
+
+  React.useEffect(() => {
+    void loadRecipients();
+  }, [loadRecipients]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -213,9 +284,10 @@ export function BulkCampaignDetailPageClient({
   React.useEffect(() => {
     const id = window.setInterval(() => {
       void loadDetail({ silent: true });
+      void loadRecipients();
     }, 3000);
     return () => window.clearInterval(id);
-  }, [loadDetail]);
+  }, [loadDetail, loadRecipients]);
 
   async function updateCampaignStatus(action: "pause" | "resume") {
     setActionBusy(true);
@@ -274,6 +346,103 @@ export function BulkCampaignDetailPageClient({
     }
   }
 
+  async function downloadReport(format: "csv" | "xlsx") {
+    setReportDownloading(format);
+    try {
+      const res = await apiFetch(
+        `/v1/bulk-campaigns/${campaignId}/report?format=${format}`
+      );
+      if (!res.ok) {
+        toast.error("Report failed", {
+          description: "Could not export this campaign report.",
+        });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const disposition = res.headers.get("content-disposition");
+      const filenameMatch = disposition?.match(/filename="([^"]+)"/i);
+      a.href = url;
+      a.download =
+        filenameMatch?.[1] ?? `bulk-campaign-${campaignId}-report.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Report exported", {
+        description: a.download,
+      });
+    } finally {
+      setReportDownloading(null);
+    }
+  }
+
+  function audienceLabel(audience: RecipientAudience): string {
+    if (audience === "failed") return "failed";
+    if (audience === "replied") return "replied";
+    if (audience === "seen_no_reply") return "seen but no-reply";
+    return "no-reply";
+  }
+
+  async function retryAudienceRecipients(audience: RecipientAudience) {
+    setRecipientActionBusy(
+      audience === "failed" ? "retry_failed" : "retry_no_reply"
+    );
+    try {
+      const out = await apiJson<CreateBulkCampaignResponse>(
+        `/v1/bulk-campaigns/${campaignId}/retry`,
+        {
+          method: "POST",
+          body: JSON.stringify({ audience }),
+        }
+      );
+      toast.success("Retry campaign created", {
+        description: `${out.campaign.name} (${out.campaign.recipientCount} recipients)`,
+      });
+      router.push(`/bulk-messages/${out.campaign.id}`);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : "Could not create retry campaign.";
+      toast.error("Retry failed", { description: msg });
+    } finally {
+      setRecipientActionBusy(null);
+    }
+  }
+
+  async function createAudienceContactGroup(audience: RecipientAudience) {
+    const fallback = detail?.campaign.name
+      ? `${audienceLabel(audience)} - ${detail.campaign.name}`.slice(0, 80)
+      : `${audienceLabel(audience)} recipients`;
+    const name = window.prompt("Contact group name", fallback);
+    if (!name?.trim()) return;
+
+    setRecipientActionBusy(
+      audience === "failed" ? "group_failed" : "group_replied"
+    );
+    try {
+      const out = await apiJson<{
+        group: { id: string; name: string; total: number };
+        skipped: number;
+      }>(`/v1/bulk-campaigns/${campaignId}/contact-group`, {
+        method: "POST",
+        body: JSON.stringify({ audience, name: name.trim() }),
+      });
+      toast.success("Contact group created", {
+        description: `${out.group.name} (${out.group.total} contacts)`,
+      });
+      router.push(`/contacts/${out.group.id}`);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : "Could not create contact group.";
+      toast.error("Group creation failed", { description: msg });
+    } finally {
+      setRecipientActionBusy(null);
+    }
+  }
+
   const campaign = detail?.campaign;
   const stats = detail?.stats;
   const target = stats?.targetRecipients ?? campaign?.recipientCount ?? 0;
@@ -284,101 +453,199 @@ export function BulkCampaignDetailPageClient({
     target > 0 && stats
       ? Math.min(100, Math.round((stats.totalOutboundRows / target) * 100))
       : 0;
+  const deliveredRate =
+    sent > 0 && stats ? Math.min(100, Math.round((stats.delivered / sent) * 100)) : 0;
+  const seenRate =
+    sent > 0 && stats ? Math.min(100, Math.round((stats.seen / sent) * 100)) : 0;
+  const replyRate =
+    sent > 0 && stats ? Math.min(100, Math.round((stats.replied / sent) * 100)) : 0;
   const messagePagination = usePagination({
     totalItems: detail?.recentMessages.length ?? 0,
     initialPageSize: 10,
   });
   const pagedMessages = messagePagination.slice(detail?.recentMessages ?? []);
+  const recipientPagination = useControlledPagination({
+    page: recipientPage,
+    pageSize: recipientPageSize,
+    totalItems: recipientTotal,
+    onPageChange: setRecipientPage,
+    onPageSizeChange: setRecipientPageSize,
+  });
+  const pagedRecipients = recipientRows;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 pb-16 lg:space-y-10">
-        <Button variant="ghost" className="-ml-2 gap-2">
-          <Link href="/bulk-messages" className="flex items-center gap-2">
-            <ArrowLeft className="size-4" />
-            Back to bulk messages
-          </Link>
-        </Button>
-
+    <div className="mx-auto w-full max-w-6xl space-y-6 pb-16 lg:space-y-7">
         {loading && !campaign ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-24 text-muted-foreground">
+          <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-lg border border-violet-100 bg-white py-24 text-muted-foreground shadow-sm dark:border-slate-800 dark:bg-slate-950">
             <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
-            <p className="text-sm">Loading campaign…</p>
+            <p className="text-sm">Loading campaign...</p>
           </div>
         ) : loadError ? (
-          <Card className="border-destructive/40 bg-destructive/5">
+          <Card className="rounded-lg border-destructive/40 bg-destructive/5">
             <CardContent className="px-6 py-8 text-center">
               <p className="text-destructive">{loadError}</p>
-              <Button className="mt-6" variant="outline">
+              <Button className="mt-6 rounded-md" variant="outline">
                 <Link href="/bulk-messages">Return to list</Link>
               </Button>
             </CardContent>
           </Card>
         ) : campaign && stats && detail ? (
           <>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-                  {campaign.name}
-                </h1>
-                <p className="max-w-3xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-                  Delivery breakdown, devices, message content, and recent
-                  outbound rows for this campaign.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {campaign.status === "paused" ? (
+            <div className="rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+              <Link
+                href="/bulk-messages"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 dark:text-violet-300"
+              >
+                <ArrowLeft className="size-4" />
+                Back to bulk messages
+              </Link>
+              <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0 space-y-2">
+                  <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
+                    {campaign.name}
+                  </h1>
+                  <p className="max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                    Delivery breakdown, devices, message content, and recipient rows.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    className="gap-2"
-                    disabled={actionBusy}
-                    onClick={() => void updateCampaignStatus("resume")}
+                    className="h-10 rounded-md"
+                    disabled={reportDownloading !== null}
+                    onClick={() => void downloadReport("csv")}
                   >
-                    <Play className="size-4" />
-                    Resume
+                    {reportDownloading === "csv" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Download className="size-4" />
+                    )}
+                    CSV
                   </Button>
-                ) : campaign.status === "completed" || campaign.status === "failed" ? null : (
                   <Button
                     type="button"
                     variant="outline"
-                    className="gap-2"
-                    disabled={actionBusy}
-                    onClick={() => void updateCampaignStatus("pause")}
+                    className="h-10 rounded-md"
+                    disabled={reportDownloading !== null}
+                    onClick={() => void downloadReport("xlsx")}
                   >
-                    <Pause className="size-4" />
-                    Pause
+                    {reportDownloading === "xlsx" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Download className="size-4" />
+                    )}
+                    XLSX
                   </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="destructive"
-                  className="gap-2"
-                  disabled={actionBusy}
-                  onClick={() => setDeleteOpen(true)}
-                >
-                  <Trash2 className="size-4" />
-                  Delete
-                </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 rounded-md"
+                    disabled={recipientActionBusy !== null || stats.failed === 0}
+                    onClick={() => void retryAudienceRecipients("failed")}
+                  >
+                    {recipientActionBusy === "retry_failed" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="size-4" />
+                    )}
+                    Retry Failed
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 rounded-md"
+                    disabled={recipientActionBusy !== null || stats.noReply === 0}
+                    onClick={() => void retryAudienceRecipients("no_reply")}
+                  >
+                    {recipientActionBusy === "retry_no_reply" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="size-4" />
+                    )}
+                    Follow Up
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 rounded-md"
+                    disabled={recipientActionBusy !== null || stats.failed === 0}
+                    onClick={() => void createAudienceContactGroup("failed")}
+                  >
+                    {recipientActionBusy === "group_failed" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <UserPlus className="size-4" />
+                    )}
+                    Save Failed
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 rounded-md"
+                    disabled={recipientActionBusy !== null || stats.replied === 0}
+                    onClick={() => void createAudienceContactGroup("replied")}
+                  >
+                    {recipientActionBusy === "group_replied" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <UserPlus className="size-4" />
+                    )}
+                    Save Replied
+                  </Button>
+                  {campaign.status === "paused" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10 rounded-md"
+                      disabled={actionBusy}
+                      onClick={() => void updateCampaignStatus("resume")}
+                    >
+                      <Play className="size-4" />
+                      Resume
+                    </Button>
+                  ) : campaign.status === "completed" || campaign.status === "failed" ? null : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10 rounded-md"
+                      disabled={actionBusy}
+                      onClick={() => void updateCampaignStatus("pause")}
+                    >
+                      <Pause className="size-4" />
+                      Pause
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="h-10 rounded-md"
+                    disabled={actionBusy}
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </Button>
+                </div>
               </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className={statusBadgeClass(campaign.status)}>
-                {statusLabel(campaign.status)}
-              </Badge>
-              <Badge variant="secondary" className="font-normal">
-                {campaign.kind === "text" ? "Text" : "Template"}
-              </Badge>
-              <Badge variant="outline" className="font-normal">
-                {deviceModeLabel(campaign.deviceMode)}
-              </Badge>
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                <Badge className={statusBadgeClass(campaign.status)}>
+                  {statusLabel(campaign.status)}
+                </Badge>
+                <Badge variant="secondary" className="rounded-md font-medium">
+                  {campaign.kind === "text" ? "Text" : "Template"}
+                </Badge>
+                <Badge variant="outline" className="rounded-md font-medium">
+                  {deviceModeLabel(campaign.deviceMode)}
+                </Badge>
+              </div>
             </div>
 
             <div>
               <h2 className="mb-3 text-sm font-semibold text-foreground">
                 Delivery progress
               </h2>
-              <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
+              <div className="space-y-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
                 <div className="flex flex-wrap items-end justify-between gap-2 text-sm">
                   <span className="text-muted-foreground">
                     WhatsApp delivered (sent)
@@ -407,15 +674,61 @@ export function BulkCampaignDetailPageClient({
                   max={target}
                   className="opacity-80"
                 />
+                <div className="grid gap-2 border-t border-slate-100 pt-3 text-sm dark:border-slate-800 sm:grid-cols-3">
+                  <div className="rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/60">
+                    <p className="text-xs text-muted-foreground">
+                      Delivered rate
+                    </p>
+                    <p className="mt-1 font-semibold tabular-nums">
+                      {deliveredRate}%
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/60">
+                    <p className="text-xs text-muted-foreground">Seen rate</p>
+                    <p className="mt-1 font-semibold tabular-nums">
+                      {seenRate}%
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/60">
+                    <p className="text-xs text-muted-foreground">Reply rate</p>
+                    <p className="mt-1 font-semibold tabular-nums">
+                      {replyRate}%
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard
-                label="Delivered (sent)"
+                label="Sent"
                 value={stats.sent}
                 icon={CheckCircle2}
                 accent="green"
+              />
+              <StatCard
+                label="Delivered"
+                value={stats.delivered}
+                icon={Smartphone}
+                accent="indigo"
+              />
+              <StatCard
+                label="Seen"
+                value={stats.seen}
+                icon={EyeOff}
+                accent="slate"
+              />
+              <StatCard
+                label="Replied"
+                value={stats.replied}
+                icon={MessageSquare}
+                accent="green"
+              />
+              <StatCard
+                label="No reply"
+                value={stats.noReply}
+                icon={Phone}
+                accent="amber"
               />
               <StatCard
                 label="Failed"
@@ -441,24 +754,18 @@ export function BulkCampaignDetailPageClient({
                 icon={Server}
                 accent="indigo"
               />
-              <StatCard
-                label="Read / seen"
-                value="—"
-                icon={EyeOff}
-                accent="slate"
-              />
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Read receipts are not stored on outbound messages yet, so
-              &quot;seen&quot; counts are unavailable. Failed rows include the
-              error on each recipient below.
+              Delivered and seen depend on WhatsApp receipt events and recipient
+              privacy settings. Replied is based on inbound messages matched to
+              this campaign.
             </p>
 
             <Separator />
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <Card size="sm">
-                <CardHeader className="border-b border-border/60 pb-3">
+              <Card size="sm" className="rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+                <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Calendar className="size-4" />
                     Schedule &amp; dates
@@ -496,6 +803,12 @@ export function BulkCampaignDetailPageClient({
                     <span className="text-muted-foreground">Delay</span>
                     <span className="text-right tabular-nums">
                       {campaign.delayMinSec}–{campaign.delayMaxSec}s random
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">Timezone</span>
+                    <span className="text-right font-medium">
+                      {campaign.timezone ?? campaign.antiBlock.timezone ?? "Server local"}
                     </span>
                   </div>
                   <div className="flex justify-between gap-4">
@@ -554,8 +867,8 @@ export function BulkCampaignDetailPageClient({
                 </CardContent>
               </Card>
 
-              <Card size="sm">
-                <CardHeader className="border-b border-border/60 pb-3">
+              <Card size="sm" className="rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+                <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <MessageSquare className="size-4" />
                     Message content
@@ -589,7 +902,7 @@ export function BulkCampaignDetailPageClient({
                     </div>
                   )}
                   {campaign.attachmentType ? (
-                    <div className="rounded-lg border bg-muted/40 px-3 py-2">
+                    <div className="rounded-lg border border-violet-100 bg-violet-50/40 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50">
                       <p className="text-xs font-medium text-muted-foreground">
                         Attachment
                       </p>
@@ -605,7 +918,7 @@ export function BulkCampaignDetailPageClient({
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="mt-2 gap-2"
+                          className="mt-2 rounded-md"
                           disabled={downloading}
                           onClick={() => void downloadAttachment()}
                         >
@@ -623,8 +936,8 @@ export function BulkCampaignDetailPageClient({
               </Card>
             </div>
 
-            <Card size="sm">
-              <CardHeader className="border-b border-border/60 pb-3">
+            <Card size="sm" className="rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Smartphone className="size-4" />
                   Devices in campaign
@@ -639,7 +952,7 @@ export function BulkCampaignDetailPageClient({
                   {detail.devices.map((d) => (
                     <li
                       key={d.id}
-                      className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm"
+                      className="flex items-center gap-2 rounded-lg border border-violet-100 bg-violet-50/40 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/50"
                     >
                       <Phone className="size-3.5 shrink-0 text-muted-foreground" />
                       <span className="font-medium">{d.name}</span>
@@ -653,10 +966,10 @@ export function BulkCampaignDetailPageClient({
                   ))}
                 </ul>
                 {detail.deviceSendStats.length > 0 ? (
-                  <div className="overflow-x-auto rounded-lg border">
+                  <div className="overflow-x-auto rounded-lg border border-slate-100 dark:border-slate-800">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
                           <TableHead>Device</TableHead>
                           <TableHead className="text-right">Sent</TableHead>
                           <TableHead className="text-right">Failed</TableHead>
@@ -667,7 +980,7 @@ export function BulkCampaignDetailPageClient({
                       </TableHeader>
                       <TableBody>
                         {detail.deviceSendStats.map((r) => (
-                          <TableRow key={r.deviceId}>
+                          <TableRow key={r.deviceId} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
                             <TableCell className="font-medium">
                               <div>{r.deviceName}</div>
                               {r.phone ? (
@@ -700,21 +1013,133 @@ export function BulkCampaignDetailPageClient({
               </CardContent>
             </Card>
 
-            <Card size="sm">
-              <CardHeader className="border-b border-border/60 pb-3">
-                <CardTitle className="text-base">
-                  Recent messages
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    (last {detail.recentMessages.length})
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  One row per outbound attempt. Errors appear under the
-                  recipient for failed sends.
-                </CardDescription>
+            <Card size="sm" className="overflow-hidden rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <CardTitle className="text-base">
+                      Recipient progress
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">
+                        ({recipientTotal} total)
+                      </span>
+                    </CardTitle>
+                    <CardDescription>
+                      One row per campaign recipient. Export CSV or XLSX for the full
+                      report.
+                    </CardDescription>
+                  </div>
+                  {recipientTotal > 0 || recipientStatusFilter !== "all" ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {recipientStatusFilters.map((item) => (
+                        <Button
+                          key={item.value}
+                          type="button"
+                          variant={
+                            recipientStatusFilter === item.value
+                              ? "default"
+                              : "outline"
+                          }
+                          size="sm"
+                          className="h-8 rounded-md px-2.5"
+                          onClick={() => {
+                            setRecipientStatusFilter(item.value);
+                            setRecipientPage(1);
+                          }}
+                        >
+                          {item.label}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </CardHeader>
               <CardContent className="px-0 pt-0">
-                {detail.recentMessages.length === 0 ? (
+                {target > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+                          <TableHead>Recipient</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            Device
+                          </TableHead>
+                          <TableHead className="hidden md:table-cell">
+                            Attempts
+                          </TableHead>
+                          <TableHead className="hidden lg:table-cell">
+                            Last update
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {recipientsLoading && pagedRecipients.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={5}
+                              className="py-8 text-center text-sm text-muted-foreground"
+                            >
+                              Loading recipients...
+                            </TableCell>
+                          </TableRow>
+                        ) : pagedRecipients.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={5}
+                              className="py-8 text-center text-sm text-muted-foreground"
+                            >
+                              No recipients match this filter.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          pagedRecipients.map((r) => (
+                          <TableRow key={r.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+                            <TableCell className="align-top font-mono text-xs">
+                              {r.phone}
+                              {r.lastError ? (
+                                <div className="mt-1 max-w-[220px] text-[11px] font-sans text-destructive sm:max-w-md">
+                                  {r.lastError}
+                                </div>
+                              ) : null}
+                              {r.lastReplyText ? (
+                                <div className="mt-1 max-w-[220px] text-[11px] font-sans text-emerald-700 dark:text-emerald-300 sm:max-w-md">
+                                  Reply: {r.lastReplyText}
+                                </div>
+                              ) : null}
+                            </TableCell>
+                            <TableCell className="align-top">
+                              {outboundStatusBadge(r.status)}
+                            </TableCell>
+                            <TableCell className="hidden align-top text-sm sm:table-cell">
+                              {r.deviceName ?? "-"}
+                            </TableCell>
+                            <TableCell className="hidden align-top tabular-nums md:table-cell">
+                              {r.attempts}
+                            </TableCell>
+                            <TableCell className="hidden align-top text-xs text-muted-foreground lg:table-cell">
+                              {formatBulkCampaignWhen(
+                                r.lastReplyAt ??
+                                  r.repliedAt ??
+                                  r.seenAt ??
+                                  r.deliveredAt ??
+                                  r.sentAt ??
+                                  r.failedAt ??
+                                  r.queuedAt ??
+                                  r.createdAt
+                              )}
+                            </TableCell>
+                          </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                    <TablePagination
+                      {...recipientPagination}
+                      className="px-4 sm:px-4"
+                      disabled={recipientsLoading}
+                    />
+                  </div>
+                ) : detail.recentMessages.length === 0 ? (
                   <p className="px-4 py-6 text-center text-sm text-muted-foreground">
                     No outbound rows yet (e.g. scheduled campaign not started,
                     or still queuing).
@@ -723,7 +1148,7 @@ export function BulkCampaignDetailPageClient({
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
                           <TableHead>Recipient</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="hidden sm:table-cell">
@@ -736,7 +1161,7 @@ export function BulkCampaignDetailPageClient({
                       </TableHeader>
                       <TableBody>
                         {pagedMessages.map((m) => (
-                          <TableRow key={m.id}>
+                          <TableRow key={m.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
                             <TableCell className="align-top font-mono text-xs">
                               {m.toPhone}
                               {m.errorMessage ? (

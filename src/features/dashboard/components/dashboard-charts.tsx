@@ -56,11 +56,11 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
   }, [barSeries, range]);
 
   return (
-    <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-lg">
-        <CardHeader className="flex flex-col gap-2 space-y-0 px-4 pb-1 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:pt-5">
+    <div className="grid gap-4 lg:grid-cols-2">
+      <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+        <CardHeader className="flex flex-col gap-2 space-y-0 px-5 pb-1 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-0.5">
-            <CardTitle className="text-sm font-semibold sm:text-base">
+            <CardTitle className="text-base font-bold text-[#251c32] dark:text-slate-100">
               Message volume
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -71,7 +71,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
             value={range}
             onValueChange={(v) => setRange(v ?? "6")}
           >
-            <SelectTrigger className="h-9 w-[132px] rounded-lg border-slate-200 text-xs sm:text-sm dark:border-slate-700">
+            <SelectTrigger className="h-9 w-[132px] rounded-lg border-0 bg-[#f4efff] text-xs text-[#5630a7] sm:text-sm dark:bg-slate-800 dark:text-violet-300">
               <SelectValue placeholder="Range" />
             </SelectTrigger>
             <SelectContent>
@@ -81,7 +81,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
             </SelectContent>
           </Select>
         </CardHeader>
-        <CardContent className="min-h-[220px] px-4 pb-4 pt-1 sm:min-h-[240px] sm:px-5 sm:pb-5">
+        <CardContent className="min-h-[250px] px-5 pb-5 pt-1">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={barData}
@@ -126,16 +126,16 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-2xl">
-        <CardHeader className="space-y-0.5 px-4 pb-1 pt-4 sm:px-5 sm:pt-5">
-          <CardTitle className="text-sm font-semibold sm:text-base">
+      <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+        <CardHeader className="space-y-0.5 px-5 pb-1 pt-5">
+          <CardTitle className="text-base font-bold text-[#251c32] dark:text-slate-100">
             Channel mix
           </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               Campaign, direct text, template, live chat (daily)
             </CardDescription>
         </CardHeader>
-        <CardContent className="min-h-[220px] px-4 pb-4 pt-1 sm:min-h-[240px] sm:px-5 sm:pb-5">
+        <CardContent className="min-h-[250px] px-5 pb-5 pt-1">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={lineSeries}

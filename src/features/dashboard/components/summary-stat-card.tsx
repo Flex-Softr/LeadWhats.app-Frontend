@@ -14,14 +14,16 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
   const Icon = summaryIcons[data.icon];
 
   return (
-    <Card className="rounded-lg border border-white/70 bg-white/90 shadow-sm shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-lg">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 pb-1 pt-4 sm:px-5 sm:pt-5">
-        <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+    <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-5 pb-1 pt-5">
+        <CardTitle className="text-sm font-bold text-[#251c32] dark:text-slate-100">
           {data.title}
         </CardTitle>
-        <Icon className="size-4 text-slate-400" />
+        <span className="flex size-9 items-center justify-center rounded-lg bg-[#f0eaff] text-[#6d45c8] dark:bg-slate-800 dark:text-violet-300">
+          <Icon className="size-4" />
+        </span>
       </CardHeader>
-      <CardContent className="space-y-3 px-4 pb-4 sm:px-5 sm:pb-5">
+      <CardContent className="space-y-4 px-5 pb-5">
         <div className="grid gap-2 text-xs sm:text-sm">
           {data.rows.map((row) => (
             <div
@@ -42,9 +44,9 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
             <span>Utilization</span>
             <span>{data.progress}%</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div className="h-2 overflow-hidden rounded-full bg-[#eee9f8] dark:bg-slate-800">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-sky-500"
+              className="h-full rounded-full bg-gradient-to-r from-[#7d58d6] to-[#f05ad6]"
               style={{ width: `${Math.min(data.progress, 100)}%` }}
             />
           </div>

@@ -154,20 +154,24 @@ export function TemplatesClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-            Message Templates
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-            Create and manage reusable layouts. Each card shows how the message
-            tends to look on a recipient&apos;s phone.
-          </p>
+    <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+      <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <FileText className="size-5" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              Message Templates
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Create reusable WhatsApp layouts for single sends and campaigns.
+            </p>
+          </div>
         </div>
         <Button
           type="button"
-          className="h-11 w-full gap-2 px-5 sm:w-auto rounded-sm"
+          className="h-10 w-full rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700 sm:w-auto"
           onClick={() => {
             setEditingTemplate(null);
             setFormOpen(true);
@@ -180,7 +184,7 @@ export function TemplatesClient() {
       </div>
 
       {!loading && templates.length > 0 ? (
-        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:flex-wrap sm:items-end">
           <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
             <Label htmlFor="tpl-search" className="sr-only">
               Search templates
@@ -190,8 +194,8 @@ export function TemplatesClient() {
               id="tpl-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, slug, or body…"
-              className="h-11 rounded-md border-slate-200 bg-white/90 pl-10 dark:border-slate-700 dark:bg-slate-950/60"
+              placeholder="Search by name, slug, or body..."
+              className="h-10 rounded-md border-slate-200 bg-white pl-10 dark:border-slate-700 dark:bg-slate-950"
             />
           </div>
           <div className="w-full space-y-1.5 sm:w-52">
@@ -206,7 +210,7 @@ export function TemplatesClient() {
             >
               <SelectTrigger
                 id="tpl-type-filter"
-                className="h-11 w-full rounded-md"
+                className="h-10 w-full rounded-md"
               >
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
@@ -223,12 +227,12 @@ export function TemplatesClient() {
         </div>
       ) : null}
 
-      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-        <CardContent className="p-4 sm:p-6 sm:rounded-lg">
+      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <CardContent className="p-4 sm:p-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
               <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
-              <p className="text-sm">Loading templates…</p>
+              <p className="text-sm">Loading templates...</p>
             </div>
           ) : templates.length === 0 ? (
             <ListEmptyState
@@ -249,7 +253,7 @@ export function TemplatesClient() {
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="mt-2"
+                className="mt-2 rounded-md"
                 onClick={() => {
                   setSearch("");
                   setTypeFilter("all");
@@ -259,10 +263,10 @@ export function TemplatesClient() {
               </Button>
             </div>
           ) : (
-            <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 justify-center">
+            <ul className="grid justify-center gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {pagedTemplates.map((t) => (
                 <li key={t.id}>
-                  <div className="flex h-full flex-col rounded-lg border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
+                  <div className="flex h-full flex-col overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
                     <div className="flex flex-col gap-3 p-4">
                       <div className="flex min-w-0 items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -276,14 +280,14 @@ export function TemplatesClient() {
                         <div className="flex shrink-0 flex-col items-end gap-1">
                           <Badge
                             variant="outline"
-                            className="text-[10px] font-normal"
+                            className="rounded-md text-[10px] font-medium"
                           >
                             {typeLabel(t.typeId)}
                           </Badge>
                           {!t.active ? (
                             <Badge
                               variant="secondary"
-                              className="text-[10px] font-normal text-amber-900 dark:text-amber-200"
+                              className="rounded-md text-[10px] font-medium text-amber-900 dark:text-amber-200"
                             >
                               Inactive
                             </Badge>
@@ -293,7 +297,7 @@ export function TemplatesClient() {
                       <button
                         type="button"
                         onClick={() => openDetail(t)}
-                        className="flex w-full justify-center rounded-xl bg-slate-100/90 py-4 outline-none transition hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-violet-500 dark:bg-slate-900/60 dark:hover:bg-slate-900/80"
+                        className="flex w-full justify-center rounded-lg bg-violet-50/60 py-4 outline-none transition hover:bg-violet-50 focus-visible:ring-2 focus-visible:ring-violet-500 dark:bg-slate-900/60 dark:hover:bg-slate-900/80"
                       >
                         <WhatsAppMessagePreview
                           compact
@@ -317,7 +321,7 @@ export function TemplatesClient() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="gap-1.5"
+                        className="rounded-md"
                         onClick={() => openDetail(t)}
                       >
                         <Eye className="size-3.5" />
@@ -327,7 +331,7 @@ export function TemplatesClient() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="gap-1.5"
+                        className="rounded-md"
                         onClick={() => {
                           setEditingTemplate(t);
                           setFormOpen(true);
@@ -340,7 +344,7 @@ export function TemplatesClient() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="gap-1.5"
+                        className="rounded-md"
                         disabled={busyId === t.id}
                         onClick={() => void toggleTemplateActive(t)}
                       >
@@ -355,7 +359,7 @@ export function TemplatesClient() {
                         type="button"
                         variant="destructive"
                         size="sm"
-                        className="gap-1.5"
+                        className="rounded-md"
                         onClick={() => setDeleteTarget(t)}
                       >
                         <Trash2 className="size-3.5" />

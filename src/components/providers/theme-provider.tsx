@@ -34,7 +34,6 @@ export function ThemeProvider({
   enableSystem = true,
   storageKey = "theme",
   attribute = "class",
-  disableTransitionOnChange: _disableTransitionOnChange = false,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light");

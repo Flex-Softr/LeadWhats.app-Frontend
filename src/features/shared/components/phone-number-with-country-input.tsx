@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import {
   findCountryByIso2,
   PHONE_COUNTRY_PREFIXES,
@@ -23,6 +24,7 @@ type PhoneNumberWithCountryInputProps = {
   id?: string;
   disabled?: boolean;
   placeholder?: string;
+  className?: string;
 };
 
 export function PhoneNumberWithCountryInput({
@@ -33,6 +35,7 @@ export function PhoneNumberWithCountryInput({
   id = "phone-local",
   disabled = false,
   placeholder = "Enter phone number",
+  className,
 }: PhoneNumberWithCountryInputProps) {
   const selectedCountry = React.useMemo(
     () => findCountryByIso2(countryIso2) ?? PHONE_COUNTRY_PREFIXES[0],
@@ -46,7 +49,8 @@ export function PhoneNumberWithCountryInput({
         "flex h-11 w-full items-stretch overflow-hidden rounded-sm border border-input bg-transparent transition-colors",
         "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         "dark:bg-input/30 dark:hover:bg-input/50",
-        disabled && "cursor-not-allowed opacity-60"
+        disabled && "cursor-not-allowed opacity-60",
+        className
       )}
     >
       <Select
@@ -86,13 +90,13 @@ export function PhoneNumberWithCountryInput({
         </SelectContent>
       </Select>
 
-      <input
+      <Input
         id={id}
         type="tel"
         value={localNumber}
         onChange={(e) => onLocalNumberChange(e.target.value)}
         placeholder={placeholder}
-        className="h-full w-full border-0 bg-transparent px-3 text-sm leading-none outline-none placeholder:text-muted-foreground"
+        className="h-full w-full rounded-none border-0 bg-transparent px-3 text-sm leading-none shadow-none focus-visible:border-0 focus-visible:ring-0 dark:bg-transparent"
         disabled={disabled}
         inputMode="numeric"
       />

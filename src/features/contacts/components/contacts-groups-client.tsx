@@ -114,25 +114,27 @@ export function ContactsGroupsClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-            Contact Groups
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-            Create and manage contact groups for organized messaging.{" "}
-            <span className="text-slate-600 dark:text-slate-300">
-              Verified means the number is registered on WhatsApp (use Revalidate
-              with a connected device).
-            </span>
-          </p>
+    <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+      <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <Folder className="size-5" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              Contact Groups
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Organize contacts for campaigns. Revalidate numbers after
+              connecting a WhatsApp device to mark verified contacts.
+            </p>
+          </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
           <Button
             type="button"
             variant="secondary"
-            className="h-11 gap-2 px-5"
+            className="h-10 rounded-md px-4"
             disabled={loading}
             onClick={() => void handleRevalidateAll()}
           >
@@ -141,7 +143,7 @@ export function ContactsGroupsClient() {
           </Button>
           <Button
             type="button"
-            className="h-11 gap-2 px-5"
+            className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
             disabled={loading}
             onClick={() => setCreateOpen(true)}
           >
@@ -151,7 +153,7 @@ export function ContactsGroupsClient() {
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total Contacts"
           value={g.totalContacts}
@@ -178,8 +180,8 @@ export function ContactsGroupsClient() {
         />
       </div>
 
-      <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-        <CardContent className="p-0 pt-2 sm:rounded-3xl">
+      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <CardContent className="p-0">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
               <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />

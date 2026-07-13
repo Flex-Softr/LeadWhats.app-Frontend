@@ -66,26 +66,26 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60 sm:rounded-lg",
+        "rounded-lg border border-violet-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950",
         className
       )}
     >
       <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
         <div
           className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-xl sm:size-11",
+            "flex size-10 shrink-0 items-center justify-center rounded-lg sm:size-11",
             a.icon
           )}
         >
           <Icon className="size-[18px] sm:size-5" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium leading-tight text-slate-500 sm:text-sm dark:text-slate-400">
+          <p className="truncate text-xs font-semibold uppercase tracking-[0.12em] leading-tight text-slate-500 dark:text-slate-400">
             {label}
           </p>
           <p
             className={cn(
-              "mt-1 text-2xl font-semibold tabular-nums sm:text-[30px]",
+              "mt-1 text-2xl font-bold tabular-nums",
               a.value
             )}
           >

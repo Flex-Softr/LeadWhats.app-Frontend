@@ -1,17 +1,17 @@
-import { Sparkles } from "lucide-react";
+import { MessageCircleMore } from "lucide-react";
 
 export function BrandMark() {
   return (
-    <div className="flex items-center gap-3.5 py-1 px-3">
-      <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25">
-        <Sparkles className="size-[22px]" strokeWidth={2} />
+    <div className="flex items-center gap-3 py-1 px-2">
+      <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#8d6ae8] to-[#5d35bd] text-white shadow-[0_12px_24px_rgba(93,53,189,0.28)]">
+        <MessageCircleMore className="size-[21px]" strokeWidth={2.1} />
       </div>
       <div className="min-w-0 leading-tight">
-        <p className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600 bg-clip-text text-xl font-bold tracking-tight text-transparent dark:from-violet-400 dark:via-fuchsia-400 dark:to-indigo-400">
+        <p className="text-[1.45rem] font-extrabold tracking-tight text-[#21172d] dark:text-white">
           FlexoWhats
         </p>
-        <p className="mt-0.5 truncate text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-          WhatsApp Studio
+        <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          SaaS Messaging Dashboard
         </p>
       </div>
     </div>

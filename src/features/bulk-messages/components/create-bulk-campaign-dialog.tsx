@@ -1,7 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Phone, Send, Shield, Shuffle } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  Phone,
+  Send,
+  Shield,
+  Shuffle,
+  Upload,
+  Users,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { MessageTypeCards } from "@/features/single-message/components/message-type-cards";
@@ -184,12 +194,14 @@ export function CreateBulkCampaignDialog({
   const [activeHoursEnd, setActiveHoursEnd] = React.useState("");
   const [inactiveHoursStart, setInactiveHoursStart] = React.useState("");
   const [inactiveHoursEnd, setInactiveHoursEnd] = React.useState("");
-  const [deviceId, setDeviceId] = React.useState<string>("");
-  const [devices, setDevices] = React.useState<DeviceApiRecord[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-
   const g = globalStats();
+  const fieldClass =
+    "h-12 rounded-lg border-slate-200 bg-slate-50 px-3 shadow-inner shadow-violet-950/5 transition-colors hover:bg-slate-50 focus-visible:border-violet-400 focus-visible:ring-violet-500/20 disabled:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/70 dark:hover:bg-slate-900/70";
+  const textareaClass =
+    "resize-y rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-relaxed shadow-inner shadow-violet-950/5 focus-visible:border-violet-400 focus-visible:ring-violet-500/20 dark:border-slate-800 dark:bg-slate-900/70";
+  const sectionClass =
+    "rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950";
+  const helperClass = "text-xs leading-5 text-slate-500 dark:text-slate-400";
 
   const activeHoursEnabled =
   activeHoursStart.trim() !== "" &&
@@ -295,46 +307,26 @@ export function CreateBulkCampaignDialog({
     });
   }
 
-  const loadContext = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const [devData] = await Promise.all([
-        apiJson<DevicesListResponse>("/v1/devices"),
-      ]);
-      setDevices(devData.devices);
-    } catch (err) {
-      const msg =
-        err instanceof ApiError ? err.message : "Could not load messaging data.";
-      toast.error("Load failed", { description: msg });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    void loadContext();
-  }, [loadContext]);
-
   const connected = React.useMemo(
-    () => devices.filter((d) => d.status === "connected"),
-    [devices]
+    () => allDevices.filter((d) => d.status === "connected"),
+    [allDevices]
   );
 
   React.useEffect(() => {
-    if (deviceId && !connected.some((d) => d.id === deviceId)) {
-      setDeviceId("");
+    if (singleDeviceId && !connected.some((d) => d.id === singleDeviceId)) {
+      setSingleDeviceId("");
     }
-  }, [connected, deviceId]);
+  }, [connected, singleDeviceId]);
 
   React.useEffect(() => {
-    if (connected.length === 1 && deviceId === "") {
-      setDeviceId(connected[0].id);
+    if (connected.length === 1 && singleDeviceId === "") {
+      setSingleDeviceId(connected[0].id);
     }
-  }, [connected, deviceId]);
+  }, [connected, singleDeviceId]);
 
   const selectedDevice = React.useMemo(
-    () => connected.find((d) => d.id === deviceId),
-    [connected, deviceId]
+    () => connected.find((d) => d.id === singleDeviceId),
+    [connected, singleDeviceId]
   );
 
   async function handleAttachmentFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -445,6 +437,8 @@ export function CreateBulkCampaignDialog({
         1000,
         Math.max(1, parseInt(failLimitInRow, 10) || 1)
       );
+      const timezone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone || null;
 
       const deviceIds =
         deviceMode === "single" ? [singleDeviceId] : [...sessionIds];
@@ -502,6 +496,7 @@ export function CreateBulkCampaignDialog({
           activeHoursEnd: activeHoursEnd.trim() || null,
           inactiveHoursStart: inactiveHoursStart.trim() || null,
           inactiveHoursEnd: inactiveHoursEnd.trim() || null,
+          timezone,
         },
       };
 
@@ -546,32 +541,50 @@ export function CreateBulkCampaignDialog({
         showCloseButton
         className={cn(
           "max-h-[min(94vh,900px)] max-w-[calc(100%-.5rem)] gap-0 overflow-hidden rounded-lg p-0",
-          "border border-white/70 bg-white/95 shadow-lg shadow-violet-950/10",
-          "backdrop-blur-md sm:max-w-6xl",
-          "dark:border-slate-800 dark:bg-slate-950/95"
+          "border border-violet-100 bg-white shadow-[0_22px_70px_rgba(72,43,132,0.18)]",
+          "sm:max-w-6xl dark:border-slate-800 dark:bg-slate-950"
         )}
       >
-        <DialogHeader className="space-y-2 border-b border-slate-200/80 px-6 pb-5 pt-6 text-left sm:px-8 sm:pb-6 sm:pt-7 dark:border-slate-800">
-          <DialogTitle className="font-heading pr-8 text-xl font-semibold tracking-tight sm:text-2xl">
-            Build message campaign
-          </DialogTitle>
-          <DialogDescription className="text-[15px] leading-relaxed">
-            Choose how devices share load, set random delays between sends, and
-            pick verified recipients.
-          </DialogDescription>
+        <DialogHeader className="border-b border-violet-100 bg-white px-6 pb-5 pt-6 text-left dark:border-slate-800 dark:bg-slate-950 sm:px-8 sm:pb-6 sm:pt-7">
+          <div className="flex items-start gap-3 pr-8">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+              <Send className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+                Build message campaign
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-[15px] leading-relaxed">
+                Configure sender devices, message content, audience, schedule,
+                and anti-block rules.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         {contextLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-slate-500 dark:text-slate-400">
             <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
-            <p className="text-sm">Loading devices and templates…</p>
+            <p className="text-sm">Loading devices and templates...</p>
           </div>
         ) : (
           <>
-            <div className="max-h-[min(62vh,640px)] overflow-y-auto">
-              <div className="flex flex-col md:flex-row gap-8 px-6 py-7 sm:gap-10 sm:px-8 sm:py-8 lg:items-start w-full">
-                <div className="space-y-7 w-full md:w-[65%]">
-                  <div className="space-y-2.5">
+            <div className="max-h-[min(64vh,660px)] overflow-y-auto bg-slate-50/55 dark:bg-slate-950">
+              <div className="flex w-full flex-col gap-6 px-6 py-7 sm:px-8 sm:py-8 md:flex-row lg:items-start">
+                <div className="w-full space-y-5 md:w-[65%]">
+                  <div className={sectionClass}>
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          Campaign setup
+                        </h3>
+                        <p className={helperClass}>
+                          Name the campaign and choose how WhatsApp sessions
+                          should share delivery.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-2.5">
                     <Label
                       htmlFor="bulk-campaign-name"
                       className="text-sm font-semibold"
@@ -586,11 +599,11 @@ export function CreateBulkCampaignDialog({
                       value={campaignName}
                       onChange={(e) => setCampaignName(e.target.value)}
                       placeholder="e.g., Product Launch Announcement"
-                      className="h-11 rounded-md px-3.5 text-[15px]"
+                      className={`${fieldClass} text-[15px]`}
                     />
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="mt-5 space-y-3">
                     <Label className="text-sm font-semibold">Device mode</Label>
                     <div className="grid gap-3 sm:grid-cols-3">
                       {DEVICE_MODE_OPTIONS.map((opt) => {
@@ -602,27 +615,31 @@ export function CreateBulkCampaignDialog({
                             type="button"
                             onClick={() => setDeviceMode(opt.value)}
                             className={cn(
-                              "flex flex-col items-start gap-1.5 rounded-lg border-2 px-4 py-3.5 text-left transition-colors",
+                              "flex min-h-24 flex-col items-start gap-2 rounded-lg border px-4 py-3.5 text-left shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-violet-500/20",
                               active
-                                ? "border-emerald-500 bg-emerald-50/90 dark:border-emerald-500 dark:bg-emerald-950/40"
-                                : "border-slate-200/90 bg-white/70 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-slate-700"
+                                ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40"
+                                : "border-slate-100 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
                             )}
                           >
-                            <span className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                "flex size-10 items-center justify-center rounded-lg",
+                                active
+                                  ? "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200"
+                                  : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
+                              )}
+                            >
                               <Icon
-                                className={cn(
-                                  "size-4",
-                                  active
-                                    ? "text-emerald-700 dark:text-emerald-300"
-                                    : "text-slate-500"
-                                )}
+                                className="size-5"
                               />
+                            </span>
+                            <span className="flex flex-col gap-1">
                               <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                                 {opt.title}
                               </span>
-                            </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {opt.description}
+                              <span className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+                                {opt.description}
+                              </span>
                             </span>
                           </button>
                         );
@@ -643,8 +660,10 @@ export function CreateBulkCampaignDialog({
                       spread recipients across selected devices.
                     </p>
                   </div>
+                  </div>
 
                   {deviceMode === "single" ? (
+                    <div className={sectionClass}>
                     <div className="space-y-2.5">
                       <Label
                         htmlFor="bulk-single-device"
@@ -656,13 +675,13 @@ export function CreateBulkCampaignDialog({
                         </span>
                       </Label>
                       <Select
-                  value={deviceId}
-                  onValueChange={(v) => setDeviceId(v ?? "")}
+	                  value={singleDeviceId}
+	                  onValueChange={(v) => setSingleDeviceId(v ?? "")}
                 >
                   <SelectTrigger
                     id="device"
                     size="default"
-                    className="h-11 w-full min-w-0 rounded-sm"
+                    className={`${fieldClass} w-full min-w-0`}
                   >
                     <SelectValue placeholder="Choose a connected device…">
                       {selectedDevice ? deviceName(selectedDevice) : null}
@@ -677,13 +696,15 @@ export function CreateBulkCampaignDialog({
                   </SelectContent>
                 </Select>
                 {selectedDevice ? (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className={helperClass}>
                     Outgoing messages will use this WhatsApp session (
                     {selectedDevice.phone ?? "number on file"}).
                   </p>
                 ) : null}
                     </div>
+                    </div>
                   ) : (
+                    <div className={sectionClass}>
                     <div className="space-y-2.5">
                       <Label className="text-sm font-semibold">
                         WhatsApp sessions{" "}
@@ -694,8 +715,8 @@ export function CreateBulkCampaignDialog({
                           (select one or more)
                         </span>
                       </Label>
-                      <ScrollArea className="h-40 rounded-md border border-slate-200/90 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
-                        <ul className="divide-y divide-slate-200/80 p-2 dark:divide-slate-800">
+                      <ScrollArea className="h-44 rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
+                        <ul className="space-y-2 p-2">
                           {allDevices.length === 0 ? (
                             <li className="px-3 py-8 text-center text-sm text-slate-500">
                               No devices yet — add a session under Devices.
@@ -707,10 +728,12 @@ export function CreateBulkCampaignDialog({
                                 <li key={d.id}>
                                   <label
                                     className={cn(
-                                      "flex items-center gap-3 rounded-lg px-3 py-3 transition-colors",
+                                      "flex items-center gap-3 rounded-lg border px-3 py-3 transition-colors",
                                       connected
-                                        ? "cursor-pointer hover:bg-white/80 dark:hover:bg-slate-800/50"
-                                        : "cursor-not-allowed opacity-60"
+                                        ? sessionIds.has(d.id)
+                                          ? "cursor-pointer border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30"
+                                          : "cursor-pointer border-slate-100 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900"
+                                        : "cursor-not-allowed border-slate-100 bg-white opacity-60 dark:border-slate-800 dark:bg-slate-950"
                                     )}
                                   >
                                     <input
@@ -720,7 +743,7 @@ export function CreateBulkCampaignDialog({
                                       onChange={(e) =>
                                         toggleSession(d.id, e.target.checked)
                                       }
-                                      className="size-4 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500/30 disabled:opacity-50"
+                                      className="size-4 shrink-0 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30 disabled:opacity-50"
                                     />
                                     <span className="text-[15px] text-slate-800 dark:text-slate-200">
                                       {deviceLabel(d)}
@@ -738,8 +761,10 @@ export function CreateBulkCampaignDialog({
                         </ul>
                       </ScrollArea>
                     </div>
+                    </div>
                   )}
 
+                  <div className={sectionClass}>
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold">Message Type</Label>
                     <MessageTypeCards
@@ -747,8 +772,10 @@ export function CreateBulkCampaignDialog({
                       onChange={setMessageType}
                     />
                   </div>
+                  </div>
 
                   {messageType === "text" ? (
+                    <div className={sectionClass}>
                     <div className="space-y-2.5">
                       <Label
                         htmlFor="bulk-message"
@@ -764,10 +791,12 @@ export function CreateBulkCampaignDialog({
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Enter your message here..."
-                        className="min-h-36 resize-y rounded-md text-[15px] leading-relaxed"
+                        className={`${textareaClass} min-h-40`}
                       />
                     </div>
+                    </div>
                   ) : (
+                    <div className={sectionClass}>
                     <div className="space-y-2.5">
                       <Label
                         htmlFor="bulk-template"
@@ -779,7 +808,7 @@ export function CreateBulkCampaignDialog({
                         </span>
                       </Label>
                       {templates.length === 0 ? (
-                        <p className="rounded-md border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
+                        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-muted-foreground dark:border-slate-800 dark:bg-slate-900/60">
                           No templates — create one under Templates.
                         </p>
                       ) : (
@@ -793,7 +822,7 @@ export function CreateBulkCampaignDialog({
                         >
                           <SelectTrigger
                             id="bulk-template"
-                            className="h-11 w-full rounded-lg"
+                            className={`${fieldClass} w-full`}
                           >
                             <SelectValue placeholder="Choose a template..." />
                           </SelectTrigger>
@@ -810,15 +839,23 @@ export function CreateBulkCampaignDialog({
                         </Select>
                       )}
                     </div>
+                    </div>
                   )}
 
-                  <div className="space-y-4 rounded-lg border border-slate-200/90 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/30">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      Attachment (Optional)
-                    </h3>
+                  <div className={sectionClass}>
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          Attachment
+                        </h3>
+                        <p className={helperClass}>
+                          Optional media or document attached to each text send.
+                        </p>
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Attachment type (metadata)
+                        Attachment type
                       </Label>
                       <Select
                         value={attachmentType}
@@ -826,7 +863,7 @@ export function CreateBulkCampaignDialog({
                           setAttachmentType(v as AttachmentType)
                         }
                       >
-                        <SelectTrigger className="h-12 w-full rounded-sm bg-white dark:bg-slate-950">
+                        <SelectTrigger className={`${fieldClass} w-full`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -839,20 +876,27 @@ export function CreateBulkCampaignDialog({
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="bulk-file"
-                        className="text-xs font-medium text-slate-600 dark:text-slate-400"
-                      >
+                      <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">
                         File upload
                       </Label>
-                      <Input
-                        id="bulk-file"
-                        type="file"
-                        disabled={attachmentUploading}
-                        accept={acceptForAttachmentType(attachmentType)}
-                        onChange={(e) => void handleAttachmentFile(e)}
-                        className="h-11 cursor-pointer rounded-sm bg-white px-3 dark:bg-slate-950"
-                      />
+                      <label className="block">
+                        <Input
+                          id="bulk-file"
+                          type="file"
+                          disabled={attachmentUploading}
+                          accept={acceptForAttachmentType(attachmentType)}
+                          onChange={(e) => void handleAttachmentFile(e)}
+                          className="sr-only"
+                        />
+                        <span className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-violet-100 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm transition-colors hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200 dark:hover:bg-violet-950/20">
+                          {attachmentUploading ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Upload className="size-4" />
+                          )}
+                          {attachmentUploading ? "Uploading..." : "Upload file"}
+                        </span>
+                      </label>
                       {attachmentOriginalName ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-xs text-slate-700 dark:text-slate-300">
@@ -863,17 +907,18 @@ export function CreateBulkCampaignDialog({
                             type="button"
                             variant="ghost"
                             size="xs"
-                            className="h-7 text-xs"
+                            className="h-7 text-xs text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30"
                             onClick={() => {
                               setAttachmentAssetId("");
                               setAttachmentOriginalName("");
                             }}
                           >
+                            <X className="size-3" />
                             Remove
                           </Button>
                         </div>
                       ) : (
-                        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                        <p className={helperClass}>
                           Optional. File is stored and linked to this campaign (max
                           16 MB). Types above filter the file picker.
                         </p>
@@ -881,7 +926,7 @@ export function CreateBulkCampaignDialog({
                     </div>
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-5">
+                  <div className={`${sectionClass} grid gap-5 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-5`}>
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold">
                         Schedule type
@@ -892,7 +937,7 @@ export function CreateBulkCampaignDialog({
                           setScheduleType((v ?? "immediate") as ScheduleType)
                         }
                       >
-                        <SelectTrigger className="h-11 w-full rounded-sm">
+                        <SelectTrigger className={`${fieldClass} w-full`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -922,7 +967,7 @@ export function CreateBulkCampaignDialog({
                             max={3600}
                             value={delayMinSec}
                             onChange={(e) => setDelayMinSec(e.target.value)}
-                            className="h-11 w-14 rounded-sm"
+                            className={`${fieldClass} w-24`}
                           />
                         </div>
                         <span className="pb-2.5 text-sm text-slate-400">to</span>
@@ -940,7 +985,7 @@ export function CreateBulkCampaignDialog({
                             max={3600}
                             value={delayMaxSec}
                             onChange={(e) => setDelayMaxSec(e.target.value)}
-                            className="h-11 w-14 rounded-sm"
+                            className={`${fieldClass} w-24`}
                           />
                         </div>
                       </div>
@@ -969,7 +1014,7 @@ export function CreateBulkCampaignDialog({
                           type="datetime-local"
                           value={scheduledAt}
                           onChange={(e) => setScheduledAt(e.target.value)}
-                          className="h-11 max-w-md rounded-sm"
+                          className={`${fieldClass} max-w-md`}
                         />
                       </div>
                     ) : null}
@@ -986,20 +1031,25 @@ export function CreateBulkCampaignDialog({
                         min={0}
                         value={maxRetries}
                         onChange={(e) => setMaxRetries(e.target.value)}
-                        className="h-11 rounded-sm"
+                        className={fieldClass}
                       />
                     </div>
-                    <div className="space-y-2 sm:col-span-2 rounded-md border border-slate-200/90 p-4 dark:border-slate-800">
+                    <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/60 sm:col-span-2">
                       <div className="flex items-center justify-between gap-2">
-                        <Label className="text-sm font-semibold">
-                          Anti-Block Protection
-                        </Label>
-                        <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                        <div>
+                          <Label className="text-sm font-semibold">
+                            Anti-block protection
+                          </Label>
+                          <p className={helperClass}>
+                            Control pacing, filtering, and send windows.
+                          </p>
+                        </div>
+                        <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-violet-100 bg-white px-3 text-xs font-semibold text-violet-700 shadow-sm dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200">
                           <input
                             type="checkbox"
                             checked={antiBlockEnabled}
                             onChange={(e) => setAntiBlockEnabled(e.target.checked)}
-                            className="size-4 rounded border-slate-300 text-blue-600"
+                            className="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
                           />
                           Enabled
                         </label>
@@ -1015,13 +1065,18 @@ export function CreateBulkCampaignDialog({
                         ).map(([key, title, value, setter]) => (
                           <label
                             key={key}
-                            className="flex items-center gap-2 rounded-sm border border-slate-200 px-3 py-2 text-sm dark:border-slate-700"
+                            className={cn(
+                              "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                              value
+                                ? "border-violet-200 bg-violet-50 text-violet-950 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-100"
+                                : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900"
+                            )}
                           >
                             <input
                               type="checkbox"
                               checked={value}
                               onChange={(e) => setter(e.target.checked)}
-                              className="size-4 rounded border-slate-300 text-blue-600"
+                              className="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
                             />
                             {title}
                           </label>
@@ -1036,7 +1091,7 @@ export function CreateBulkCampaignDialog({
                               setUniquenessMode((v ?? "none") as UniquenessMode)
                             }
                           >
-                            <SelectTrigger className="h-10 rounded-sm">
+                            <SelectTrigger className={`${fieldClass} h-10`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -1058,7 +1113,7 @@ export function CreateBulkCampaignDialog({
                               min={1}
                               value={batchPauseEvery}
                               onChange={(e) => setBatchPauseEvery(e.target.value)}
-                              className="h-10 w-14 rounded-sm"
+                              className={`${fieldClass} h-10 w-20`}
                             />
                             <span>msgs, wait</span>
                             <Input
@@ -1066,7 +1121,7 @@ export function CreateBulkCampaignDialog({
                               min={1}
                               value={batchPauseSec}
                               onChange={(e) => setBatchPauseSec(e.target.value)}
-                              className="h-10 w-14 rounded-sm"
+                              className={`${fieldClass} h-10 w-20`}
                             />
                             <span>sec</span>
                           </div>
@@ -1080,7 +1135,7 @@ export function CreateBulkCampaignDialog({
                             min={1}
                             value={failLimitInRow}
                             onChange={(e) => setFailLimitInRow(e.target.value)}
-                            className="h-10 w-14 rounded-sm"
+                            className={`${fieldClass} h-10 w-20`}
                           />
                         </div>
                         <div className="space-y-1.5">
@@ -1090,14 +1145,14 @@ export function CreateBulkCampaignDialog({
                               type="time"
                               value={activeHoursStart}
                               onChange={(e) => setActiveHoursStart(e.target.value)}
-                              className="h-10 rounded-sm"
+                              className={`${fieldClass} h-10`}
                             />
                             <span className="text-xs text-slate-500">to</span>
                             <Input
                               type="time"
                               value={activeHoursEnd}
                               onChange={(e) => setActiveHoursEnd(e.target.value)}
-                              className="h-10 rounded-sm"
+                              className={`${fieldClass} h-10`}
                             />
                           </div>
                         </div>
@@ -1109,7 +1164,7 @@ export function CreateBulkCampaignDialog({
                               type="time"
                               value={inactiveHoursStart}
                               onChange={(e) => setInactiveHoursStart(e.target.value)}
-                              className="h-10 rounded-sm dark:text-white"
+                              className={`${fieldClass} h-10 dark:text-white`}
                               disabled={!activeHoursEnabled}
                             />
                             <span className="text-xs text-slate-500">to</span>
@@ -1117,7 +1172,7 @@ export function CreateBulkCampaignDialog({
                               type="time"
                               value={inactiveHoursEnd}
                               onChange={(e) => setInactiveHoursEnd(e.target.value)}
-                              className="h-10 rounded-sm dark:text-white"
+                              className={`${fieldClass} h-10 dark:text-white`}
                               disabled={!activeHoursEnabled}
                             />
                           </div>
@@ -1137,11 +1192,21 @@ export function CreateBulkCampaignDialog({
                   </div>
                 </div>
 
-                <div className="space-y-6 lg:sticky lg:top-0 w-full md:w-[35%]">
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold">
-                      Selection method
-                    </Label>
+                <div className="w-full space-y-5 md:w-[35%] lg:sticky lg:top-0">
+                  <div className={sectionClass}>
+                    <div className="mb-4 flex items-start gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+                        <Users className="size-4" />
+                      </span>
+                      <div>
+                        <Label className="text-sm font-semibold">
+                          Audience
+                        </Label>
+                        <p className={helperClass}>
+                          Choose who should receive this campaign.
+                        </p>
+                      </div>
+                    </div>
                     <div className="flex flex-col gap-2.5">
                       {(
                         [
@@ -1162,16 +1227,16 @@ export function CreateBulkCampaignDialog({
                         <label
                           key={opt.value}
                           className={cn(
-                            "flex cursor-pointer items-center gap-3 rounded-md border-2 px-4 py-3.5 transition-colors",
+                            "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3.5 shadow-sm transition-colors",
                             selectionMode === opt.value
-                              ? "border-blue-500 bg-blue-50/90 dark:border-blue-400 dark:bg-blue-950/35"
-                              : "border-slate-200/90 bg-white/60 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-slate-700"
+                              ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40"
+                              : "border-slate-100 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
                           )}
                         >
                           <input
                             type="radio"
                             name="bulk-selection"
-                            className="size-4 shrink-0 text-blue-600 focus:ring-blue-500/30"
+                            className="size-4 shrink-0 text-violet-600 focus:ring-violet-500/30"
                             checked={selectionMode === opt.value}
                             onChange={() => setSelectionMode(opt.value)}
                           />
@@ -1184,12 +1249,13 @@ export function CreateBulkCampaignDialog({
                   </div>
 
                   {selectionMode === "groups" ? (
+                    <div className={sectionClass}>
                     <div className="space-y-2.5">
                       <Label className="text-sm font-semibold">
                         Select contact groups
                       </Label>
-                      <ScrollArea className="h-48 rounded-md border border-slate-200/90 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
-                        <ul className="divide-y divide-slate-200/80 p-2 dark:divide-slate-800">
+                      <ScrollArea className="h-52 rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
+                        <ul className="space-y-2 p-2">
                           {groups.length === 0 ? (
                             <li className="px-3 py-8 text-center text-sm text-slate-500">
                               No groups yet — create one under Contacts.
@@ -1199,7 +1265,14 @@ export function CreateBulkCampaignDialog({
                               const st = groupStats(gr.id);
                               return (
                                 <li key={gr.id}>
-                                  <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-white/80 dark:hover:bg-slate-800/50">
+                                  <label
+                                    className={cn(
+                                      "flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-3 transition-colors",
+                                      selectedGroupIds.has(gr.id)
+                                        ? "border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30"
+                                        : "border-slate-100 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900"
+                                    )}
+                                  >
                                     <span className="flex items-center gap-3">
                                       <input
                                         type="checkbox"
@@ -1207,7 +1280,7 @@ export function CreateBulkCampaignDialog({
                                         onChange={(e) =>
                                           toggleGroup(gr.id, e.target.checked)
                                         }
-                                        className="size-4 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500/30"
+                                        className="size-4 shrink-0 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
                                       />
                                       <span className="text-[15px] font-medium text-slate-800 dark:text-slate-200">
                                         {gr.name}
@@ -1224,9 +1297,11 @@ export function CreateBulkCampaignDialog({
                         </ul>
                       </ScrollArea>
                     </div>
+                    </div>
                   ) : null}
 
                   {selectionMode === "manual" ? (
+                    <div className={sectionClass}>
                     <div className="space-y-2.5">
                       <Label
                         htmlFor="bulk-manual"
@@ -1241,24 +1316,29 @@ export function CreateBulkCampaignDialog({
                         placeholder={
                           "One number per line (E.164, e.g. +1234567890)"
                         }
-                        className="min-h-32 resize-y rounded-xl font-mono text-sm"
+                        className={`${textareaClass} min-h-36 font-mono text-sm`}
                       />
+                    </div>
                     </div>
                   ) : null}
 
                   {selectionMode === "allVerified" ? (
-                    <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-400">
+                    <p className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
                       Every verified contact across all groups will be included.
                     </p>
                   ) : null}
 
                   <div
                     className={cn(
-                      "rounded-md border px-5 py-4 shadow-sm",
-                      "border-blue-200/90 bg-blue-50/90 text-blue-950",
-                      "dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-50"
+                      "rounded-lg border px-5 py-4 shadow-sm",
+                      "border-violet-200 bg-violet-50 text-violet-950",
+                      "dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-50"
                     )}
                   >
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                      <CheckCircle2 className="size-4" />
+                      Campaign reach
+                    </div>
                     {verifiedOnly ? (
                       <>
                         <p className="text-[15px] font-semibold leading-snug">
@@ -1266,7 +1346,7 @@ export function CreateBulkCampaignDialog({
                           {recipientCount === 1 ? "contact" : "contacts"} will
                           receive this message
                         </p>
-                        <p className="mt-1.5 text-sm leading-relaxed text-blue-900/80 dark:text-blue-100/85">
+                        <p className="mt-1.5 text-sm leading-relaxed text-violet-900/80 dark:text-violet-100/85">
                           Only WhatsApp verified contacts will be included.
                         </p>
                       </>
@@ -1277,7 +1357,7 @@ export function CreateBulkCampaignDialog({
                           {recipientCount === 1 ? "recipient" : "recipients"}{" "}
                           from your manual list
                         </p>
-                        <p className="mt-1.5 text-sm leading-relaxed text-blue-900/80 dark:text-blue-100/85">
+                        <p className="mt-1.5 text-sm leading-relaxed text-violet-900/80 dark:text-violet-100/85">
                           Numbers are validated at send time; invalid lines are
                           skipped.
                         </p>
@@ -1288,11 +1368,11 @@ export function CreateBulkCampaignDialog({
               </div>
             </div>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-slate-200/80 bg-slate-50/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex flex-col-reverse gap-3 border-t border-violet-100 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6">
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 rounded-md px-6 sm:w-auto"
+                className="h-11 rounded-lg border-violet-100 bg-white px-6 font-semibold text-violet-700 shadow-sm hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200 dark:hover:bg-violet-950/20 sm:w-auto"
                 disabled={submitting}
                 onClick={() => onOpenChange(false)}
               >
@@ -1301,7 +1381,7 @@ export function CreateBulkCampaignDialog({
               <Button
                 type="button"
                 disabled={!canSubmit}
-                className="h-11 gap-2 rounded-md bg-blue-600 px-6 text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-500"
+                className="h-11 gap-2 rounded-lg bg-violet-600 px-6 font-semibold text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
                 onClick={() => void handleSubmit()}
               >
                 {submitting ? (

@@ -6,6 +6,7 @@ import {
   Bell,
   ChevronDown,
   CreditCard,
+  Menu,
   LogOut,
   Moon,
   Search,
@@ -19,7 +20,7 @@ import { getPageMeta } from "@/config/pages";
 import { useSubscription } from "@/features/billing/subscription-context";
 import { userDisplayName, userInitials } from "@/lib/user-display";
 import { MobileSidebar } from "@/features/layout/components/mobile-sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,35 +46,34 @@ export function AppHeader() {
   const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <header className="sticky top-0 z-40 rounded-t-[1.75rem] border-b border-white/50 bg-white/55 px-5 py-4 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/40 sm:px-7 sm:py-5 lg:px-9 lg:py-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-7">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-         
-          <div className="min-w-0 pt-1 lg:pt-0.5">
-            <h1 className="truncate text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
+    <header className="sticky top-0 z-40 border-b border-violet-100/80 bg-[#f7f4fc]/92 px-4 py-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/92 sm:px-6 lg:px-7">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-7">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <MobileSidebar />
+          <div className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-[#3c2a52] lg:flex dark:text-slate-200">
+            <Menu className="size-6" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-extrabold tracking-tight text-[#1f172b] sm:text-2xl dark:text-slate-50">
               {meta.title}
             </h1>
-            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-[15px] dark:text-slate-400">
+            <p className="mt-0.5 max-w-2xl truncate text-xs font-medium text-slate-400 sm:text-sm dark:text-slate-500">
               {meta.description}
             </p>
           </div>
         </div>
 
-        <div className="flex w-full flex-1 items-center lg:max-w-md xl:max-w-lg">
+        <div className="flex w-full flex-1 items-center xl:max-w-md 2xl:max-w-lg">
           <div className="relative w-full">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-slate-500" />
             <Input
-              placeholder="Search..."
-              className="h-12 w-full rounded-lg border-slate-200/80 bg-white/70 pl-12 text-[15px] shadow-inner shadow-slate-900/5 dark:border-slate-700/80 dark:bg-slate-900/50"
+              placeholder="Search here..."
+              className="h-12 w-full rounded-full border-0 bg-white pl-5 pr-12 text-[14px] shadow-[0_12px_32px_rgba(66,48,106,0.08)] placeholder:text-slate-400 dark:bg-slate-900 dark:shadow-none"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between md:justify-end gap-2 sm:gap-2.5">
-        <div>
-          <MobileSidebar />
-          </div>
-
+        <div className="flex items-center justify-between gap-2 md:justify-end sm:gap-2.5">
           <div className="flex items-center justify-end gap-2 sm:gap-2.5">
           <Button
             type="button"
@@ -81,7 +81,7 @@ export function AppHeader() {
             size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="size-10 rounded-lg text-slate-600 dark:text-slate-300 shadow-xs shadow-[#9b18d1]"
+            className="size-10 rounded-full text-[#6d45c8] hover:bg-white dark:text-violet-300 dark:hover:bg-slate-900"
           >
             {mounted ? (
               isDark ? (
@@ -96,9 +96,10 @@ export function AppHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="size-10 rounded-lg text-slate-600 dark:text-slate-300 shadow-xs shadow-[#9b18d1]"
+            className="relative size-10 rounded-full text-[#6d45c8] hover:bg-white dark:text-violet-300 dark:hover:bg-slate-900"
             aria-label="Notifications"
           >
+            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500 ring-2 ring-[#f7f4fc] dark:ring-slate-950" />
             <Bell className="size-[20px]" />
           </Button>
 
@@ -125,13 +126,13 @@ export function AppHeader() {
               render={
                 <Button
                   variant="outline"
-                  className="h-11 shrink-0 gap-1.5 rounded-lg border-slate-200/90 bg-white/80 px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
+                  className="h-12 shrink-0 gap-1.5 rounded-full border-0 bg-white px-2.5 shadow-[0_12px_30px_rgba(66,48,106,0.1)] dark:bg-slate-900 dark:shadow-none"
                   aria-label="Open account menu"
                   aria-haspopup="menu"
                 />
               }
             >
-              <Avatar className="size-9 border-0">
+              <Avatar className="size-10 border-2 border-white shadow-sm">
                 <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-xs font-semibold text-white">
                   {authUser ? userInitials(authUser) : "?"}
                 </AvatarFallback>

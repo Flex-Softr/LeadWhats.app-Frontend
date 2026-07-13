@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Check, CreditCard, Sparkles } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+  Gem,
+  LockKeyhole,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  WalletCards,
+  Zap,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { BILLING_PLANS, isPaidPlan } from "@/config/plans";
@@ -133,76 +143,94 @@ export function BillingClient() {
       : null;
 
   const anyGatewayReady = paymentGateways.some((g) => g.configured);
+  const currentPlanName =
+    planId === "free" ? "Free" : planId === "pro" ? "Pro" : "Business";
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-          Plans &amp; billing
-        </h2>
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-          You are on the{" "}
-          <span className="font-medium text-slate-700 dark:text-slate-300">
-            {planId === "free" ? "Free" : planId === "pro" ? "Pro" : "Business"}
-          </span>{" "}
-          plan. Choose a payment provider, then upgrade.
-        </p>
-        {subscriptionStatus ? (
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Subscription status:{" "}
-            <span className="font-medium text-slate-700 dark:text-slate-300">
-              {subscriptionStatus}
-            </span>
-            {periodLabel ? (
-              <>
-                {" "}
-                · Renews / period ends{" "}
-                <span className="font-medium">{periodLabel}</span>
-              </>
-            ) : null}
-          </p>
-        ) : null}
-        <p className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
-          <strong className="font-semibold">Payments:</strong>{" "}
-          {anyGatewayReady
-            ? "At least one gateway is configured on the API — you can complete checkout below."
-            : "Configure SSLCommerz (sandbox) and/or Stripe in the API .env to enable live checkouts."}{" "}
-          Stripe-only demo upgrades still apply when Stripe keys are absent and you pick Stripe.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-[1500px] space-y-6">
+      <section className="grid gap-5 xl:grid-cols-12">
+        <div className="relative min-h-[260px] overflow-hidden rounded-lg bg-gradient-to-br from-[#7a58d8] via-[#a777df] to-[#e166cc] px-6 py-7 text-white shadow-[0_22px_60px_rgba(101,67,164,0.22)] sm:px-8 xl:col-span-7">
+          <div className="relative z-10 max-w-xl">
+            <Badge className="mb-5 rounded-full border-white/25 bg-white/16 px-3 py-1 text-xs font-semibold text-white shadow-none">
+              <Sparkles className="mr-1 size-3.5" />
+              Billing control
+            </Badge>
+            <h2 className="max-w-lg text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+              Choose the plan that fits your messaging scale
+            </h2>
+            <p className="mt-4 max-w-md text-sm font-medium leading-relaxed text-white/86">
+              Upgrade devices, message volume, automation, and support from one
+              polished billing workspace.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <div className="rounded-lg bg-white/16 px-4 py-3 backdrop-blur-sm">
+                <p className="text-[11px] font-semibold uppercase text-white/65">
+                  Current plan
+                </p>
+                <p className="mt-1 text-xl font-extrabold">{currentPlanName}</p>
+              </div>
+              <div className="rounded-lg bg-white/16 px-4 py-3 backdrop-blur-sm">
+                <p className="text-[11px] font-semibold uppercase text-white/65">
+                  Status
+                </p>
+                <p className="mt-1 text-xl font-extrabold">
+                  {subscriptionStatus ?? "Workspace"}
+                </p>
+              </div>
+              {periodLabel ? (
+                <div className="rounded-lg bg-white/16 px-4 py-3 backdrop-blur-sm">
+                  <p className="text-[11px] font-semibold uppercase text-white/65">
+                    Period end
+                  </p>
+                  <p className="mt-1 text-xl font-extrabold">{periodLabel}</p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <div className="pointer-events-none absolute bottom-5 right-6 hidden w-[245px] sm:block">
+            <div className="relative aspect-square">
+              <div className="absolute inset-7 rounded-full border-[28px] border-white/20" />
+              <div className="absolute inset-7 rounded-full border-[28px] border-transparent border-t-white/75 border-r-white/75 rotate-45" />
+              <div className="absolute inset-20 flex items-center justify-center rounded-full bg-white/20 text-2xl font-extrabold backdrop-blur">
+                {planId === "business" ? "100%" : planId === "pro" ? "70%" : "30%"}
+              </div>
+              <WalletCards className="absolute left-3 top-8 size-16 text-white/22" />
+            </div>
+          </div>
+        </div>
 
-      <Card className="rounded-lg border border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-950/40">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <CreditCard className="size-5 text-violet-600 dark:text-violet-400" />
-            Payment gateway
-          </CardTitle>
-          <CardDescription>
-            Select where you want to pay. SSLCommerz uses a hosted page (sandbox
-            for testing); Stripe uses subscription checkout when configured.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
+        <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900 xl:col-span-5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-extrabold text-[#251c32] dark:text-slate-50">
+              <CreditCard className="size-5 text-[#6d45c8]" />
+              Payment gateway
+            </CardTitle>
+            <CardDescription>
+              Pick a provider before upgrading. SSLCommerz needs a contact
+              phone; Stripe can run demo upgrades when keys are absent.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3">
             {paymentGateways.map((g) => (
               <button
                 key={g.id}
                 type="button"
                 onClick={() => setGateway(g.id)}
                 className={cn(
-                  "rounded-lg border p-4 text-left transition-colors",
+                  "rounded-lg border-0 p-4 text-left shadow-[inset_0_0_0_1px_rgba(110,69,200,0.1)] transition-all",
                   gateway === g.id
-                    ? "border-violet-500 bg-violet-50/80 ring-2 ring-violet-500/30 dark:border-violet-600 dark:bg-violet-950/40"
-                    : "border-slate-200 bg-slate-50/50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/30",
+                    ? "bg-[#f0eaff] ring-2 ring-[#7d58d6]/30"
+                    : "bg-[#faf8ff] hover:bg-[#f4efff] dark:bg-slate-950 dark:hover:bg-slate-800",
                   !g.configured && "opacity-70"
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold text-slate-900 dark:text-slate-50">
+                  <span className="font-bold text-[#251c32] dark:text-slate-50">
                     {g.displayName}
                   </span>
                   {g.configured ? (
-                    <Badge variant="secondary" className="text-xs font-normal">
+                    <Badge className="rounded-full bg-emerald-50 text-xs font-semibold text-emerald-700 shadow-none dark:bg-emerald-950 dark:text-emerald-300">
                       Ready
                     </Badge>
                   ) : (
@@ -218,7 +246,7 @@ export function BillingClient() {
             ))}
           </div>
           {gateway === "sslcommerz" ? (
-            <div className="space-y-2">
+            <div className="space-y-2 rounded-lg bg-[#faf8ff] p-4 dark:bg-slate-950">
               <Label htmlFor="cus-phone">Contact phone (SSLCommerz)</Label>
               <Input
                 id="cus-phone"
@@ -228,7 +256,7 @@ export function BillingClient() {
                 placeholder="e.g. 01712345678"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="max-w-md rounded-md"
+                className="h-11 rounded-full border-0 bg-white px-4 shadow-inner shadow-violet-950/5 dark:bg-slate-900"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Required by SSLCommerz for receipts. Use a real number in
@@ -236,8 +264,15 @@ export function BillingClient() {
               </p>
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+            <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
+              <strong className="font-semibold">Payments:</strong>{" "}
+              {anyGatewayReady
+                ? "A gateway is configured, so checkout can run below."
+                : "Configure SSLCommerz and/or Stripe in the API .env to enable live checkouts."}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-3">
         {BILLING_PLANS.map((plan) => {
@@ -248,31 +283,44 @@ export function BillingClient() {
             <Card
               key={plan.id}
               className={cn(
-                "relative flex flex-col rounded-lg border bg-white/90 shadow-sm backdrop-blur-md dark:bg-slate-950/60",
+                "relative flex flex-col rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900",
                 plan.highlight && "overflow-visible",
                 plan.highlight
-                  ? "border-violet-400/60 shadow-md shadow-violet-500/10 dark:border-violet-600/50"
-                  : "border-white/70 dark:border-slate-800/80"
+                  ? "ring-2 ring-[#7d58d6]/35"
+                  : "ring-1 ring-transparent"
               )}
             >
               {plan.highlight ? (
-                <div className="absolute -top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white shadow-md">
+                <div className="absolute -top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-r from-[#7d58d6] to-[#f05ad6] px-3 py-1 text-xs font-bold text-white shadow-md">
                   <Sparkles className="size-3.5" />
                   Popular
                 </div>
               ) : null}
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 pt-6">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-lg">{plan.name}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-10 items-center justify-center rounded-lg bg-[#f0eaff] text-[#6d45c8] dark:bg-slate-800 dark:text-violet-300">
+                      {plan.id === "free" ? (
+                        <ShieldCheck className="size-5" />
+                      ) : plan.id === "pro" ? (
+                        <Zap className="size-5" />
+                      ) : (
+                        <Gem className="size-5" />
+                      )}
+                    </span>
+                    <CardTitle className="text-xl font-extrabold text-[#251c32] dark:text-slate-50">
+                      {plan.name}
+                    </CardTitle>
+                  </div>
                   {current ? (
-                    <Badge variant="secondary" className="shrink-0 font-normal">
+                    <Badge className="shrink-0 rounded-full bg-[#f0eaff] font-semibold text-[#5630a7] shadow-none">
                       Current
                     </Badge>
                   ) : null}
                 </div>
-                <CardDescription>{plan.description}</CardDescription>
+                <CardDescription className="min-h-10">{plan.description}</CardDescription>
                 <div className="pt-3">
-                  <span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  <span className="text-4xl font-extrabold tracking-tight text-black dark:text-white">
                     {plan.priceLabel}
                   </span>
                   {plan.priceUsd != null && plan.priceUsd > 0 ? (
@@ -289,31 +337,33 @@ export function BillingClient() {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 space-y-3 pb-6">
-                <ul className="space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
+                <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                   {plan.features.map((f) => (
                     <li key={f} className="flex gap-2">
-                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300">
+                        <Check className="size-3.5" />
+                      </span>
                       <span>{f}</span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter className="mt-auto flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800">
+              <CardFooter className="mt-auto flex flex-col gap-2 border-t border-[#eee9f8] pt-5 dark:border-slate-800">
                 {current ? (
-                  <Button type="button" variant="outline" className="w-full" disabled>
+                  <Button type="button" variant="outline" className="h-11 w-full rounded-full" disabled>
                     Your current plan
                   </Button>
                 ) : !isPaid ? (
-                  <Button type="button" variant="outline" className="w-full" disabled>
+                  <Button type="button" variant="outline" className="h-11 w-full rounded-full" disabled>
                     Downgrade via support
                   </Button>
                 ) : (
                   <Button
                     type="button"
                     className={cn(
-                      "w-full",
+                      "h-11 w-full rounded-full font-bold",
                       plan.highlight &&
-                        "bg-violet-600 text-white hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500"
+                        "bg-gradient-to-r from-[#7d58d6] to-[#f05ad6] text-white shadow-[0_14px_28px_rgba(125,88,214,0.25)] hover:opacity-95"
                     )}
                     disabled={loading !== null || !hydrated || !canCheckoutPaid}
                     onClick={() => startUpgrade(plan.id)}
@@ -329,18 +379,27 @@ export function BillingClient() {
         })}
       </div>
 
-      <Card className="rounded-lg border border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
-        <CardContent className="flex flex-col gap-3 p-5 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between dark:text-slate-400">
-          <p>
-            Need the Free plan again? Resets your workspace when no active
-            Stripe subscription is blocking it, and when your SSLCommerz-paid
-            period has ended.
-          </p>
+      <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+        <CardContent className="flex flex-col gap-4 p-5 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between dark:text-slate-400">
+          <div className="flex gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#f0eaff] text-[#6d45c8] dark:bg-slate-800 dark:text-violet-300">
+              <RotateCcw className="size-5" />
+            </span>
+            <div>
+              <p className="font-bold text-[#251c32] dark:text-slate-100">
+                Reset workspace to Free
+              </p>
+              <p className="mt-1 max-w-2xl">
+                Available when no active Stripe subscription is blocking it, and
+                when any SSLCommerz-paid period has ended.
+              </p>
+            </div>
+          </div>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="shrink-0"
+            className="h-10 shrink-0 rounded-full"
             disabled={resetting}
             onClick={() => void onResetFree()}
           >
@@ -349,8 +408,9 @@ export function BillingClient() {
         </CardContent>
       </Card>
 
-      <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-        Questions?{" "}
+      <p className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-500 dark:text-slate-400">
+        <LockKeyhole className="size-3.5" />
+        Secure hosted checkout. Questions?{" "}
         <Link href="/" className="font-medium text-primary hover:underline">
           Contact sales
         </Link>{" "}

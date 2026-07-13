@@ -81,13 +81,13 @@ export function LiveChatNewThreadDialog({
       <DialogContent
         showCloseButton
         className={cn(
-          "max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-md",
-          "border border-white/70 bg-white/95 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95"
+          "max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-md",
+          "border border-violet-100 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
         )}
       >
-        <DialogHeader className="border-b border-slate-200/80 px-6 pb-4 pt-6 text-left dark:border-slate-800">
+        <DialogHeader className="border-b border-violet-100 bg-slate-50/70 px-6 pb-4 pt-6 text-left dark:border-slate-800 dark:bg-slate-900/40">
           <DialogTitle className="font-heading flex items-center gap-2 pr-8 text-lg font-semibold">
-            <MessageSquarePlus className="size-5 text-blue-600 dark:text-blue-400" />
+            <MessageSquarePlus className="size-5 text-violet-600 dark:text-violet-400" />
             New conversation
           </DialogTitle>
         </DialogHeader>
@@ -101,7 +101,7 @@ export function LiveChatNewThreadDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 555 0100"
-              className="h-11 rounded-xl"
+              className="h-10 rounded-md"
               autoComplete="tel"
             />
             <p className="text-xs text-muted-foreground">
@@ -117,7 +117,7 @@ export function LiveChatNewThreadDialog({
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g., Acme support"
-              className="h-11 rounded-xl"
+              className="h-10 rounded-md"
               maxLength={200}
             />
           </div>
@@ -126,7 +126,7 @@ export function LiveChatNewThreadDialog({
           <Button
             type="button"
             variant="outline"
-            className="rounded-xl"
+            className="rounded-md"
             disabled={submitting}
             onClick={() => onOpenChange(false)}
           >
@@ -134,7 +134,7 @@ export function LiveChatNewThreadDialog({
           </Button>
           <Button
             type="button"
-            className="rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+            className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
             disabled={!canSubmit}
             onClick={() => void handleSubmit()}
           >

@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   Clock,
+  Loader2,
   MessageSquare,
   Phone,
   PhoneMissed,
@@ -18,6 +19,11 @@ import { ListEmptyState } from "@/features/shared/components/list-empty-state";
 import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
 import { StatCard } from "@/features/shared/components/stat-card";
 import type { CallResponderRule } from "@/types/call-responder";
+import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
+import type {
+  MessageTemplateApiRecord,
+  TemplatesListResponse,
+} from "@/types/templates-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,16 +36,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ApiError, apiJson } from "@/lib/api";
+
+type CallResponderRulesResponse = {
+  rules: CallResponderRule[];
+};
+
+type CreateCallResponderRuleResponse = {
+  rule: CallResponderRule;
+};
 
 type RuleFilter = "all" | "active" | "inactive";
 
 export function CallResponderClient() {
   const [rules, setRules] = React.useState<CallResponderRule[]>([]);
+  const [devices, setDevices] = React.useState<DeviceApiRecord[]>([]);
+  const [templates, setTemplates] = React.useState<MessageTemplateApiRecord[]>(
+    []
+  );
+  const [loading, setLoading] = React.useState(true);
   const [deleteTarget, setDeleteTarget] =
     React.useState<CallResponderRule | null>(null);
   const [search, setSearch] = React.useState("");
   const [filter, setFilter] = React.useState<RuleFilter>("all");
   const [createOpen, setCreateOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      setLoading(true);
+      try {
+        const [rulesData, devicesData, templatesData] = await Promise.all([
+          apiJson<CallResponderRulesResponse>("/v1/call-responder-rules"),
+          apiJson<DevicesListResponse>("/v1/devices"),
+          apiJson<TemplatesListResponse>("/v1/templates"),
+        ]);
+        if (cancelled) return;
+        setRules(rulesData.rules);
+        setDevices(devicesData.devices);
+        setTemplates(
+          templatesData.templates.filter((template) => template.active !== false)
+        );
+      } catch (err) {
+        if (cancelled) return;
+        const msg =
+          err instanceof ApiError
+            ? err.message
+            : "Could not load call responder.";
+        toast.error("Call responder unavailable", { description: msg });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const stats = React.useMemo(() => {
     const total = rules.length;
@@ -81,37 +133,78 @@ export function CallResponderClient() {
     });
   }
 
-  function handleCreated(rule: CallResponderRule) {
-    setRules((prev) => [rule, ...prev]);
+  async function handleCreateRule(input: {
+    name: string;
+    deviceId: string;
+    callTypes: CallResponderRule["callTypes"];
+    responseDelayMinutes: number;
+    messageFormType: CallResponderRule["messageFormType"];
+    messageBody?: string | null;
+    templateId?: string | null;
+  }) {
+    try {
+      const data = await apiJson<CreateCallResponderRuleResponse>(
+        "/v1/call-responder-rules",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        }
+      );
+      setRules((prev) => [data.rule, ...prev]);
+      toast.success("Rule created", {
+        description: `“${data.rule.name}” is active.`,
+      });
+      return data.rule;
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not create rule.";
+      toast.error("Create failed", { description: msg });
+      throw err;
+    }
   }
 
-  function confirmDeleteRule() {
+  async function confirmDeleteRule() {
     if (!deleteTarget) return;
     const rule = deleteTarget;
-    setRules((prev) => prev.filter((r) => r.id !== rule.id));
-    toast.success("Rule removed", {
-      description: `“${rule.name}” was removed from this list.`,
-    });
+    try {
+      await apiJson(`/v1/call-responder-rules/${rule.id}`, {
+        method: "DELETE",
+      });
+      setRules((prev) => prev.filter((r) => r.id !== rule.id));
+      toast.success("Rule removed", {
+        description: `“${rule.name}” was removed from this list.`,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not delete rule.";
+      toast.error("Delete failed", { description: msg });
+      throw err;
+    }
   }
 
   return (
     <>
-      <div className="mx-auto w-full max-w-6xl space-y-8 lg:space-y-10">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
-              Call Responder
-            </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
-              Automatically respond to received, outgoing, missed, and rejected
-              calls with custom messages or templates.
-            </p>
+      <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
+        <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+              <Phone className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                Call Responder
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                Automatically reply to missed, rejected, received, or outgoing calls.
+              </p>
+            </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <Button
               type="button"
               variant="outline"
-              className="h-11 gap-2 border-slate-200 bg-white px-5 dark:border-slate-800 dark:bg-slate-950"
+              className="h-10 rounded-md px-4"
               onClick={handleCallLogs}
             >
               <Clock className="size-4" />
@@ -119,7 +212,8 @@ export function CallResponderClient() {
             </Button>
             <Button
               type="button"
-              className="h-11 gap-2 bg-blue-600 px-5 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
+              className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
+              disabled={loading || devices.length === 0}
               onClick={() => setCreateOpen(true)}
             >
               <Plus className="size-4" />
@@ -128,14 +222,14 @@ export function CallResponderClient() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:gap-4">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search rules..."
-              className="h-11 rounded-md pl-10"
+              className="h-10 rounded-md pl-10"
               aria-label="Search rules"
             />
           </div>
@@ -143,7 +237,7 @@ export function CallResponderClient() {
             value={filter}
             onValueChange={(v) => setFilter((v ?? "all") as RuleFilter)}
           >
-            <SelectTrigger className="h-11 w-full rounded-sm sm:w-[200px]">
+            <SelectTrigger className="h-10 w-full rounded-md sm:w-[200px]">
               <SelectValue placeholder="All Rules" />
             </SelectTrigger>
             <SelectContent>
@@ -154,7 +248,7 @@ export function CallResponderClient() {
           </Select>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Total Rules"
             value={stats.total}
@@ -181,26 +275,40 @@ export function CallResponderClient() {
           />
         </div>
 
-        <Card className="rounded-lg border border-white/70 bg-white/90 shadow-md shadow-violet-950/5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/60">
-          <CardContent className="p-0 sm:rounded-3xl">
+        <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <CardContent className="p-0">
             {rules.length === 0 ? (
               <div className="px-6 pb-10 pt-6 sm:px-8">
-                <ListEmptyState
-                  icon={Phone}
-                  title="No call responder rules yet"
-                  description="Create your first call responder rule to start automating call responses"
-                  className="py-14 sm:py-20"
-                />
-                <div className="flex justify-center">
-                  <Button
-                    type="button"
-                    className="h-11 gap-2 bg-blue-600 px-6 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
-                    onClick={() => setCreateOpen(true)}
-                  >
-                    <Plus className="size-4" />
-                    Create Rule
-                  </Button>
-                </div>
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
+                    <Loader2 className="size-8 animate-spin text-violet-600" />
+                    <p className="text-sm">Loading call responder...</p>
+                  </div>
+                ) : (
+                  <>
+                    <ListEmptyState
+                      icon={Phone}
+                      title="No call responder rules yet"
+                      description={
+                        devices.length === 0
+                          ? "Connect a WhatsApp device before creating call responder rules."
+                          : "Create your first call responder rule to start automating call responses."
+                      }
+                      className="py-14 sm:py-20"
+                    />
+                    <div className="flex justify-center">
+                      <Button
+                        type="button"
+                        className="h-10 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
+                        disabled={devices.length === 0}
+                        onClick={() => setCreateOpen(true)}
+                      >
+                        <Plus className="size-4" />
+                        Create Rule
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : visible.length === 0 ? (
               <div className="px-6 py-16 text-center text-sm text-muted-foreground">
@@ -222,7 +330,9 @@ export function CallResponderClient() {
       <CreateCallResponderRuleDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={handleCreated}
+        devices={devices}
+        templates={templates}
+        onCreate={handleCreateRule}
       />
 
       <ConfirmDestructiveDialog

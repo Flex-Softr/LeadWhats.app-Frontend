@@ -385,8 +385,8 @@ export function ImportContactsFileDialog({
       <DialogContent
         className={cn(
           mappingStep
-            ? "flex !h-[min(92dvh,900px)] !w-[min(96vw,1200px)] !max-w-[1200px] flex-col gap-0 overflow-hidden rounded-xl p-0"
-            : "!w-[min(92vw,680px)] !max-w-[680px]"
+            ? "flex !h-[min(92dvh,900px)] !w-[min(96vw,1200px)] !max-w-[1200px] flex-col gap-0 overflow-hidden rounded-lg border-violet-100 p-0"
+            : "!w-[min(92vw,680px)] !max-w-[680px] rounded-lg border-violet-100"
         )}
         showCloseButton
       >
@@ -404,12 +404,13 @@ export function ImportContactsFileDialog({
           className={cn(
             "gap-2 sm:gap-0",
             mappingStep &&
-              "mx-0 mb-0 mt-0 shrink-0 rounded-none border-t border-border/80 bg-muted/40 px-4 py-4 sm:px-8"
+              "mx-0 mb-0 mt-0 shrink-0 rounded-none border-t border-violet-100 bg-slate-50/80 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/60 sm:px-8"
           )}
         >
           <Button
             type="button"
             variant="secondary"
+            className="rounded-md"
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
@@ -418,10 +419,11 @@ export function ImportContactsFileDialog({
           {mappingStep ? (
             <Button
               type="button"
+              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
               disabled={busy || importCount === 0}
               onClick={() => void handleImport()}
             >
-              {busy ? "Importing…" : `Import ${importCount} contact(s)`}
+              {busy ? "Importing..." : `Import ${importCount} contact(s)`}
             </Button>
           ) : null}
         </DialogFooter>

@@ -77,10 +77,10 @@ export function EditContactDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {contact ? (
-      <DialogContent className="sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
               <Pencil className="size-4" />
             </div>
             <DialogTitle>Edit contact</DialogTitle>
@@ -99,6 +99,7 @@ export function EditContactDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contact name"
+              className="h-10 rounded-md"
             />
           </div>
           <div className="space-y-2">
@@ -108,7 +109,7 @@ export function EditContactDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1234567890"
-              className="font-mono"
+              className="h-10 rounded-md font-mono"
             />
           </div>
           <div className="space-y-2">
@@ -119,7 +120,7 @@ export function EditContactDialog({
                 setStatus((v ?? "unverified") as ContactRowStatus)
               }
             >
-              <SelectTrigger id="edit-c-status" className="w-full">
+              <SelectTrigger id="edit-c-status" className="h-10 w-full rounded-md">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -133,6 +134,7 @@ export function EditContactDialog({
             <Button
               type="button"
               variant="secondary"
+              className="rounded-md"
               onClick={() => onOpenChange(false)}
               disabled={saving}
             >
@@ -140,9 +142,10 @@ export function EditContactDialog({
             </Button>
             <Button
               type="submit"
+              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
               disabled={!phone.trim() || !name.trim() || saving}
             >
-              {saving ? "Saving…" : "Save changes"}
+              {saving ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

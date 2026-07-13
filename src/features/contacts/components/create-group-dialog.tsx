@@ -51,10 +51,10 @@ export function CreateGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
               <FolderPlus className="size-4" />
             </div>
             <DialogTitle>New contact group</DialogTitle>
@@ -71,6 +71,7 @@ export function CreateGroupDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., VIP customers"
+              className="h-10 rounded-md"
               autoFocus
             />
           </div>
@@ -78,13 +79,18 @@ export function CreateGroupDialog({
             <Button
               type="button"
               variant="secondary"
+              className="rounded-md"
               onClick={() => onOpenChange(false)}
               disabled={working}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || working}>
-              {working ? "Creating…" : "Create group"}
+            <Button
+              type="submit"
+              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
+              disabled={!name.trim() || working}
+            >
+              {working ? "Creating..." : "Create group"}
             </Button>
           </DialogFooter>
         </form>

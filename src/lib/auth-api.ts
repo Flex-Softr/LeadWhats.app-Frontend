@@ -83,3 +83,67 @@ export async function logoutRequest(): Promise<void> {
   }
   setAccessToken(null);
 }
+
+export async function forgotPasswordRequest(email: string): Promise<{
+  ok: true;
+  resetUrl?: string;
+  emailDelivered?: boolean;
+}> {
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBaseUrl()}/v1/auth/forgot-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "Cannot reach the API. Start the server in /server (npm run dev) on port 4000.",
+      "NETWORK_ERROR"
+    );
+  }
+  if (!res.ok) {
+    throw await parseError(res);
+  }
+  return res.json() as Promise<{
+    ok: true;
+    resetUrl?: string;
+    emailDelivered?: boolean;
+  }>;
+}
+
+export async function resetPasswordRequest(input: {
+  token: string;
+  password: string;
+}): Promise<{ ok: true }> {
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBaseUrl()}/v1/auth/reset-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "Cannot reach the API. Start the server in /server (npm run dev) on port 4000.",
+      "NETWORK_ERROR"
+    );
+  }
+  if (!res.ok) {
+    throw await parseError(res);
+  }
+  setAccessToken(null);
+  return res.json() as Promise<{ ok: true }>;
+}
+
+export function buildGoogleOAuthStartUrl(next?: string | null): string {
+  const url = new URL(`${getApiBaseUrl()}/v1/auth/google/start`);
+  if (next) {
+    url.searchParams.set("next", next);
+  }
+  return url.toString();
+}
