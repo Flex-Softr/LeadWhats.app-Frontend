@@ -5,7 +5,7 @@ RUN npm ci
 
 FROM deps AS builder
 WORKDIR /app
-ARG NEXT_PUBLIC_API_URL=http://localhost:4000
+ARG NEXT_PUBLIC_API_URL=http://localhost:5001
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
 RUN npm run build
