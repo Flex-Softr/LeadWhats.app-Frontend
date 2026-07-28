@@ -64,7 +64,8 @@ export function findCountryByIso2(iso2: string): PhoneCountryPrefix | undefined 
 
 export function buildE164Phone(dialCode: string, localNumber: string): string {
   const prefix = dialCode.trim();
-  const local = localNumber.replace(/[^\d]/g, "");
+  // Strip leading zeros (national trunk prefix) so e.g. 0171… + +880 → +880171…
+  const local = localNumber.replace(/[^\d]/g, "").replace(/^0+/, "");
   return `${prefix}${local}`;
 }
 
