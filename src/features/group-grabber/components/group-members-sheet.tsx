@@ -80,38 +80,67 @@ export function GroupMembersSheet({
   /** When true, server omits admins — typical for campaigns that should not message group admins. */
   const [excludeGroupAdmins, setExcludeGroupAdmins] = React.useState(true);
 
-  React.useEffect(() => {
-    if (!open) {
-      setMembers([]);
-      setError(null);
-      setSelectedJids(new Set());
+  const scrapeKey =
+    open && group && deviceId
+      ? `${deviceId}:${group.jid}:${excludeGroupAdmins ? "1" : "0"}`
+      : null;
+
+  const [activeScrapeKey, setActiveScrapeKey] = React.useState<string | null>(
+    null
+  );
+  const [contactGroupsOpen, setContactGroupsOpen] = React.useState(false);
+
+  // Adjust state while rendering when the sheet / scrape target changes
+  // (avoids cascading setState inside effects).
+  if (scrapeKey !== activeScrapeKey) {
+    setActiveScrapeKey(scrapeKey);
+    setMembers([]);
+    setError(null);
+    setSelectedJids(new Set());
+    setLoading(Boolean(scrapeKey));
+    if (!scrapeKey) {
       setNewGroupName("");
       setTargetGroupId("");
-      return;
     }
+  }
 
-    setGroupsLoading(true);
+  if (open !== contactGroupsOpen) {
+    setContactGroupsOpen(open);
+    setGroupsLoading(open);
+    if (!open) {
+      setNewGroupName("");
+      setTargetGroupId("");
+    }
+  }
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
     void apiJson<ContactGroupsListResponse>("/v1/contact-groups")
       .then((d) => {
+        if (cancelled) return;
         setContactGroups(d.groups);
         if (d.groups.length > 0) {
           setTargetGroupId((prev) => prev || d.groups[0]!.id);
         }
       })
       .catch(() => {
-        toast.error("Could not load contact groups");
+        if (!cancelled) toast.error("Could not load contact groups");
       })
-      .finally(() => setGroupsLoading(false));
+      .finally(() => {
+        if (!cancelled) setGroupsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   React.useEffect(() => {
-    if (!open || !group || !deviceId) return;
+    if (!scrapeKey || !group || !deviceId) return;
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setMembers([]);
-    setSelectedJids(new Set());
 
     void (async () => {
       try {
@@ -146,7 +175,7 @@ export function GroupMembersSheet({
     return () => {
       cancelled = true;
     };
-  }, [open, group?.jid, deviceId, group, excludeGroupAdmins]);
+  }, [scrapeKey, group, deviceId, excludeGroupAdmins]);
 
   function toggleJid(jid: string, on: boolean) {
     setSelectedJids((prev) => {
