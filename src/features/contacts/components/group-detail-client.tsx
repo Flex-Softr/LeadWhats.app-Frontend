@@ -25,6 +25,10 @@ import { DeleteContactDialog } from "@/features/contacts/components/delete-conta
 import { EditContactDialog } from "@/features/contacts/components/edit-contact-dialog";
 import { ImportContactsFileDialog } from "@/features/contacts/components/import-contacts-file-dialog";
 import { formatSkippedSummary } from "@/features/contacts/lib/import-skip-summary";
+import {
+  downloadContactImportDemoCsv,
+  downloadContactImportDemoXlsx,
+} from "@/features/contacts/lib/download-import-demo";
 import { PasteContactsDialog } from "@/features/contacts/components/paste-contacts-dialog";
 import { usePathname } from "next/navigation";
 
@@ -198,21 +202,28 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     setSelectedContactIds(new Set());
   }
 
-  function exportSelectedContacts(format: "csv" | "xlsx") {
-    if (selectedContacts.length === 0) {
-      toast.warning("No contacts selected");
+  function exportContacts(format: "csv" | "xlsx") {
+    if (rows.length === 0) {
+      toast.warning("No contacts to export");
       return;
     }
+
+    const exportSelected = selectedCount > 0;
+    const contactIds = exportSelected
+      ? selectedContacts.map((contact) => contact.id)
+      : undefined;
 
     setExportingFormat(format);
     void downloadContactExport(groupId, {
       format,
-      contactIds: selectedContacts.map((contact) => contact.id),
+      contactIds,
       fallbackFilename: buildExportFilename(group?.name ?? "contacts", format),
     })
       .then(() => {
         toast.success(`${format.toUpperCase()} exported`, {
-          description: `${selectedContacts.length} selected contact(s) downloaded.`,
+          description: exportSelected
+            ? `${selectedCount} selected contact(s) downloaded.`
+            : `${rows.length} contact(s) downloaded.`,
         });
       })
       .catch((err) => {
@@ -268,8 +279,9 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
               )}
             </h2>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-              Manage contacts, import files, export selected rows, and revalidate
-              WhatsApp availability from one place.
+              Manage contacts, import from CSV/XLSX (use the demo files as a
+              template), export selected rows, and revalidate WhatsApp
+              availability from one place.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
@@ -301,6 +313,46 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             >
               <FileUp className="size-4" />
               Import
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-md px-4"
+              disabled={detailLoading || !group}
+              onClick={() => {
+                try {
+                  downloadContactImportDemoCsv();
+                  toast.success("Demo CSV downloaded", {
+                    description:
+                      "Includes Name, Phone, and Status sample rows.",
+                  });
+                } catch {
+                  toast.error("Could not download demo CSV");
+                }
+              }}
+            >
+              <Download className="size-4" />
+              Download demo CSV
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-md px-4"
+              disabled={detailLoading || !group}
+              onClick={() => {
+                try {
+                  downloadContactImportDemoXlsx();
+                  toast.success("Demo XLSX downloaded", {
+                    description:
+                      "Includes Name, Phone, and Status sample rows.",
+                  });
+                } catch {
+                  toast.error("Could not download demo XLSX");
+                }
+              }}
+            >
+              <FileSpreadsheet className="size-4" />
+              Download demo XLSX
             </Button>
           </div>
         </div>
@@ -401,7 +453,9 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
               Contacts in {titleName}
             </h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Select contacts to export CSV/XLSX.
+              {selectedCount > 0
+                ? `${selectedCount} selected — export downloads those rows.`
+                : "Export downloads the full group, or select rows first."}
             </p>
           </div>
           <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
@@ -430,29 +484,29 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                 type="button"
                 variant="outline"
                 className="h-10 rounded-md px-3"
-                disabled={selectedCount === 0 || exportingFormat !== null}
-                onClick={() => exportSelectedContacts("csv")}
+                disabled={rows.length === 0 || exportingFormat !== null}
+                onClick={() => exportContacts("csv")}
               >
                 {exportingFormat === "csv" ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
                   <Download className="size-4" />
                 )}
-                CSV
+                Export CSV
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 className="h-10 rounded-md px-3"
-                disabled={selectedCount === 0 || exportingFormat !== null}
-                onClick={() => exportSelectedContacts("xlsx")}
+                disabled={rows.length === 0 || exportingFormat !== null}
+                onClick={() => exportContacts("xlsx")}
               >
                 {exportingFormat === "xlsx" ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
                   <FileSpreadsheet className="size-4" />
                 )}
-                XLSX
+                Export XLSX
               </Button>
             </div>
           </div>
@@ -779,7 +833,7 @@ async function downloadContactExport(
   groupId: string,
   input: {
     format: "csv" | "xlsx";
-    contactIds: string[];
+    contactIds?: string[];
     fallbackFilename: string;
   }
 ) {
@@ -788,7 +842,9 @@ async function downloadContactExport(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       format: input.format,
-      contactIds: input.contactIds,
+      ...(input.contactIds && input.contactIds.length > 0
+        ? { contactIds: input.contactIds }
+        : {}),
     }),
   });
 
