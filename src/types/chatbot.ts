@@ -22,6 +22,8 @@ export type ChatbotFlow = {
   triggerKeywords: string;
   cooldownMinutes: number;
   active: boolean;
+  aiEnabled: boolean;
+  aiSettings: Record<string, unknown> | null;
   nodes: ChatbotFlowNode[];
   conversationCount: number;
   createdAt: string;

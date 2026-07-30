@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Bot,
   CreditCard,
+  KeyRound,
   LayoutDashboard,
   MessageCircle,
   MessageSquare,
@@ -39,6 +40,12 @@ export const NAV_ITEMS: NavItem[] = [
     description: "WhatsApp Sessions",
     href: "/devices",
     icon: Smartphone,
+  },
+  {
+    title: "AI Credentials",
+    description: "Gemini & OpenRouter keys",
+    href: "/ai-credentials",
+    icon: KeyRound,
   },
   {
     title: "Single Message",

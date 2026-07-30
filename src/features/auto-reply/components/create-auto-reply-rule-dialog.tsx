@@ -6,12 +6,24 @@ import { toast } from "sonner";
 
 import type { AutoReplyRule } from "@/types/auto-reply";
 import type { AutoReplyRuleMutationResponse } from "@/types/auto-reply-api";
+import type {
+  AiCredentialApi,
+  AiCredentialsListResponse,
+  AiSettingsForm,
+} from "@/types/ai-credentials-api";
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import type {
   MessageTemplateApiRecord,
   TemplateMediaListResponse,
   TemplatesListResponse,
 } from "@/types/templates-api";
+import {
+  CredentialModelFields,
+  aiSettingsDefaults,
+  aiSettingsFormValid,
+  buildAiSettingsPayload,
+  parseAiSettingsFromRecord,
+} from "@/features/ai-credentials/components/credential-model-fields";
 import { ApiError, apiFormJson, apiJson } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,46 +87,14 @@ function deviceName(d: DeviceApiRecord): string {
   return name || "Unnamed device";
 }
 
-function openAiDefaults() {
-  return {
-    apiKey: "",
-    model: "gpt-3.5-turbo",
-    baseUrl: "https://api.openai.com/v1",
-    systemPrompt: "",
-    temperature: "0.7",
-    maxTokens: "",
-    continuousChat: false,
-  };
+function openAiDefaults(): AiSettingsForm {
+  return aiSettingsDefaults();
 }
 
 function parseOpenAiFromRule(
   settings: AutoReplyRule["openAiSettings"]
-): ReturnType<typeof openAiDefaults> {
-  const d = openAiDefaults();
-  if (!settings) return d;
-  const o = settings;
-  return {
-    apiKey: typeof o.apiKey === "string" ? o.apiKey : "",
-    model: typeof o.model === "string" && o.model ? o.model : d.model,
-    baseUrl:
-      typeof o.baseUrl === "string" && o.baseUrl.length > 0
-        ? o.baseUrl
-        : d.baseUrl,
-    systemPrompt:
-      typeof o.systemPrompt === "string" ? o.systemPrompt : "",
-    temperature:
-      typeof o.temperature === "number"
-        ? String(o.temperature)
-        : d.temperature,
-    maxTokens:
-      typeof o.maxTokens === "number"
-        ? String(o.maxTokens)
-        : typeof o.maxTokens === "string"
-          ? o.maxTokens
-          : "",
-    continuousChat:
-      typeof o.continuousChat === "boolean" ? o.continuousChat : false,
-  };
+): AiSettingsForm {
+  return parseAiSettingsFromRecord(settings);
 }
 
 export function CreateAutoReplyRuleDialog({
@@ -135,6 +115,7 @@ export function CreateAutoReplyRuleDialog({
   const [mediaAssets, setMediaAssets] = React.useState<
     { id: string; originalName: string; mimeType: string }[]
   >([]);
+  const [credentials, setCredentials] = React.useState<AiCredentialApi[]>([]);
 
   const [name, setName] = React.useState("");
   const [keyword, setKeyword] = React.useState("");
@@ -151,7 +132,7 @@ export function CreateAutoReplyRuleDialog({
   const [mediaCaption, setMediaCaption] = React.useState("");
   const [response, setResponse] = React.useState("");
   const [openAiEnabled, setOpenAiEnabled] = React.useState(false);
-  const [openAi, setOpenAi] = React.useState(openAiDefaults);
+  const [openAi, setOpenAi] = React.useState<AiSettingsForm>(openAiDefaults);
   const [active, setActive] = React.useState(true);
 
   React.useEffect(() => {
@@ -160,17 +141,21 @@ export function CreateAutoReplyRuleDialog({
     (async () => {
       setContextLoading(true);
       try {
-        const [devRes, tplRes, mediaRes] = await Promise.all([
+        const [devRes, tplRes, mediaRes, credRes] = await Promise.all([
           apiJson<DevicesListResponse>("/v1/devices"),
           apiJson<TemplatesListResponse>("/v1/templates"),
           apiJson<TemplateMediaListResponse>("/v1/templates/media").catch(
             () => ({ assets: [] })
+          ),
+          apiJson<AiCredentialsListResponse>("/v1/ai-credentials").catch(
+            () => ({ credentials: [] })
           ),
         ]);
         if (cancelled) return;
         setDevices(devRes.devices);
         setTemplates(tplRes.templates.filter((tpl) => tpl.active !== false));
         setMediaAssets(mediaRes.assets);
+        setCredentials(credRes.credentials);
 
         if (editingRule) {
           setName(editingRule.name);
@@ -216,6 +201,7 @@ export function CreateAutoReplyRuleDialog({
           setDevices([]);
           setTemplates([]);
           setMediaAssets([]);
+          setCredentials([]);
         }
       } finally {
         if (!cancelled) setContextLoading(false);
@@ -267,11 +253,7 @@ export function CreateAutoReplyRuleDialog({
     return false;
   }, [openAiEnabled, messageMode, response, templateId, mediaAssetId]);
 
-  const openAiOk =
-    !openAiEnabled ||
-    (openAi.apiKey.trim().length > 0 &&
-      (openAi.baseUrl.trim().length === 0 ||
-        openAi.baseUrl.startsWith("http")));
+  const openAiOk = !openAiEnabled || aiSettingsFormValid(openAi);
 
   const canSubmit =
     !contextLoading &&
@@ -307,20 +289,8 @@ export function CreateAutoReplyRuleDialog({
         ? mediaCaption.trim()
         : null;
 
-    const maxTok = openAi.maxTokens.trim();
     const openAiPayload = openAiEnabled
-      ? {
-          apiKey: openAi.apiKey.trim(),
-          model: openAi.model.trim() || "gpt-3.5-turbo",
-          baseUrl: openAi.baseUrl.trim() || undefined,
-          systemPrompt: openAi.systemPrompt.trim() || undefined,
-          temperature: Number.parseFloat(openAi.temperature) || 0.7,
-          maxTokens:
-            maxTok === ""
-              ? null
-              : Math.max(1, Number.parseInt(maxTok, 10) || 512),
-          continuousChat: openAi.continuousChat,
-        }
+      ? buildAiSettingsPayload(openAi, { includeContinuousChat: true })
       : null;
 
     const body = {
@@ -671,7 +641,7 @@ export function CreateAutoReplyRuleDialog({
                       <div className="flex flex-wrap items-center gap-2">
                         <Sparkles className="size-4 text-sky-600 dark:text-sky-400" />
                         <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                          Use OpenAI for Responses
+                          Use AI for Responses
                         </span>
                         <Badge
                           variant="secondary"
@@ -681,7 +651,7 @@ export function CreateAutoReplyRuleDialog({
                         </Badge>
                       </div>
                       <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        Generate AI-powered responses using an OpenAI-compatible API.
+                        Generate replies with a saved Gemini or OpenRouter credential.
                       </p>
                     </div>
                     <label className="inline-flex cursor-pointer items-center gap-2">
@@ -711,143 +681,12 @@ export function CreateAutoReplyRuleDialog({
 
                   {openAiEnabled ? (
                     <div className="mt-4 space-y-4 border-t border-sky-200/70 pt-4 dark:border-sky-900/50">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2 sm:col-span-2">
-                          <Label className="text-xs font-semibold">
-                            API key{" "}
-                            <span className="text-red-600 dark:text-red-400">*</span>
-                          </Label>
-                          <Input
-                            type="password"
-                            autoComplete="off"
-                            value={openAi.apiKey}
-                            onChange={(e) =>
-                              setOpenAi((p) => ({ ...p, apiKey: e.target.value }))
-                            }
-                            placeholder="sk-…"
-                            className="rounded-xl font-mono text-sm"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold">Model</Label>
-                          <Input
-                            value={openAi.model}
-                            onChange={(e) =>
-                              setOpenAi((p) => ({ ...p, model: e.target.value }))
-                            }
-                            className="rounded-xl"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold">
-                            Base URL (optional)
-                          </Label>
-                          <Input
-                            value={openAi.baseUrl}
-                            onChange={(e) =>
-                              setOpenAi((p) => ({ ...p, baseUrl: e.target.value }))
-                            }
-                            placeholder="https://api.openai.com/v1"
-                            className="rounded-xl text-sm"
-                          />
-                          <p className="text-[11px] text-muted-foreground">
-                            Leave empty for OpenAI, or use your compatible endpoint.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold">
-                          System prompt (optional)
-                        </Label>
-                        <Textarea
-                          value={openAi.systemPrompt}
-                          onChange={(e) =>
-                            setOpenAi((p) => ({ ...p, systemPrompt: e.target.value }))
-                          }
-                          placeholder="You are a helpful assistant…"
-                          className="min-h-20 rounded-xl"
-                        />
-                      </div>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold">Temperature</Label>
-                          <Input
-                            type="number"
-                            step="0.1"
-                            min={0}
-                            max={2}
-                            value={openAi.temperature}
-                            onChange={(e) =>
-                              setOpenAi((p) => ({
-                                ...p,
-                                temperature: e.target.value,
-                              }))
-                            }
-                            className="rounded-xl"
-                          />
-                          <p className="text-[11px] text-muted-foreground">
-                            0.0 – 2.0 (default 0.7)
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold">
-                            Max tokens (optional)
-                          </Label>
-                          <Input
-                            value={openAi.maxTokens}
-                            onChange={(e) =>
-                              setOpenAi((p) => ({ ...p, maxTokens: e.target.value }))
-                            }
-                            placeholder="Leave empty for default"
-                            className="rounded-xl"
-                          />
-                        </div>
-                      </div>
-
-                      <div
-                        className={cn(
-                          "rounded-xl border border-violet-200/80 bg-violet-50/60 p-3 dark:border-violet-900/50 dark:bg-violet-950/25"
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Continuous AI chat
-                            </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              Stored for future use: AI continues until a human sends a
-                              message.
-                            </p>
-                          </div>
-                          <label className="inline-flex cursor-pointer items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={openAi.continuousChat}
-                              onChange={(e) =>
-                                setOpenAi((p) => ({
-                                  ...p,
-                                  continuousChat: e.target.checked,
-                                }))
-                              }
-                              className="sr-only"
-                            />
-                            <span
-                              className={cn(
-                                "relative h-7 w-12 shrink-0 rounded-full border border-slate-200 bg-slate-200 transition-colors dark:border-slate-600 dark:bg-slate-700",
-                                openAi.continuousChat &&
-                                  "border-emerald-500 bg-emerald-500 dark:border-emerald-500"
-                              )}
-                            >
-                              <span
-                                className={cn(
-                                  "absolute left-0.5 top-0.5 size-6 rounded-full bg-white shadow transition-transform",
-                                  openAi.continuousChat && "translate-x-5"
-                                )}
-                              />
-                            </span>
-                          </label>
-                        </div>
-                      </div>
+                      <CredentialModelFields
+                        credentials={credentials}
+                        value={openAi}
+                        onChange={setOpenAi}
+                        showContinuousChat
+                      />
                     </div>
                   ) : null}
                 </div>

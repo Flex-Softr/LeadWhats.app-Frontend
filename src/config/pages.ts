@@ -12,6 +12,10 @@ export const PAGE_META = {
     title: "Devices",
     description: "Manage your WhatsApp sessions and connections.",
   },
+  "/ai-credentials": {
+    title: "AI Credentials",
+    description: "Store Gemini and OpenRouter API keys for AI replies.",
+  },
   "/single-message": {
     title: "Single Message",
     description: "Send Test messages with different Templates.",

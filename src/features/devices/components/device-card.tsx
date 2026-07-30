@@ -95,8 +95,8 @@ export function DeviceCard({
                   </Badge>
                 )}
               </div>
-              <p className="mt-1 max-w-[230px] truncate font-mono text-xs text-slate-500 dark:text-slate-400">
-                {device.sessionId}
+              <p className="mt-1 max-w-[230px] truncate font-mono text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                {device.phone ?? "No phone linked"}
               </p>
             </div>
           </div>
@@ -133,14 +133,6 @@ export function DeviceCard({
             )}
           </span>
         </div>
-        {isConnected && device.phone ? (
-          <div className="flex justify-between gap-4 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/70">
-            <span className="text-slate-500 dark:text-slate-400">Phone</span>
-            <span className="truncate font-medium tabular-nums text-slate-800 dark:text-slate-200">
-              {device.phone}
-            </span>
-          </div>
-        ) : null}
         <div className="flex justify-between gap-4 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-900/70">
           <span className="text-slate-500 dark:text-slate-400">Created</span>
           <span className="truncate text-slate-800 dark:text-slate-200">

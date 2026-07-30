@@ -1,12 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Clock, Loader2, MessageSquareDot, Pencil, Plus, Trash2 } from "lucide-react";
+import { Clock, Loader2, MessageSquareDot, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddChatbotNodeDialog } from "@/features/chatbot/components/add-chatbot-node-dialog";
+import {
+  CredentialModelFields,
+  aiSettingsDefaults,
+  aiSettingsFormValid,
+  buildAiSettingsPayload,
+  parseAiSettingsFromRecord,
+} from "@/features/ai-credentials/components/credential-model-fields";
 import type { ChatbotFlow, ChatbotFlowNode } from "@/types/chatbot";
 import type { ChatbotFlowMutationResponse } from "@/types/chatbot-api";
+import type {
+  AiCredentialApi,
+  AiCredentialsListResponse,
+  AiSettingsForm,
+} from "@/types/ai-credentials-api";
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import { ApiError, apiJson } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +110,7 @@ export function CreateChatbotFlowDialog({
   const [contextLoading, setContextLoading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [devices, setDevices] = React.useState<DeviceApiRecord[]>([]);
+  const [credentials, setCredentials] = React.useState<AiCredentialApi[]>([]);
 
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -105,6 +118,9 @@ export function CreateChatbotFlowDialog({
   const [triggerKeywords, setTriggerKeywords] = React.useState("");
   const [cooldown, setCooldown] = React.useState("0");
   const [active, setActive] = React.useState(true);
+  const [aiEnabled, setAiEnabled] = React.useState(false);
+  const [aiSettings, setAiSettings] =
+    React.useState<AiSettingsForm>(aiSettingsDefaults);
   const [draftNodes, setDraftNodes] = React.useState<ChatbotFlowNode[]>([]);
   const [addNodeOpen, setAddNodeOpen] = React.useState(false);
 
@@ -117,9 +133,15 @@ export function CreateChatbotFlowDialog({
     (async () => {
       setContextLoading(true);
       try {
-        const devRes = await apiJson<DevicesListResponse>("/v1/devices");
+        const [devRes, credRes] = await Promise.all([
+          apiJson<DevicesListResponse>("/v1/devices"),
+          apiJson<AiCredentialsListResponse>("/v1/ai-credentials").catch(
+            () => ({ credentials: [] })
+          ),
+        ]);
         if (cancelled) return;
         setDevices(devRes.devices);
+        setCredentials(credRes.credentials);
 
         if (editingFlow) {
           setName(editingFlow.name);
@@ -128,6 +150,8 @@ export function CreateChatbotFlowDialog({
           setTriggerKeywords(editingFlow.triggerKeywords);
           setCooldown(String(editingFlow.cooldownMinutes));
           setActive(editingFlow.active);
+          setAiEnabled(Boolean(editingFlow.aiEnabled));
+          setAiSettings(parseAiSettingsFromRecord(editingFlow.aiSettings));
           setDraftNodes(
             [...editingFlow.nodes].sort((a, b) => a.sortOrder - b.sortOrder)
           );
@@ -139,6 +163,8 @@ export function CreateChatbotFlowDialog({
           setTriggerKeywords("");
           setCooldown("0");
           setActive(true);
+          setAiEnabled(false);
+          setAiSettings(aiSettingsDefaults());
           setDraftNodes([]);
         }
       } catch (err) {
@@ -147,6 +173,7 @@ export function CreateChatbotFlowDialog({
             err instanceof ApiError ? err.message : "Could not load devices.";
           toast.error("Load failed", { description: msg });
           setDevices([]);
+          setCredentials([]);
         }
       } finally {
         if (!cancelled) setContextLoading(false);
@@ -162,7 +189,8 @@ export function CreateChatbotFlowDialog({
     !submitting &&
     name.trim().length > 0 &&
     deviceId.length > 0 &&
-    triggerKeywords.trim().length > 0;
+    triggerKeywords.trim().length > 0 &&
+    (!aiEnabled || aiSettingsFormValid(aiSettings));
   const selectedDevice = devices.find((d) => d.id === deviceId);
 
   function removeNode(id: string) {
@@ -183,6 +211,9 @@ export function CreateChatbotFlowDialog({
       Math.max(0, Number.parseInt(cooldown, 10) || 0)
     );
     const nodes = draftNodesToApi(draftNodes);
+    const aiPayload = aiEnabled
+      ? buildAiSettingsPayload(aiSettings)
+      : null;
 
     setSubmitting(true);
     try {
@@ -199,6 +230,8 @@ export function CreateChatbotFlowDialog({
               triggerKeywords: triggerKeywords.trim(),
               cooldownMinutes: cooldownNum,
               active,
+              aiEnabled,
+              aiSettings: aiPayload,
               nodes,
             }),
           }
@@ -215,6 +248,8 @@ export function CreateChatbotFlowDialog({
             triggerKeywords: triggerKeywords.trim(),
             cooldownMinutes: cooldownNum,
             active,
+            aiEnabled,
+            aiSettings: aiPayload,
             nodes,
           }),
         });
@@ -379,6 +414,65 @@ export function CreateChatbotFlowDialog({
                         Flow is active
                       </span>
                     </label>
+
+                    <div
+                      className={cn(
+                        "rounded-2xl border border-sky-200/90 bg-sky-50/90 p-4 dark:border-sky-900/60 dark:bg-sky-950/30"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Sparkles className="size-4 text-sky-600 dark:text-sky-400" />
+                            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              Use AI for replies
+                            </span>
+                            <Badge
+                              variant="secondary"
+                              className="bg-sky-100 text-sky-800 dark:bg-sky-900/80 dark:text-sky-200"
+                            >
+                              AI Powered
+                            </Badge>
+                          </div>
+                          <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                            When triggered, generate a reply with your saved
+                            credential. Message nodes are used as fallback.
+                          </p>
+                        </div>
+                        <label className="inline-flex cursor-pointer items-center gap-2">
+                          <input
+                            type="checkbox"
+                            role="switch"
+                            checked={aiEnabled}
+                            onChange={(e) => setAiEnabled(e.target.checked)}
+                            className="sr-only"
+                          />
+                          <span
+                            className={cn(
+                              "relative h-7 w-12 shrink-0 rounded-full border border-slate-200 bg-slate-200 transition-colors dark:border-slate-600 dark:bg-slate-700",
+                              aiEnabled &&
+                                "border-emerald-500 bg-emerald-500 dark:border-emerald-500"
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "absolute left-0.5 top-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                                aiEnabled && "translate-x-5"
+                              )}
+                            />
+                          </span>
+                        </label>
+                      </div>
+                      {aiEnabled ? (
+                        <div className="mt-4 space-y-4 border-t border-sky-200/70 pt-4 dark:border-sky-900/50">
+                          <CredentialModelFields
+                            credentials={credentials}
+                            value={aiSettings}
+                            onChange={setAiSettings}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="flex min-h-[320px] flex-col rounded-2xl border border-slate-200/90 bg-slate-50/40 p-5 dark:border-slate-800 dark:bg-slate-900/30 sm:p-6">

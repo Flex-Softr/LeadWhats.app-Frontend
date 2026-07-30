@@ -31,6 +31,8 @@ export function flowApiToUi(f: ChatbotFlowApi): ChatbotFlow {
     triggerKeywords: f.triggerKeywords,
     cooldownMinutes: f.cooldownMinutes,
     active: f.active,
+    aiEnabled: Boolean(f.aiEnabled),
+    aiSettings: f.aiSettings ?? null,
     conversationCount: f.conversationCount,
     nodes: f.nodes.map(flowNodeApiToUi),
     createdAt: f.createdAt,

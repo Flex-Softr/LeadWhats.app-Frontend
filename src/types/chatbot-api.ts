@@ -20,6 +20,8 @@ export type ChatbotFlowApi = {
   cooldownMinutes: number;
   active: boolean;
   conversationCount: number;
+  aiEnabled: boolean;
+  aiSettings: Record<string, unknown> | null;
   nodes: ChatbotFlowNodeApi[];
   createdAt: string;
   updatedAt: string;
