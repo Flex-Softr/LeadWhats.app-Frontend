@@ -27,3 +27,28 @@ export type GroupGrabberListResponse = {
 export type GroupGrabberScrapeResponse = {
   members: WaGroupMemberApi[];
 };
+
+export type GroupGrabberExportFormat = "csv" | "xlsx";
+
+/** Body for `POST /v1/group-grabber/export-members` */
+export type GroupGrabberExportMembersBody = {
+  format: GroupGrabberExportFormat;
+  groupName?: string;
+  /** When true, rows without a phone are omitted server-side. */
+  onlyWithPhone?: boolean;
+  members: {
+    name?: string;
+    phone?: string | null;
+    jid?: string;
+    isAdmin?: boolean;
+  }[];
+};
+
+/** Body for `POST /v1/group-grabber/devices/:deviceId/export-members` */
+export type GroupGrabberScrapeExportBody = {
+  groupJid: string;
+  format: GroupGrabberExportFormat;
+  excludeAdmins?: boolean;
+  onlyWithPhone?: boolean;
+  groupName?: string;
+};

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Loader2, UserPlus } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, UserPlus } from "lucide-react";
 
 import type { GrabbedGroup, GrabbedMember } from "@/types/group-grabber";
 import type {
@@ -11,7 +11,11 @@ import type {
   ContactGroupsListResponse,
   CreateContactGroupResponse,
 } from "@/types/contacts-api";
-import type { GroupGrabberScrapeResponse } from "@/types/group-grabber-api";
+import type {
+  GroupGrabberExportFormat,
+  GroupGrabberScrapeResponse,
+} from "@/types/group-grabber-api";
+import { downloadGrabbedMembersExport } from "@/features/group-grabber/lib/export-members";
 import { ApiError, apiJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +75,8 @@ export function GroupMembersSheet({
   const [targetGroupId, setTargetGroupId] = React.useState<string>("");
   const [newGroupName, setNewGroupName] = React.useState("");
   const [importing, setImporting] = React.useState(false);
+  const [exportingFormat, setExportingFormat] =
+    React.useState<GroupGrabberExportFormat | null>(null);
   /** When true, server omits admins — typical for campaigns that should not message group admins. */
   const [excludeGroupAdmins, setExcludeGroupAdmins] = React.useState(true);
 
@@ -159,6 +165,41 @@ export function GroupMembersSheet({
 
   function selectNone() {
     setSelectedJids(new Set());
+  }
+
+  function exportSelectedMembers(format: GroupGrabberExportFormat) {
+    const picked = members.filter((m) => selectedJids.has(m.jid));
+    if (picked.length === 0) {
+      toast.warning("No members selected");
+      return;
+    }
+
+    const groupName = group?.name ?? "group-members";
+    setExportingFormat(format);
+    void downloadGrabbedMembersExport({
+      format,
+      groupName,
+      fallbackGroupName: groupName,
+      members: picked.map((m) => ({
+        name: m.name,
+        phone: m.phone,
+        jid: m.jid,
+        isAdmin: m.isAdmin,
+      })),
+    })
+      .then(() => {
+        toast.success(`${format.toUpperCase()} exported`, {
+          description: `${picked.length} selected member(s) downloaded.`,
+        });
+      })
+      .catch((err) => {
+        const msg =
+          err instanceof ApiError
+            ? err.message
+            : `Could not create the ${format.toUpperCase()} file.`;
+        toast.error("Export failed", { description: msg });
+      })
+      .finally(() => setExportingFormat(null));
   }
 
   async function runImport() {
@@ -284,7 +325,7 @@ export function GroupMembersSheet({
                     {members.length} members · {withPhoneCount} with a phone on
                     file
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
                       variant="secondary"
@@ -296,11 +337,56 @@ export function GroupMembersSheet({
                     </Button>
                     <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        setSelectedJids(new Set(members.map((m) => m.jid)))
+                      }
+                      disabled={members.length === 0}
+                    >
+                      Select all
+                    </Button>
+                    <Button
+                      type="button"
                       variant="ghost"
                       size="sm"
                       onClick={selectNone}
                     >
                       Clear
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      disabled={
+                        selectedJids.size === 0 || exportingFormat !== null
+                      }
+                      onClick={() => exportSelectedMembers("csv")}
+                    >
+                      {exportingFormat === "csv" ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Download className="size-3.5" />
+                      )}
+                      CSV
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      disabled={
+                        selectedJids.size === 0 || exportingFormat !== null
+                      }
+                      onClick={() => exportSelectedMembers("xlsx")}
+                    >
+                      {exportingFormat === "xlsx" ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <FileSpreadsheet className="size-3.5" />
+                      )}
+                      XLSX
                     </Button>
                   </div>
                 </div>
@@ -341,7 +427,6 @@ export function GroupMembersSheet({
                               type="checkbox"
                               className="size-4 rounded border-slate-300"
                               checked={selectedJids.has(m.jid)}
-                              disabled={!m.phone}
                               onChange={(e) =>
                                 toggleJid(m.jid, e.target.checked)
                               }
@@ -450,7 +535,11 @@ export function GroupMembersSheet({
               <Button
                 type="button"
                 className="h-11 w-full text-base font-semibold"
-                disabled={importing || members.length === 0}
+                disabled={
+                  importing ||
+                  exportingFormat !== null ||
+                  members.length === 0
+                }
                 onClick={() => void runImport()}
               >
                 {importing ? (
