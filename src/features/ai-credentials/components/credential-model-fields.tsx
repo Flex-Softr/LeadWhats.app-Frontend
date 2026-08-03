@@ -101,6 +101,9 @@ type CredentialModelFieldsProps = {
   disabled?: boolean;
 };
 
+const CREDENTIAL_NONE = "__none__";
+const MODEL_DEFAULT = "__default__";
+
 export function CredentialModelFields({
   credentials,
   value,
@@ -113,13 +116,26 @@ export function CredentialModelFields({
   const [modelsError, setModelsError] = React.useState<string | null>(null);
 
   const activeCredentials = React.useMemo(
-    () => credentials.filter((c) => c.active),
+    () =>
+      (Array.isArray(credentials) ? credentials : []).filter((c) => c.active),
     [credentials]
   );
 
   const selectedCredential = activeCredentials.find(
     (c) => c.id === value.credentialId
   );
+
+  // Base UI Select crashes when value is "" / unknown and no matching SelectItem exists.
+  const credentialSelectValue =
+    value.credentialId.trim() &&
+    activeCredentials.some((c) => c.id === value.credentialId)
+      ? value.credentialId
+      : CREDENTIAL_NONE;
+  const modelInList = models.some(
+    (m) => m.id === value.model || m.modelId === value.model
+  );
+  const modelSelectValue =
+    value.model.trim() && modelInList ? value.model : MODEL_DEFAULT;
 
   React.useEffect(() => {
     if (!selectedCredential) {
@@ -187,21 +203,27 @@ export function CredentialModelFields({
             Credential <span className="text-red-600 dark:text-red-400">*</span>
           </Label>
           <Select
-            value={value.credentialId}
-            onValueChange={(v) =>
+            value={credentialSelectValue}
+            onValueChange={(v) => {
+              const id = !v || v === CREDENTIAL_NONE ? "" : v;
+              // Keep model empty until list loads / user picks an override.
+              // Setting credential.model immediately can crash Select when that
+              // id is not yet present in SelectItem options.
               onChange({
                 ...value,
-                credentialId: v ?? "",
-                model:
-                  activeCredentials.find((c) => c.id === v)?.model ?? "",
-              })
-            }
+                credentialId: id,
+                model: "",
+              });
+            }}
             disabled={disabled || activeCredentials.length === 0}
           >
             <SelectTrigger className="h-11 w-full rounded-xl">
               <SelectValue placeholder="Select credential" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={CREDENTIAL_NONE}>
+                Select credential…
+              </SelectItem>
               {activeCredentials.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name} · {providerLabel(c.provider)} ({c.apiKeyMasked})
@@ -217,8 +239,13 @@ export function CredentialModelFields({
             <span className="font-normal text-muted-foreground">(optional)</span>
           </Label>
           <Select
-            value={value.model}
-            onValueChange={(v) => onChange({ ...value, model: v ?? "" })}
+            value={modelSelectValue}
+            onValueChange={(v) =>
+              onChange({
+                ...value,
+                model: !v || v === MODEL_DEFAULT ? "" : v,
+              })
+            }
             disabled={disabled || !selectedCredential || modelsLoading}
           >
             <SelectTrigger className="h-11 w-full rounded-xl">
@@ -234,6 +261,11 @@ export function CredentialModelFields({
               />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={MODEL_DEFAULT}>
+                {selectedCredential?.modelLabel
+                  ? `Default · ${selectedCredential.modelLabel}`
+                  : "Use credential default"}
+              </SelectItem>
               {freeModels.length > 0 ? (
                 <>
                   <div className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">

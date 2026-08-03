@@ -892,13 +892,35 @@ export function BulkCampaignDetailPageClient({
                       </p>
                     )
                   ) : (
-                    <div>
+                    <div className="space-y-3">
                       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Text body
+                        {detail.bodyTexts && detail.bodyTexts.length > 1
+                          ? `Text variants (${detail.bodyTexts.length})`
+                          : "Text body"}
                       </p>
-                      <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed">
-                        {detail.messagePreview?.trim() || "—"}
-                      </p>
+                      {detail.bodyTexts && detail.bodyTexts.length > 0 ? (
+                        <ul className="space-y-3">
+                          {detail.bodyTexts.map((text, index) => (
+                            <li
+                              key={`${index}-${text.slice(0, 24)}`}
+                              className="rounded-lg border border-slate-100 bg-slate-50/70 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/40"
+                            >
+                              {detail.bodyTexts && detail.bodyTexts.length > 1 ? (
+                                <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                  Variant {index + 1}
+                                </p>
+                              ) : null}
+                              <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
+                                {text.trim() || "—"}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed">
+                          {detail.messagePreview?.trim() || "—"}
+                        </p>
+                      )}
                     </div>
                   )}
                   {campaign.attachmentType ? (

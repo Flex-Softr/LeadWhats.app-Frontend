@@ -70,6 +70,53 @@ export type CreateBulkCampaignResponse = {
   note?: string;
 };
 
+/** Optional AI rewrite block on POST /v1/bulk-campaigns (TEXT only). */
+export type BulkCampaignAiRewritePayload = {
+  enabled: true;
+  count: number;
+  credentialId: string;
+  systemPrompt?: string;
+  temperature?: number;
+  maxTokens?: number | null;
+};
+
+export type CreateBulkCampaignPayload = {
+  name: string;
+  deviceIds: string[];
+  deviceMode: BulkCampaignDeviceModeApi;
+  kind: "text" | "template";
+  bodyText?: string;
+  bodyTexts?: string[];
+  templateId?: string;
+  attachmentAssetId?: string | null;
+  attachmentType?: "image" | "video" | "document" | "audio";
+  selectionMode: "groups" | "all_verified" | "manual";
+  groupIds?: string[];
+  manualPhones?: string[];
+  scheduleType: "immediate" | "scheduled";
+  scheduledAt?: string | null;
+  delayMinSec: number;
+  delayMaxSec: number;
+  maxRetries: number;
+  aiRewrite?: BulkCampaignAiRewritePayload;
+  antiBlock?: {
+    enabled?: boolean;
+    spintax?: boolean;
+    verifyNumbers?: boolean;
+    repliedOnly?: boolean;
+    recent24hOnly?: boolean;
+    uniquenessMode?: "none" | "campaign" | "workspace_window";
+    batchPauseEvery?: number;
+    batchPauseSec?: number;
+    failLimitInRow?: number;
+    activeHoursStart?: string | null;
+    activeHoursEnd?: string | null;
+    inactiveHoursStart?: string | null;
+    inactiveHoursEnd?: string | null;
+    timezone?: string | null;
+  };
+};
+
 export type BulkCampaignDeviceRowApi = {
   id: string;
   name: string;
@@ -156,6 +203,8 @@ export type BulkCampaignDetailApi = {
   campaign: BulkCampaignListItemApi;
   template: { id: string; name: string; typeId: string } | null;
   messagePreview: string | null;
+  /** Final TEXT message pool (custom + AI). Null/empty for templates. */
+  bodyTexts?: string[] | null;
   devices: BulkCampaignDeviceRowApi[];
   deviceSendStats: BulkCampaignDeviceSendStatsApi[];
   stats: BulkCampaignOutboundStatsApi;

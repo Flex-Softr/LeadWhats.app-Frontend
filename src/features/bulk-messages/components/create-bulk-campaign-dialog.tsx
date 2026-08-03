@@ -5,19 +5,38 @@ import {
   CheckCircle2,
   Loader2,
   Phone,
+  Plus,
   Send,
   Shield,
   Shuffle,
+  Sparkles,
+  Trash2,
   Upload,
   Users,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useSubscription } from "@/features/billing/subscription-context";
+import { AiPanelErrorBoundary } from "@/features/bulk-messages/components/ai-panel-error-boundary";
 import { MessageTypeCards } from "@/features/single-message/components/message-type-cards";
 import type { MessageFormType } from "@/features/single-message/components/message-type-cards";
 import { useContacts } from "@/features/contacts/contacts-provider";
-import type { CreateBulkCampaignResponse } from "@/types/bulk-campaign-api";
+import {
+  aiSettingsDefaults,
+  aiSettingsFormValid,
+  buildAiSettingsPayload,
+} from "@/features/bulk-messages/lib/ai-settings-form";
+import { maxBulkMessageContentsForPlan } from "@/features/bulk-messages/lib/bulk-message-plan-limits";
+import type {
+  CreateBulkCampaignPayload,
+  CreateBulkCampaignResponse,
+} from "@/types/bulk-campaign-api";
+import type {
+  AiCredentialApi,
+  AiCredentialsListResponse,
+  AiSettingsForm,
+} from "@/types/ai-credentials-api";
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import type {
   MessageTemplateApiRecord,
@@ -34,7 +53,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -145,6 +163,8 @@ export function CreateBulkCampaignDialog({
   onCreated,
 }: CreateBulkCampaignDialogProps) {
   const { groups, groupStats, globalStats, refreshGroups } = useContacts();
+  const { planId } = useSubscription();
+  const maxMessageContents = maxBulkMessageContentsForPlan(planId);
 
   const [contextLoading, setContextLoading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
@@ -152,6 +172,7 @@ export function CreateBulkCampaignDialog({
   const [templates, setTemplates] = React.useState<MessageTemplateApiRecord[]>(
     []
   );
+  const [credentials, setCredentials] = React.useState<AiCredentialApi[]>([]);
 
   const [campaignName, setCampaignName] = React.useState("");
   const [deviceMode, setDeviceMode] = React.useState<DeviceMode>("round_robin");
@@ -160,7 +181,11 @@ export function CreateBulkCampaignDialog({
     () => new Set()
   );
   const [messageType, setMessageType] = React.useState<MessageFormType>("text");
-  const [messageText, setMessageText] = React.useState("");
+  const [bodyTexts, setBodyTexts] = React.useState<string[]>([""]);
+  const [aiRewriteEnabled, setAiRewriteEnabled] = React.useState(false);
+  const [aiRewriteCount, setAiRewriteCount] = React.useState("1");
+  const [aiRewriteSettings, setAiRewriteSettings] =
+    React.useState<AiSettingsForm>(() => aiSettingsDefaults());
   const [templateId, setTemplateId] = React.useState("");
   const [attachmentType, setAttachmentType] =
     React.useState<AttachmentType>("image");
@@ -223,14 +248,20 @@ export function CreateBulkCampaignDialog({
       setContextLoading(true);
       try {
         const loadedGroups = await refreshGroups();
-        const [devRes, tplRes] = await Promise.all([
+        const [devRes, tplRes, credRes] = await Promise.all([
           apiJson<DevicesListResponse>("/v1/devices"),
           apiJson<TemplatesListResponse>("/v1/templates"),
+          apiJson<AiCredentialsListResponse>("/v1/ai-credentials").catch(
+            () => ({ credentials: [] as AiCredentialApi[] })
+          ),
         ]);
         if (cancelled) return;
         setAllDevices(devRes.devices);
         setTemplates(
           tplRes.templates.filter((tpl) => tpl.active !== false)
+        );
+        setCredentials(
+          Array.isArray(credRes.credentials) ? credRes.credentials : []
         );
         const connected = devRes.devices.filter((d) => d.status === "connected");
 
@@ -239,7 +270,10 @@ export function CreateBulkCampaignDialog({
         setSessionIds(new Set(connected.map((d) => d.id)));
         setSingleDeviceId(connected[0]?.id ?? "");
         setMessageType("text");
-        setMessageText("");
+        setBodyTexts([""]);
+        setAiRewriteEnabled(false);
+        setAiRewriteCount("1");
+        setAiRewriteSettings(aiSettingsDefaults());
         setTemplateId("");
         setAttachmentType("image");
         setAttachmentAssetId("");
@@ -274,6 +308,7 @@ export function CreateBulkCampaignDialog({
           toast.error("Load failed", { description: msg });
           setAllDevices([]);
           setTemplates([]);
+          setCredentials([]);
           setSessionIds(new Set());
         }
       } finally {
@@ -289,7 +324,60 @@ export function CreateBulkCampaignDialog({
 
   React.useEffect(() => {
     if (messageType === "text") setTemplateId("");
+    else setAiRewriteEnabled(false);
   }, [messageType]);
+
+  const parsedAiRewriteCount = React.useMemo(() => {
+    const n = Number.parseInt(aiRewriteCount, 10);
+    if (!Number.isFinite(n) || n < 1) return 1;
+    return Math.min(20, n);
+  }, [aiRewriteCount]);
+
+  const customFilledCount = bodyTexts.filter((t) => t.trim().length > 0).length;
+  // Custom message rows are capped by plan; AI count is validated separately on submit.
+  const maxCustomSlots = maxMessageContents;
+  const maxAiSlots = Math.max(0, maxMessageContents - Math.max(1, customFilledCount));
+  const safeAiCount =
+    maxAiSlots > 0 ? Math.min(parsedAiRewriteCount, maxAiSlots) : 0;
+  const activeCredentials = React.useMemo(
+    () => (Array.isArray(credentials) ? credentials.filter((c) => c.active) : []),
+    [credentials]
+  );
+
+  function updateBodyTextAt(index: number, value: string) {
+    setBodyTexts((prev) => prev.map((t, i) => (i === index ? value : t)));
+  }
+
+  function addBodyText() {
+    setBodyTexts((prev) => {
+      if (prev.length >= maxCustomSlots) return prev;
+      return [...prev, ""];
+    });
+  }
+
+  function removeBodyText(index: number) {
+    setBodyTexts((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
+  }
+
+  function toggleAiRewrite() {
+    if (aiRewriteEnabled) {
+      setAiRewriteEnabled(false);
+      return;
+    }
+    if (maxAiSlots < 1) {
+      toast.error("AI rewrites unavailable", {
+        description: `Your plan allows ${maxMessageContents} message content(s). Keep fewer custom messages or upgrade.`,
+      });
+      return;
+    }
+    if (parsedAiRewriteCount > maxAiSlots) {
+      setAiRewriteCount(String(maxAiSlots));
+    }
+    setAiRewriteEnabled(true);
+  }
 
   React.useEffect(() => {
     setAttachmentAssetId("");
@@ -366,8 +454,20 @@ export function CreateBulkCampaignDialog({
 
   const messageOk =
     messageType === "text"
-      ? messageText.trim().length > 0
+      ? customFilledCount > 0
       : templateId !== "" && templates.some((t) => t.id === templateId);
+
+  const poolWithinPlan =
+    messageType !== "text" ||
+    customFilledCount + (aiRewriteEnabled ? safeAiCount : 0) <=
+      maxMessageContents;
+
+  const aiRewriteOk =
+    messageType !== "text" ||
+    !aiRewriteEnabled ||
+    (aiSettingsFormValid(aiRewriteSettings) &&
+      safeAiCount >= 1 &&
+      poolWithinPlan);
 
   const recipientsOk =
     selectionMode === "groups"
@@ -411,6 +511,8 @@ export function CreateBulkCampaignDialog({
     campaignName.trim().length > 0 &&
     devicesOk &&
     messageOk &&
+    aiRewriteOk &&
+    poolWithinPlan &&
     recipientsOk &&
     scheduleOk &&
     activeHoursPairOk &&
@@ -443,13 +545,24 @@ export function CreateBulkCampaignDialog({
       const deviceIds =
         deviceMode === "single" ? [singleDeviceId] : [...sessionIds];
 
-      const payload = {
+      const normalizedBodyTexts =
+        messageType === "text"
+          ? bodyTexts.map((t) => t.trim()).filter(Boolean)
+          : [];
+
+      const aiSettingsPayload = aiRewriteEnabled
+        ? buildAiSettingsPayload(aiRewriteSettings)
+        : null;
+
+      const payload: CreateBulkCampaignPayload = {
         name: campaignName.trim(),
         deviceIds,
         deviceMode,
         kind: messageType,
         bodyText:
-          messageType === "text" ? messageText.trim() : undefined,
+          messageType === "text" ? normalizedBodyTexts[0] : undefined,
+        bodyTexts:
+          messageType === "text" ? normalizedBodyTexts : undefined,
         templateId:
           messageType === "template" && templateId
             ? templateId
@@ -482,6 +595,20 @@ export function CreateBulkCampaignDialog({
         delayMinSec: delayLo,
         delayMaxSec: delayHi,
         maxRetries: retries,
+        aiRewrite:
+          messageType === "text" &&
+          aiRewriteEnabled &&
+          aiSettingsPayload?.credentialId &&
+          safeAiCount >= 1
+            ? {
+                enabled: true,
+                count: safeAiCount,
+                credentialId: aiSettingsPayload.credentialId,
+                systemPrompt: aiSettingsPayload.systemPrompt,
+                temperature: aiSettingsPayload.temperature,
+                maxTokens: aiSettingsPayload.maxTokens,
+              }
+            : undefined,
         antiBlock: {
           enabled: antiBlockEnabled,
           spintax: spintaxEnabled,
@@ -538,14 +665,23 @@ export function CreateBulkCampaignDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        showCloseButton
+        showCloseButton={false}
         className={cn(
           "max-h-[min(94vh,900px)] max-w-[calc(100%-.5rem)] gap-0 overflow-hidden rounded-lg p-0",
           "border border-violet-100 bg-white shadow-[0_22px_70px_rgba(72,43,132,0.18)]",
           "sm:max-w-6xl dark:border-slate-800 dark:bg-slate-950"
         )}
       >
-        <DialogHeader className="border-b border-violet-100 bg-white px-6 pb-5 pt-6 text-left dark:border-slate-800 dark:bg-slate-950 sm:px-8 sm:pb-6 sm:pt-7">
+        <AiPanelErrorBoundary label="Campaign dialog crashed while updating.">
+        <DialogHeader className="relative border-b border-violet-100 bg-white px-6 pb-5 pt-6 text-left dark:border-slate-800 dark:bg-slate-950 sm:px-8 sm:pb-6 sm:pt-7">
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => onOpenChange(false)}
+            className="absolute top-4 right-4 inline-flex size-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          >
+            <X className="size-4" />
+          </button>
           <div className="flex items-start gap-3 pr-8">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
               <Send className="size-5" />
@@ -715,7 +851,7 @@ export function CreateBulkCampaignDialog({
                           (select one or more)
                         </span>
                       </Label>
-                      <ScrollArea className="h-44 rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
+                      <div className="h-44 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
                         <ul className="space-y-2 p-2">
                           {allDevices.length === 0 ? (
                             <li className="px-3 py-8 text-center text-sm text-slate-500">
@@ -759,7 +895,7 @@ export function CreateBulkCampaignDialog({
                             })
                           )}
                         </ul>
-                      </ScrollArea>
+                      </div>
                     </div>
                     </div>
                   )}
@@ -775,26 +911,263 @@ export function CreateBulkCampaignDialog({
                   </div>
 
                   {messageType === "text" ? (
+                    <>
                     <div className={sectionClass}>
-                    <div className="space-y-2.5">
-                      <Label
-                        htmlFor="bulk-message"
-                        className="text-sm font-semibold"
-                      >
-                        Message Content{" "}
-                        <span className="font-normal text-red-600 dark:text-red-400">
-                          *
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-sm font-semibold">
+                            Message Content{" "}
+                            <span className="font-normal text-red-600 dark:text-red-400">
+                              *
+                            </span>
+                          </Label>
+                          <p className={helperClass}>
+                            Add multiple variants. One is picked at random per
+                            recipient. Plan allows up to {maxMessageContents}{" "}
+                            total (custom + AI).
+                          </p>
+                        </div>
+                        <span className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800 dark:bg-violet-900/70 dark:text-violet-200">
+                          {customFilledCount +
+                            (aiRewriteEnabled ? safeAiCount : 0)}
+                          /{maxMessageContents}
                         </span>
-                      </Label>
-                      <Textarea
-                        id="bulk-message"
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        placeholder="Enter your message here..."
-                        className={`${textareaClass} min-h-40`}
-                      />
+                      </div>
+
+                      <div className="space-y-3">
+                        {bodyTexts.map((text, index) => (
+                          <div key={index} className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <Label
+                                htmlFor={`bulk-message-${index}`}
+                                className="text-xs font-medium text-slate-600 dark:text-slate-300"
+                              >
+                                Variant {index + 1}
+                              </Label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-destructive hover:text-destructive"
+                                disabled={bodyTexts.length <= 1}
+                                onClick={() => removeBodyText(index)}
+                              >
+                                <Trash2 className="size-3.5" />
+                                Remove
+                              </Button>
+                            </div>
+                            <Textarea
+                              id={`bulk-message-${index}`}
+                              value={text}
+                              onChange={(e) =>
+                                updateBodyTextAt(index, e.target.value)
+                              }
+                              placeholder="Enter your message here..."
+                              className={`${textareaClass} min-h-28`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-md"
+                        disabled={bodyTexts.length >= maxCustomSlots}
+                        onClick={addBodyText}
+                      >
+                        <Plus className="size-3.5" />
+                        Add message
+                      </Button>
+                      {!poolWithinPlan ? (
+                        <p className="text-xs text-amber-700 dark:text-amber-300">
+                          Custom messages + AI rewrites exceed your plan limit (
+                          {maxMessageContents}). Reduce variants or upgrade.
+                        </p>
+                      ) : null}
                     </div>
                     </div>
+
+                    <div
+                      className={cn(
+                        sectionClass,
+                        "border-sky-200/80 bg-sky-50/40 dark:border-sky-900/60 dark:bg-sky-950/20"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Sparkles className="size-4 text-sky-600 dark:text-sky-400" />
+                            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              AI message rewrites
+                            </span>
+                            <span className="inline-flex rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/80 dark:text-sky-200">
+                              AI Powered
+                            </span>
+                          </div>
+                          <p className={helperClass}>
+                            Generate extra paraphrases from your first message at
+                            create time. Counts toward your plan limit.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={aiRewriteEnabled}
+                          onClick={toggleAiRewrite}
+                          className={cn(
+                            "relative h-7 w-12 shrink-0 rounded-full border transition-colors",
+                            aiRewriteEnabled
+                              ? "border-emerald-500 bg-emerald-500"
+                              : "border-slate-200 bg-slate-200 dark:border-slate-600 dark:bg-slate-700"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "absolute left-0.5 top-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                              aiRewriteEnabled && "translate-x-5"
+                            )}
+                          />
+                        </button>
+                      </div>
+
+                      {aiRewriteEnabled ? (
+                        <div className="mt-4 space-y-4 border-t border-sky-200/70 pt-4 dark:border-sky-900/50">
+                          <div className="space-y-2">
+                            <label
+                              htmlFor="bulk-ai-rewrite-count"
+                              className="text-sm font-semibold"
+                            >
+                              Number of AI variants
+                            </label>
+                            <input
+                              id="bulk-ai-rewrite-count"
+                              type="number"
+                              min={1}
+                              max={Math.max(1, maxAiSlots)}
+                              value={aiRewriteCount}
+                              onChange={(e) => setAiRewriteCount(e.target.value)}
+                              className={`${fieldClass} w-full`}
+                            />
+                            <p className={helperClass}>
+                              Remaining slots after custom messages: {maxAiSlots}.
+                            </p>
+                          </div>
+
+                          {activeCredentials.length === 0 ? (
+                            <p className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                              No AI credentials yet. Open{" "}
+                              <span className="font-semibold">AI Credentials</span>{" "}
+                              in the sidebar and add a Gemini or OpenRouter key
+                              first.
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              <label
+                                htmlFor="bulk-ai-credential"
+                                className="text-xs font-semibold"
+                              >
+                                Credential{" "}
+                                <span className="text-red-600">*</span>
+                              </label>
+                              <select
+                                id="bulk-ai-credential"
+                                value={aiRewriteSettings.credentialId}
+                                onChange={(e) =>
+                                  setAiRewriteSettings((prev) => ({
+                                    ...prev,
+                                    credentialId: e.target.value,
+                                    model: "",
+                                  }))
+                                }
+                                className={`${fieldClass} w-full`}
+                              >
+                                <option value="">Select credential…</option>
+                                {activeCredentials.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.name} ·{" "}
+                                    {c.provider === "gemini"
+                                      ? "Gemini"
+                                      : "OpenRouter"}{" "}
+                                    ({c.apiKeyMasked})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          <div className="space-y-2">
+                            <label
+                              htmlFor="bulk-ai-system-prompt"
+                              className="text-xs font-semibold"
+                            >
+                              System prompt (optional)
+                            </label>
+                            <textarea
+                              id="bulk-ai-system-prompt"
+                              value={aiRewriteSettings.systemPrompt}
+                              onChange={(e) =>
+                                setAiRewriteSettings((prev) => ({
+                                  ...prev,
+                                  systemPrompt: e.target.value,
+                                }))
+                              }
+                              placeholder="Keep the same meaning; vary wording naturally…"
+                              className={`${textareaClass} block w-full min-h-28`}
+                            />
+                          </div>
+
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                              <label
+                                htmlFor="bulk-ai-temperature"
+                                className="text-xs font-semibold"
+                              >
+                                Temperature
+                              </label>
+                              <input
+                                id="bulk-ai-temperature"
+                                type="number"
+                                step="0.1"
+                                min={0}
+                                max={2}
+                                value={aiRewriteSettings.temperature}
+                                onChange={(e) =>
+                                  setAiRewriteSettings((prev) => ({
+                                    ...prev,
+                                    temperature: e.target.value,
+                                  }))
+                                }
+                                className={`${fieldClass} w-full`}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label
+                                htmlFor="bulk-ai-max-tokens"
+                                className="text-xs font-semibold"
+                              >
+                                Max tokens (optional)
+                              </label>
+                              <input
+                                id="bulk-ai-max-tokens"
+                                value={aiRewriteSettings.maxTokens}
+                                onChange={(e) =>
+                                  setAiRewriteSettings((prev) => ({
+                                    ...prev,
+                                    maxTokens: e.target.value,
+                                  }))
+                                }
+                                placeholder="Leave empty for default"
+                                className={`${fieldClass} w-full`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                    </>
                   ) : (
                     <div className={sectionClass}>
                     <div className="space-y-2.5">
@@ -1254,7 +1627,7 @@ export function CreateBulkCampaignDialog({
                       <Label className="text-sm font-semibold">
                         Select contact groups
                       </Label>
-                      <ScrollArea className="h-52 rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
+                      <div className="h-52 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
                         <ul className="space-y-2 p-2">
                           {groups.length === 0 ? (
                             <li className="px-3 py-8 text-center text-sm text-slate-500">
@@ -1295,7 +1668,7 @@ export function CreateBulkCampaignDialog({
                             })
                           )}
                         </ul>
-                      </ScrollArea>
+                      </div>
                     </div>
                     </div>
                   ) : null}
@@ -1394,6 +1767,7 @@ export function CreateBulkCampaignDialog({
             </div>
           </>
         )}
+        </AiPanelErrorBoundary>
       </DialogContent>
     </Dialog>
   );
