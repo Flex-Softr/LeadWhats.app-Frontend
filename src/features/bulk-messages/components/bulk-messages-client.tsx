@@ -283,9 +283,9 @@ export function BulkMessagesClient() {
   return (
     <>
       <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
-        <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
               <Megaphone className="size-5" />
             </div>
             <div className="min-w-0">
@@ -312,7 +312,7 @@ export function BulkMessagesClient() {
             </Button>
             <Button
               type="button"
-              className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700 sm:w-auto"
+              className="h-10 rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary/90 sm:w-auto"
               disabled={loading}
               onClick={() => setCreateOpen(true)}
             >
@@ -351,7 +351,7 @@ export function BulkMessagesClient() {
 
 
         {(runningCampaigns.length > 0 || pendingCampaigns.length > 0) && (
-  <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+  <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
     <CardContent className="p-0">
       <div className="border-b border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/40">
         <h3 className="text-lg font-semibold">
@@ -380,13 +380,13 @@ export function BulkMessagesClient() {
 
         <TableBody>
           {[...runningCampaigns, ...pendingCampaigns].map((c) => (
-            <TableRow key={c.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+            <TableRow key={c.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
               <TableCell>
                 <Link
                   href={`/bulk-messages/${c.id}`}
                   className="block w-full rounded-md text-left transition-colors"
                 >
-                  <div className="font-medium text-violet-700 underline-offset-4 hover:underline dark:text-violet-300">
+                  <div className="font-medium text-foreground underline-offset-4 hover:underline dark:text-muted-foreground">
                     {c.name}
                   </div>
 
@@ -419,7 +419,7 @@ export function BulkMessagesClient() {
                   </div>
                   <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                     <div
-                      className="h-full rounded-full bg-violet-600"
+                      className="h-full rounded-full bg-primary"
                       style={{ width: `${c.progress.percent}%` }}
                     />
                   </div>
@@ -488,11 +488,11 @@ export function BulkMessagesClient() {
 )}
 
 
-        <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <CardContent className="p-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
-                <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
+                <Loader2 className="size-9 animate-spin text-foreground dark:text-muted-foreground" />
                 <p className="text-sm">Loading campaigns…</p>
               </div>
             ) : campaigns.length === 0 ? (
@@ -544,13 +544,13 @@ export function BulkMessagesClient() {
                 </TableHeader>
                 <TableBody>
                   {pagedCampaigns.map((c) => (
-                    <TableRow key={c.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+                    <TableRow key={c.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell>
                         <Link
                           href={`/bulk-messages/${c.id}`}
-                          className="block w-full rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                          className="block w-full rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
                         >
-                          <div className="font-medium text-violet-700 underline-offset-4 hover:underline dark:text-violet-300">
+                          <div className="font-medium text-foreground underline-offset-4 hover:underline dark:text-muted-foreground">
                             {c.name}
                           </div>
                           <div className="text-xs text-muted-foreground">

@@ -77,7 +77,7 @@ export function AutoReplyRulesTable({
       </TableHeader>
       <TableBody>
         {rules.map((r) => (
-          <TableRow key={r.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+          <TableRow key={r.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
             <TableCell>
               <div className="min-w-0">
                 <p className="font-medium text-foreground">{r.name}</p>
@@ -131,7 +131,7 @@ export function AutoReplyRulesTable({
                   aria-label={
                     r.active ? `Deactivate ${r.name}` : `Activate ${r.name}`
                   }
-                  className="size-4 rounded border-input accent-violet-600 focus:ring-violet-500/50 disabled:opacity-50"
+                  className="size-4 rounded border-input accent-primary focus:ring-ring/20 disabled:opacity-50"
                 />
               </label>
             </TableCell>
@@ -142,7 +142,7 @@ export function AutoReplyRulesTable({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="rounded-md text-muted-foreground hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/30"
+                  className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
                   onClick={() => onEdit(r)}
                   aria-label={`Edit ${r.name}`}
                 >

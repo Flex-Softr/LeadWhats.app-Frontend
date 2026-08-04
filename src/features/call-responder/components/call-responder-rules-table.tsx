@@ -56,7 +56,7 @@ export function CallResponderRulesTable({
       </TableHeader>
       <TableBody>
         {rules.map((r) => (
-          <TableRow key={r.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+          <TableRow key={r.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
             <TableCell>
               <div className="min-w-0">
                 <p className="font-medium text-foreground">{r.name}</p>

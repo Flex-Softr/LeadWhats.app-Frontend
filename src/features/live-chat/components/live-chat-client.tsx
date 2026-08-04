@@ -605,14 +605,14 @@ export function LiveChatClient() {
   return (
     <div
       className={cn(
-        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm",
+        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm",
         "dark:border-slate-800 dark:bg-slate-950"
       )}
     >
-      <div className="flex flex-col gap-3 border-b border-violet-100 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex flex-col gap-3 border-b border-border bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
               <Smartphone className="size-4" />
             </div>
             <span className="whitespace-nowrap text-sm font-semibold">Live Chat</span>
@@ -687,7 +687,7 @@ export function LiveChatClient() {
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="rounded-md text-violet-700 hover:bg-violet-50 hover:text-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/40"
+              className="rounded-md text-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:bg-muted/50"
               disabled={!deviceId || devices.length === 0}
               onClick={() => setNewThreadOpen(true)}
               aria-label="New chat"
@@ -715,7 +715,7 @@ export function LiveChatClient() {
               </p>
             ) : threadsLoading ? (
               <div className="flex flex-col items-center gap-2 py-16 text-sm text-muted-foreground">
-                <Loader2 className="size-8 animate-spin text-violet-600" />
+                <Loader2 className="size-8 animate-spin text-foreground" />
                 Loading conversations...
               </div>
             ) : filteredThreads.length === 0 ? (
@@ -736,7 +736,7 @@ export function LiveChatClient() {
                         className={cn(
                           "w-full rounded-lg px-3 py-2.5 text-left transition-colors",
                           active
-                            ? "bg-violet-50 ring-1 ring-violet-200 dark:bg-violet-950/30 dark:ring-violet-900"
+                            ? "bg-muted ring-1 ring-border dark:bg-muted/30 dark:ring-border"
                             : "hover:bg-slate-100/90 dark:hover:bg-slate-900/60"
                         )}
                       >
@@ -766,7 +766,7 @@ export function LiveChatClient() {
               className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center"
               aria-live="polite"
             >
-              <div className="flex size-16 items-center justify-center rounded-lg bg-violet-50 text-violet-600 ring-1 ring-violet-100 dark:bg-violet-950/50 dark:text-violet-200 dark:ring-violet-900">
+              <div className="flex size-16 items-center justify-center rounded-lg bg-muted text-foreground ring-1 ring-border dark:bg-muted/50 dark:text-foreground dark:ring-border">
                 <MessageCircle className="size-8" />
               </div>
               <div className="space-y-1">
@@ -811,7 +811,7 @@ export function LiveChatClient() {
               >
                 {messagesLoading ? (
                   <div className="flex justify-center py-20">
-                    <Loader2 className="size-8 animate-spin text-violet-600" />
+                    <Loader2 className="size-8 animate-spin text-foreground" />
                   </div>
                 ) : messages.length === 0 ? (
                   <p className="py-12 text-center text-sm text-muted-foreground">
@@ -849,7 +849,7 @@ export function LiveChatClient() {
                             className={cn(
                               "max-w-[85%] rounded-lg px-3.5 py-2.5 text-[15px] leading-relaxed shadow-sm",
                               outbound
-                                ? "bg-violet-600 text-white"
+                                ? "bg-primary text-white"
                                 : "border border-slate-200/90 bg-white text-foreground dark:border-slate-700 dark:bg-slate-950"
                             )}
                           >
@@ -883,7 +883,7 @@ export function LiveChatClient() {
                                 className={cn(
                                   "mt-2 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm",
                                   outbound
-                                    ? "border-violet-300/60 text-white/95"
+                                    ? "border-border/60 text-white/95"
                                     : "border-slate-300 text-slate-700 dark:border-slate-700 dark:text-slate-200"
                                 )}
                               >
@@ -902,7 +902,7 @@ export function LiveChatClient() {
                               className={cn(
                                 "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]",
                                 outbound
-                                  ? "text-violet-100/90"
+                                  ? "text-primary-foreground/90"
                                   : "text-muted-foreground"
                               )}
                             >
@@ -923,7 +923,7 @@ export function LiveChatClient() {
                     <Button
                       type="button"
                       size="sm"
-                      className="pointer-events-auto h-9 rounded-md bg-violet-600 px-3 text-white shadow-md hover:bg-violet-700"
+                      className="pointer-events-auto h-9 rounded-md bg-primary px-3 text-white shadow-md hover:bg-primary/90"
                       onClick={jumpToBottom}
                     >
                       <ChevronDown className="mr-1 size-4" />
@@ -1003,7 +1003,7 @@ export function LiveChatClient() {
                       </Button>
                       <Button
                         type="button"
-                        className="h-10 shrink-0 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
+                        className="h-10 shrink-0 rounded-md bg-primary px-5 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
                         disabled={!canSend}
                         onClick={() => void handleSend()}
                       >

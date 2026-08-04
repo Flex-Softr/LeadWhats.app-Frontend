@@ -44,7 +44,7 @@ export const dashboardOverview: DashboardOverview = {
       title: "Read Rate",
       value: 0,
       trend: { label: "sessions", delta: 0, accentClass: "text-emerald-600" },
-      iconClass: "bg-violet-500",
+      iconClass: "bg-primary",
     },
     {
       id: "chats",

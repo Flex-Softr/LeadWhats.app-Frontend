@@ -10,7 +10,7 @@ const FEATURES = [
 
 export function AuthMarketingPanel() {
   return (
-    <div className="relative flex min-h-[240px] flex-col overflow-hidden bg-gradient-to-br from-violet-950 via-violet-800 to-fuchsia-600 px-8 py-10 text-white lg:min-h-screen lg:px-12 lg:py-12 xl:px-16">
+    <div className="relative flex min-h-[240px] flex-col overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-700 px-8 py-10 text-white lg:min-h-screen lg:px-12 lg:py-12 xl:px-16">
       <div
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{

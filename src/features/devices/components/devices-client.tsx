@@ -227,8 +227,8 @@ export function DevicesClient() {
 
   if (loading) {
     return (
-      <div className="mx-auto flex min-h-[420px] w-full max-w-6xl flex-col items-center justify-center gap-4 rounded-lg border border-violet-100 bg-white/85 px-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-400">
-        <div className="flex size-16 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
+      <div className="mx-auto flex min-h-[420px] w-full max-w-6xl flex-col items-center justify-center gap-4 rounded-lg border border-border bg-white/85 px-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-400">
+        <div className="flex size-16 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted/50 dark:text-muted-foreground">
           <Loader2 className="size-8 animate-spin" />
         </div>
         <p className="text-sm font-medium">Loading WhatsApp devices...</p>
@@ -238,10 +238,10 @@ export function DevicesClient() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
-      <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
               <Smartphone className="size-5" />
             </div>
             <div>
@@ -256,7 +256,7 @@ export function DevicesClient() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="grid grid-cols-3 gap-2 sm:w-[270px]">
-            <div className="rounded-lg bg-violet-50 px-3 py-2 text-center text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+            <div className="rounded-lg bg-muted px-3 py-2 text-center text-foreground dark:bg-muted/40 dark:text-foreground">
               <p className="text-lg font-bold tabular-nums">{totalDevices}</p>
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-75">
                 Total
@@ -277,7 +277,7 @@ export function DevicesClient() {
           </div>
           <Button
             type="button"
-            className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
+            className="h-10 rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary/90"
             onClick={() => setAddOpen(true)}
           >
             <Plus className="size-4" />
@@ -316,7 +316,7 @@ export function DevicesClient() {
         <Button
           type="button"
           variant="outline"
-          className="h-auto min-h-14 justify-between rounded-lg border-violet-100 bg-white px-4 py-3 text-violet-700 shadow-sm hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200"
+          className="h-auto min-h-14 justify-between rounded-lg border-border bg-white px-4 py-3 text-foreground shadow-sm hover:bg-muted dark:border-border dark:bg-slate-950 dark:text-foreground"
           onClick={() => {
             const nextReady = devices.find((d) => d.status === "qr_ready");
             if (nextReady) {
@@ -327,7 +327,7 @@ export function DevicesClient() {
           }}
         >
           <span className="flex items-center gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-foreground dark:bg-muted/40 dark:text-foreground">
               <QrCode className="size-4" />
             </span>
             <span className="font-semibold">
@@ -349,13 +349,13 @@ export function DevicesClient() {
         </div>
 
         {devices.length === 0 ? (
-          <Card className="rounded-lg border border-dashed border-violet-200 bg-white/95 shadow-sm dark:border-violet-900/60 dark:bg-slate-950/80">
+          <Card className="rounded-lg border border-dashed border-border bg-white/95 shadow-sm dark:border-border dark:bg-slate-950/80">
             <CardHeader className="sr-only">
               <CardTitle>Connected devices</CardTitle>
               <CardDescription>List of WhatsApp sessions</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center gap-6 px-6 py-14 text-center sm:px-8 sm:py-16">
-              <div className="flex size-[4.5rem] items-center justify-center rounded-lg bg-violet-50 text-violet-600 ring-1 ring-violet-100 dark:bg-violet-950/50 dark:text-violet-200 dark:ring-violet-900">
+              <div className="flex size-[4.5rem] items-center justify-center rounded-lg bg-muted text-foreground ring-1 ring-border dark:bg-muted/50 dark:text-foreground dark:ring-border">
                 <QrCode className="size-8" />
               </div>
               <div className="space-y-3">
@@ -369,7 +369,7 @@ export function DevicesClient() {
               </div>
               <Button
                 type="button"
-                className="h-11 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700"
+                className="h-11 rounded-md bg-primary px-5 font-semibold text-white hover:bg-primary/90"
                 onClick={() => setAddOpen(true)}
               >
                 <Plus className="size-4" />

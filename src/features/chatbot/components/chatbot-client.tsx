@@ -185,7 +185,7 @@ export function ChatbotClient() {
   return (
     <>
       <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
-        <div className="flex flex-col gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
               Chatbot
@@ -209,7 +209,7 @@ export function ChatbotClient() {
             </Button>
             <Button
               type="button"
-              className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
+              className="h-10 rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary/90"
               disabled={loading}
               onClick={() => openCreate()}
             >
@@ -219,7 +219,7 @@ export function ChatbotClient() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:gap-4">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
@@ -278,11 +278,11 @@ export function ChatbotClient() {
           />
         </div>
 
-        <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <CardContent className="p-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
-                <Loader2 className="size-9 animate-spin text-violet-600 dark:text-violet-400" />
+                <Loader2 className="size-9 animate-spin text-foreground dark:text-muted-foreground" />
                 <p className="text-sm">Loading flows...</p>
               </div>
             ) : flows.length === 0 ? (
@@ -296,7 +296,7 @@ export function ChatbotClient() {
                 <div className="flex justify-center">
                   <Button
                     type="button"
-                    className="h-10 rounded-md bg-violet-600 px-5 font-semibold text-white hover:bg-violet-700"
+                    className="h-10 rounded-md bg-primary px-5 font-semibold text-white hover:bg-primary/90"
                     onClick={() => openCreate()}
                   >
                     <Plus className="size-4" />

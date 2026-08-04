@@ -37,8 +37,8 @@ const accentMap: Record<
     value: "text-slate-900 dark:text-slate-50",
   },
   violet: {
-    icon: "bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400",
-    value: "text-slate-900 dark:text-slate-50",
+    icon: "bg-foreground text-background",
+    value: "text-foreground",
   },
   indigo: {
     icon: "bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",
@@ -66,7 +66,7 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "rounded-lg border border-violet-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950",
+        "transition hover:-translate-y-0.5 hover:shadow-md",
         className
       )}
     >
@@ -80,7 +80,7 @@ export function StatCard({
           <Icon className="size-[18px] sm:size-5" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.12em] leading-tight text-slate-500 dark:text-slate-400">
+          <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] leading-tight text-muted-foreground">
             {label}
           </p>
           <p

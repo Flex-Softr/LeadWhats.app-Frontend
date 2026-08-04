@@ -168,12 +168,12 @@ function ProgressBar({
   return (
     <div
       className={cn(
-        "h-2 w-full overflow-hidden rounded-full bg-violet-100 dark:bg-slate-800",
+        "h-2 w-full overflow-hidden rounded-full bg-muted dark:bg-slate-800",
         className
       )}
     >
       <div
-        className="h-full rounded-full bg-violet-600 transition-[width] duration-300"
+        className="h-full rounded-full bg-primary transition-[width] duration-300"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -476,8 +476,8 @@ export function BulkCampaignDetailPageClient({
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-16 lg:space-y-7">
         {loading && !campaign ? (
-          <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-lg border border-violet-100 bg-white py-24 text-muted-foreground shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
+          <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-lg border border-border bg-white py-24 text-muted-foreground shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <Loader2 className="size-10 animate-spin text-foreground dark:text-muted-foreground" />
             <p className="text-sm">Loading campaign...</p>
           </div>
         ) : loadError ? (
@@ -491,10 +491,10 @@ export function BulkCampaignDetailPageClient({
           </Card>
         ) : campaign && stats && detail ? (
           <>
-            <div className="rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+            <div className="rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
               <Link
                 href="/bulk-messages"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 dark:text-violet-300"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground dark:text-muted-foreground"
               >
                 <ArrowLeft className="size-4" />
                 Back to bulk messages
@@ -645,7 +645,7 @@ export function BulkCampaignDetailPageClient({
               <h2 className="mb-3 text-sm font-semibold text-foreground">
                 Delivery progress
               </h2>
-              <div className="space-y-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <div className="space-y-3 rounded-lg border border-border bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
                 <div className="flex flex-wrap items-end justify-between gap-2 text-sm">
                   <span className="text-muted-foreground">
                     WhatsApp delivered (sent)
@@ -764,7 +764,7 @@ export function BulkCampaignDetailPageClient({
             <Separator />
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <Card size="sm" className="rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+              <Card size="sm" className="rounded-lg border-border shadow-sm dark:border-slate-800">
                 <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Calendar className="size-4" />
@@ -867,7 +867,7 @@ export function BulkCampaignDetailPageClient({
                 </CardContent>
               </Card>
 
-              <Card size="sm" className="rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+              <Card size="sm" className="rounded-lg border-border shadow-sm dark:border-slate-800">
                 <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <MessageSquare className="size-4" />
@@ -924,7 +924,7 @@ export function BulkCampaignDetailPageClient({
                     </div>
                   )}
                   {campaign.attachmentType ? (
-                    <div className="rounded-lg border border-violet-100 bg-violet-50/40 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50">
+                    <div className="rounded-lg border border-border bg-muted/50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50">
                       <p className="text-xs font-medium text-muted-foreground">
                         Attachment
                       </p>
@@ -958,7 +958,7 @@ export function BulkCampaignDetailPageClient({
               </Card>
             </div>
 
-            <Card size="sm" className="rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+            <Card size="sm" className="rounded-lg border-border shadow-sm dark:border-slate-800">
               <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Smartphone className="size-4" />
@@ -974,7 +974,7 @@ export function BulkCampaignDetailPageClient({
                   {detail.devices.map((d) => (
                     <li
                       key={d.id}
-                      className="flex items-center gap-2 rounded-lg border border-violet-100 bg-violet-50/40 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/50"
+                      className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/50"
                     >
                       <Phone className="size-3.5 shrink-0 text-muted-foreground" />
                       <span className="font-medium">{d.name}</span>
@@ -1002,7 +1002,7 @@ export function BulkCampaignDetailPageClient({
                       </TableHeader>
                       <TableBody>
                         {detail.deviceSendStats.map((r) => (
-                          <TableRow key={r.deviceId} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+                          <TableRow key={r.deviceId} className="hover:bg-muted/50 dark:hover:bg-muted/50">
                             <TableCell className="font-medium">
                               <div>{r.deviceName}</div>
                               {r.phone ? (
@@ -1035,7 +1035,7 @@ export function BulkCampaignDetailPageClient({
               </CardContent>
             </Card>
 
-            <Card size="sm" className="overflow-hidden rounded-lg border-violet-100 shadow-sm dark:border-slate-800">
+            <Card size="sm" className="overflow-hidden rounded-lg border-border shadow-sm dark:border-slate-800">
               <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
@@ -1115,7 +1115,7 @@ export function BulkCampaignDetailPageClient({
                           </TableRow>
                         ) : (
                           pagedRecipients.map((r) => (
-                          <TableRow key={r.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+                          <TableRow key={r.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
                             <TableCell className="align-top font-mono text-xs">
                               {r.phone}
                               {r.lastError ? (
@@ -1183,7 +1183,7 @@ export function BulkCampaignDetailPageClient({
                       </TableHeader>
                       <TableBody>
                         {pagedMessages.map((m) => (
-                          <TableRow key={m.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+                          <TableRow key={m.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
                             <TableCell className="align-top font-mono text-xs">
                               {m.toPhone}
                               {m.errorMessage ? (

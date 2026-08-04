@@ -128,7 +128,7 @@ export function AiCredentialsClient() {
         </Button>
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardHeader className="border-b border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40">
           <CardTitle className="text-lg">Saved keys</CardTitle>
           <CardDescription>

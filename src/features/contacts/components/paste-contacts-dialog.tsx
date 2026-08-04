@@ -53,10 +53,10 @@ export function PasteContactsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-lg border-violet-100 sm:max-w-lg" showCloseButton>
+      <DialogContent className="rounded-lg border-border sm:max-w-lg" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
               <Clipboard className="size-4" />
             </div>
             <DialogTitle>Paste contacts</DialogTitle>
@@ -90,7 +90,7 @@ export function PasteContactsDialog({
             </Button>
             <Button
               type="submit"
-              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
+              className="rounded-md bg-primary font-semibold text-white hover:bg-primary/90"
               disabled={!text.trim() || working}
             >
               {working ? "Importing..." : "Import"}

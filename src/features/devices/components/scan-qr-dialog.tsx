@@ -42,8 +42,8 @@ export function ScanQrDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden rounded-lg border-violet-100 p-0 sm:max-w-2xl" showCloseButton>
-        <DialogHeader className="bg-gradient-to-br from-violet-600 to-fuchsia-500 px-6 py-6 pr-12 text-left text-white">
+      <DialogContent className="gap-0 overflow-hidden rounded-lg border-border p-0 sm:max-w-2xl" showCloseButton>
+        <DialogHeader className="bg-primary px-6 py-6 pr-12 text-left text-white">
           <div className="flex items-start gap-3">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white ring-1 ring-white/20">
               <QrCode className="size-5" />
@@ -60,14 +60,14 @@ export function ScanQrDialog({
           </div>
         </DialogHeader>
 
-        <div className="grid gap-0 bg-violet-50/50 dark:bg-slate-950 sm:grid-cols-[280px_1fr]">
+        <div className="grid gap-0 bg-muted/50 dark:bg-slate-950 sm:grid-cols-[280px_1fr]">
           <div className="flex items-center justify-center p-6 sm:p-7">
-            <div className="flex min-h-[236px] w-full max-w-[236px] items-center justify-center rounded-lg bg-white p-4 shadow-sm ring-1 ring-violet-100 dark:bg-slate-50 dark:ring-violet-200">
+            <div className="flex min-h-[236px] w-full max-w-[236px] items-center justify-center rounded-lg bg-white p-4 shadow-sm ring-1 ring-border dark:bg-slate-50 dark:ring-border">
               {showQr ? (
                 <QRCodeSVG value={qrValue} size={196} level="M" />
               ) : showSpinner ? (
                 <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-                  <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-500" />
+                  <Loader2 className="size-10 animate-spin text-foreground dark:text-muted-foreground" />
                   <p className="text-sm font-medium text-slate-600">
                     Waiting for WhatsApp QR...
                   </p>
@@ -88,7 +88,7 @@ export function ScanQrDialog({
             </div>
           </div>
 
-          <div className="space-y-5 border-t border-violet-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-950 sm:border-l sm:border-t-0">
+          <div className="space-y-5 border-t border-border bg-white p-6 dark:border-slate-800 dark:bg-slate-950 sm:border-l sm:border-t-0">
             <div>
               <p className="font-semibold text-slate-900 dark:text-slate-100">
                 Scan from your phone
@@ -107,7 +107,7 @@ export function ScanQrDialog({
                   text="Point the camera at this QR code."
                 />
               </div>
-              <p className="mt-4 rounded-md bg-violet-50 px-3 py-2 text-xs leading-5 text-violet-700 dark:bg-violet-950/30 dark:text-violet-200">
+              <p className="mt-4 rounded-md bg-muted px-3 py-2 text-xs leading-5 text-foreground dark:bg-muted/30 dark:text-foreground">
                 Android: More options - Linked devices. iPhone: Settings -
                 Linked devices.
               </p>
@@ -169,7 +169,7 @@ type StepBadgeProps = {
 function StepBadge({ icon, text }: StepBadgeProps) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-white text-violet-600 shadow-sm dark:bg-slate-950 dark:text-violet-300">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-white text-foreground shadow-sm dark:bg-slate-950 dark:text-muted-foreground">
         {icon}
       </span>
       <span className="leading-5">{text}</span>

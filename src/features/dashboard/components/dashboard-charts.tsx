@@ -57,10 +57,10 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+      <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
         <CardHeader className="flex flex-col gap-2 space-y-0 px-5 pb-1 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-0.5">
-            <CardTitle className="text-base font-bold text-[#251c32] dark:text-slate-100">
+            <CardTitle className="text-base font-bold text-foreground dark:text-slate-100">
               Message volume
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -71,7 +71,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
             value={range}
             onValueChange={(v) => setRange(v ?? "6")}
           >
-            <SelectTrigger className="h-9 w-[132px] rounded-lg border-0 bg-[#f4efff] text-xs text-[#5630a7] sm:text-sm dark:bg-slate-800 dark:text-violet-300">
+            <SelectTrigger className="h-9 w-[132px] rounded-lg border-0 bg-muted text-xs text-foreground sm:text-sm dark:bg-slate-800 dark:text-muted-foreground">
               <SelectValue placeholder="Range" />
             </SelectTrigger>
             <SelectContent>
@@ -126,9 +126,9 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
         </CardContent>
       </Card>
 
-      <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+      <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
         <CardHeader className="space-y-0.5 px-5 pb-1 pt-5">
-          <CardTitle className="text-base font-bold text-[#251c32] dark:text-slate-100">
+          <CardTitle className="text-base font-bold text-foreground dark:text-slate-100">
             Channel mix
           </CardTitle>
             <CardDescription className="text-xs sm:text-sm">

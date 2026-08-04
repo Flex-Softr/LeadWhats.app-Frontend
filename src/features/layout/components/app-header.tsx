@@ -46,18 +46,18 @@ export function AppHeader() {
   const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-violet-100/80 bg-[#f7f4fc]/92 px-4 py-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/92 sm:px-6 lg:px-7">
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/92 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-7">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-7">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <MobileSidebar />
-          <div className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-[#3c2a52] lg:flex dark:text-slate-200">
+          <div className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-foreground lg:flex">
             <Menu className="size-6" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-extrabold tracking-tight text-[#1f172b] sm:text-2xl dark:text-slate-50">
+            <h1 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               {meta.title}
             </h1>
-            <p className="mt-0.5 max-w-2xl truncate text-xs font-medium text-slate-400 sm:text-sm dark:text-slate-500">
+            <p className="mt-0.5 max-w-2xl truncate text-xs font-medium text-muted-foreground sm:text-sm">
               {meta.description}
             </p>
           </div>
@@ -65,10 +65,10 @@ export function AppHeader() {
 
         <div className="flex w-full flex-1 items-center xl:max-w-md 2xl:max-w-lg">
           <div className="relative w-full">
-            <Search className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-slate-500" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search here..."
-              className="h-12 w-full rounded-full border-0 bg-white pl-5 pr-12 text-[14px] shadow-[0_12px_32px_rgba(66,48,106,0.08)] placeholder:text-slate-400 dark:bg-slate-900 dark:shadow-none"
+              className="h-11 w-full rounded-full pl-11 pr-4 text-[14px]"
             />
           </div>
         </div>
@@ -81,7 +81,7 @@ export function AppHeader() {
             size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="size-10 rounded-full text-[#6d45c8] hover:bg-white dark:text-violet-300 dark:hover:bg-slate-900"
+            className="size-10 rounded-full text-foreground hover:bg-white dark:text-muted-foreground dark:hover:bg-slate-900"
           >
             {mounted ? (
               isDark ? (
@@ -96,10 +96,10 @@ export function AppHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative size-10 rounded-full text-[#6d45c8] hover:bg-white dark:text-violet-300 dark:hover:bg-slate-900"
+            className="relative size-10 rounded-full text-foreground hover:bg-white dark:text-muted-foreground dark:hover:bg-slate-900"
             aria-label="Notifications"
           >
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500 ring-2 ring-[#f7f4fc] dark:ring-slate-950" />
+            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500 ring-2 ring-background dark:ring-slate-950" />
             <Bell className="size-[20px]" />
           </Button>
 
@@ -133,7 +133,7 @@ export function AppHeader() {
               }
             >
               <Avatar className="size-10 border-2 border-white shadow-sm">
-                <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-xs font-semibold text-white">
+                <AvatarFallback className="bg-primary text-xs font-semibold text-white">
                   {authUser ? userInitials(authUser) : "?"}
                 </AvatarFallback>
               </Avatar>

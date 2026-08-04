@@ -14,12 +14,12 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
   const Icon = summaryIcons[data.icon];
 
   return (
-    <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+    <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-5 pb-1 pt-5">
-        <CardTitle className="text-sm font-bold text-[#251c32] dark:text-slate-100">
+        <CardTitle className="text-sm font-bold text-foreground dark:text-slate-100">
           {data.title}
         </CardTitle>
-        <span className="flex size-9 items-center justify-center rounded-lg bg-[#f0eaff] text-[#6d45c8] dark:bg-slate-800 dark:text-violet-300">
+        <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-slate-800 dark:text-muted-foreground">
           <Icon className="size-4" />
         </span>
       </CardHeader>
@@ -44,9 +44,9 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
             <span>Utilization</span>
             <span>{data.progress}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-[#eee9f8] dark:bg-slate-800">
+          <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-slate-800">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#7d58d6] to-[#f05ad6]"
+              className="h-full rounded-full bg-primary"
               style={{ width: `${Math.min(data.progress, 100)}%` }}
             />
           </div>

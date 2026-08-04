@@ -90,7 +90,7 @@ export function TablePagination({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4 sm:gap-y-2 sm:px-5 sm:py-3.5",
+        "flex flex-col gap-3 border-t border-border/70 bg-card px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4 sm:gap-y-2 sm:px-5 sm:py-4",
         className
       )}
       role="navigation"

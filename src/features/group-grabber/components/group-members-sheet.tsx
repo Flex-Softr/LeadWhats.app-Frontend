@@ -320,7 +320,7 @@ export function GroupMembersSheet({
           <label className="flex cursor-pointer items-start gap-3 text-sm">
             <input
               type="checkbox"
-              className="mt-0.5 size-4 shrink-0 rounded border-slate-300 accent-violet-600 dark:border-slate-600"
+              className="mt-0.5 size-4 shrink-0 rounded border-slate-300 accent-primary dark:border-slate-600"
               checked={excludeGroupAdmins}
               onChange={(e) => setExcludeGroupAdmins(e.target.checked)}
             />
@@ -340,7 +340,7 @@ export function GroupMembersSheet({
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 [-webkit-overflow-scrolling:touch]">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-500">
-                <Loader2 className="size-8 animate-spin text-violet-600" />
+                <Loader2 className="size-8 animate-spin text-foreground" />
                 <p className="text-sm">Fetching members from WhatsApp…</p>
               </div>
             ) : error ? (
@@ -504,14 +504,14 @@ export function GroupMembersSheet({
 
                 <div className="mt-4 space-y-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
                   <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    <UserPlus className="size-4 text-violet-600" />
+                    <UserPlus className="size-4 text-foreground" />
                     Add to contacts
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Imports use your{" "}
                     <Link
                       href="/contacts"
-                      className="font-medium text-violet-600 underline dark:text-violet-400"
+                      className="font-medium text-foreground underline dark:text-muted-foreground"
                     >
                       Contacts
                     </Link>{" "}

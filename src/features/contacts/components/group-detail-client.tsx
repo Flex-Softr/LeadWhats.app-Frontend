@@ -89,6 +89,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
   const [exportingFormat, setExportingFormat] = React.useState<
     "csv" | "xlsx" | null
   >(null);
+  const [revalidating, setRevalidating] = React.useState(false);
   const [selectedContactIds, setSelectedContactIds] = React.useState<Set<string>>(
     () => new Set()
   );
@@ -240,7 +241,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 
   if (!detailLoading && !group) {
     return (
-      <div className="mx-auto w-full max-w-6xl space-y-5 rounded-lg border border-violet-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="mx-auto w-full max-w-6xl space-y-5 rounded-lg border border-border bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <p className="text-[15px] text-muted-foreground">
           This group could not be found.
         </p>
@@ -258,10 +259,10 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
-      <div className="rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+      <div className="rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
         <Link
           href="/contacts"
-          className="inline-flex cursor-pointer items-center text-sm font-semibold text-violet-700 hover:text-violet-800 dark:text-violet-300"
+          className="inline-flex cursor-pointer items-center text-sm font-semibold text-foreground hover:text-foreground dark:text-muted-foreground"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to groups
@@ -271,7 +272,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
               {detailLoading ? (
                 <span className="inline-flex items-center gap-2">
-                  <Loader2 className="size-6 animate-spin text-violet-600 dark:text-violet-400" />
+                  <Loader2 className="size-6 animate-spin text-foreground dark:text-muted-foreground" />
                   Loading...
                 </span>
               ) : (
@@ -287,7 +288,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
             <Button
               type="button"
-              className="h-10 rounded-md bg-violet-600 px-4 font-semibold text-white hover:bg-violet-700"
+              className="h-10 rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary/90"
               disabled={detailLoading || !group}
               onClick={() => setAddOpen(true)}
             >
@@ -361,9 +362,10 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             type="button"
             variant="outline"
             className="h-10 rounded-md px-4"
-            disabled={detailLoading || !group}
+            disabled={detailLoading || !group || revalidating}
             onClick={() =>
               void (async () => {
+                setRevalidating(true);
                 try {
                   const out = await revalidateGroupPhones(groupId);
                   const waHint = out.whatsappChecked
@@ -381,12 +383,18 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                       ? err.message
                       : "Could not revalidate numbers.";
                   toast.error("Revalidation failed", { description: msg });
+                } finally {
+                  setRevalidating(false);
                 }
               })()
             }
           >
-            <Phone className="size-4" />
-            Revalidate numbers
+            {revalidating ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Phone className="size-4" />
+            )}
+            {revalidating ? "Revalidating…" : "Revalidate numbers"}
           </Button>
           <Button
             type="button"
@@ -446,7 +454,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         />
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardHeader className="flex flex-col gap-4 space-y-0 border-b border-slate-100 bg-slate-50/60 px-5 py-5 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
             <h3 className="text-base font-semibold sm:text-lg">
@@ -514,7 +522,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         <CardContent className="p-0">
           {detailLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-500 dark:text-slate-400">
-              <Loader2 className="size-8 animate-spin text-violet-600 dark:text-violet-400" />
+              <Loader2 className="size-8 animate-spin text-foreground dark:text-muted-foreground" />
               <p className="text-sm">Loading contacts…</p>
             </div>
           ) : filtered.length === 0 ? (
@@ -586,7 +594,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                     <TableRow
                       key={r.id}
                       data-state={selectedContactIds.has(r.id) ? "selected" : undefined}
-                      className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20"
+                      className="hover:bg-muted/50 dark:hover:bg-muted/50"
                     >
                       <TableCell>
                         <SelectionCheckbox
@@ -612,7 +620,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            className="rounded-md text-muted-foreground hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/30"
+                            className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
                             aria-label={`Edit ${r.name}`}
                             onClick={(e) => {
                               e.preventDefault();
@@ -814,7 +822,7 @@ function SelectionCheckbox({
       checked={checked}
       aria-label={ariaLabel}
       onChange={(event) => onCheckedChange(event.currentTarget.checked)}
-      className="size-4 cursor-pointer rounded border-slate-300 accent-violet-600"
+      className="size-4 cursor-pointer rounded border-slate-300 accent-primary"
     />
   );
 }

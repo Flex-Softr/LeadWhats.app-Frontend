@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import {
+  Check,
   CheckCircle2,
+  ChevronRight,
   Loader2,
+  Minus,
   Phone,
   Plus,
   Send,
@@ -12,7 +15,6 @@ import {
   Sparkles,
   Trash2,
   Upload,
-  Users,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -70,6 +72,9 @@ const ATTACHMENT_TYPES = [
   { value: "audio", label: "Audio" },
 ] as const;
 
+/** Sentinel for Base UI Select when no credential is chosen. */
+const CREDENTIAL_NONE = "__none__";
+
 type AttachmentType = (typeof ATTACHMENT_TYPES)[number]["value"];
 type SelectionMode = "groups" | "allVerified" | "manual";
 type ScheduleType = "immediate" | "scheduled";
@@ -101,6 +106,41 @@ const DEVICE_MODE_OPTIONS: {
     icon: Shuffle,
   },
 ];
+
+const WIZARD_STEPS = [
+  {
+    id: "setup",
+    title: "Setup",
+    blurb: "Name the campaign and choose sender devices.",
+  },
+  {
+    id: "message",
+    title: "Message",
+    blurb: "Write content, pick a template, and attach media.",
+  },
+  {
+    id: "audience",
+    title: "Audience",
+    blurb: "Select who should receive this campaign.",
+  },
+  {
+    id: "schedule",
+    title: "Schedule",
+    blurb: "Choose when to send and pacing between messages.",
+  },
+  {
+    id: "protection",
+    title: "Protection",
+    blurb: "Configure anti-block filters and send windows.",
+  },
+  {
+    id: "summary",
+    title: "Summary",
+    blurb: "Review details and create the campaign.",
+  },
+] as const;
+
+type WizardStepId = (typeof WIZARD_STEPS)[number]["id"];
 
 function acceptForAttachmentType(t: AttachmentType): string {
   switch (t) {
@@ -168,6 +208,12 @@ export function CreateBulkCampaignDialog({
 
   const [contextLoading, setContextLoading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+  const [wizardStep, setWizardStep] = React.useState(0);
+  const [protectionOpen, setProtectionOpen] = React.useState({
+    filters: true,
+    pacing: true,
+    hours: false,
+  });
   const [allDevices, setAllDevices] = React.useState<DeviceApiRecord[]>([]);
   const [templates, setTemplates] = React.useState<MessageTemplateApiRecord[]>(
     []
@@ -220,13 +266,14 @@ export function CreateBulkCampaignDialog({
   const [inactiveHoursStart, setInactiveHoursStart] = React.useState("");
   const [inactiveHoursEnd, setInactiveHoursEnd] = React.useState("");
   const g = globalStats();
-  const fieldClass =
-    "h-12 rounded-lg border-slate-200 bg-slate-50 px-3 shadow-inner shadow-violet-950/5 transition-colors hover:bg-slate-50 focus-visible:border-violet-400 focus-visible:ring-violet-500/20 disabled:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/70 dark:hover:bg-slate-900/70";
-  const textareaClass =
-    "resize-y rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-relaxed shadow-inner shadow-violet-950/5 focus-visible:border-violet-400 focus-visible:ring-violet-500/20 dark:border-slate-800 dark:bg-slate-900/70";
+  const fieldClass = "h-11";
+  const textareaClass = "resize-y text-[15px] leading-relaxed";
   const sectionClass =
-    "rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950";
-  const helperClass = "text-xs leading-5 text-slate-500 dark:text-slate-400";
+    "rounded-xl border border-border bg-card p-5 shadow-sm";
+  const helperClass = "text-xs leading-5 text-muted-foreground";
+  /** Clear field chrome on tinted panels (e.g. AI rewrites). */
+  const tintedFieldClass =
+    "border-border bg-card hover:bg-card focus-visible:border-border focus-visible:bg-card dark:bg-card dark:hover:bg-card dark:focus-visible:bg-card";
 
   const activeHoursEnabled =
   activeHoursStart.trim() !== "" &&
@@ -265,6 +312,8 @@ export function CreateBulkCampaignDialog({
         );
         const connected = devRes.devices.filter((d) => d.status === "connected");
 
+        setWizardStep(0);
+        setProtectionOpen({ filters: true, pacing: true, hours: false });
         setCampaignName("");
         setDeviceMode("round_robin");
         setSessionIds(new Set(connected.map((d) => d.id)));
@@ -518,6 +567,94 @@ export function CreateBulkCampaignDialog({
     activeHoursPairOk &&
     inactiveHoursPairOk;
 
+  const setupOk =
+    campaignName.trim().length > 0 && devicesOk && hasConnectedDevice;
+  const messageStepOk = messageOk && aiRewriteOk && poolWithinPlan;
+  const protectionOk = activeHoursPairOk && inactiveHoursPairOk;
+
+  function stepComplete(index: number): boolean {
+    switch (WIZARD_STEPS[index]?.id as WizardStepId | undefined) {
+      case "setup":
+        return setupOk;
+      case "message":
+        return messageStepOk;
+      case "audience":
+        return recipientsOk;
+      case "schedule":
+        return scheduleOk;
+      case "protection":
+        return protectionOk;
+      case "summary":
+        return canSubmit;
+      default:
+        return false;
+    }
+  }
+
+  function validateCurrentStep(): boolean {
+    const id = WIZARD_STEPS[wizardStep]?.id;
+    if (id === "setup" && !setupOk) {
+      toast.error("Setup incomplete", {
+        description:
+          "Enter a campaign name and select at least one connected device.",
+      });
+      return false;
+    }
+    if (id === "message" && !messageStepOk) {
+      toast.error("Message incomplete", {
+        description:
+          "Add message content or a template, and keep AI settings within plan limits.",
+      });
+      return false;
+    }
+    if (id === "audience" && !recipientsOk) {
+      toast.error("Audience incomplete", {
+        description: "Select groups, verified contacts, or enter phone numbers.",
+      });
+      return false;
+    }
+    if (id === "schedule" && !scheduleOk) {
+      toast.error("Schedule incomplete", {
+        description: "Pick a send time for scheduled campaigns.",
+      });
+      return false;
+    }
+    if (id === "protection" && !protectionOk) {
+      toast.error("Protection incomplete", {
+        description: "Set both start and end for active/inactive hours, or clear them.",
+      });
+      return false;
+    }
+    return true;
+  }
+
+  function goNext() {
+    if (!validateCurrentStep()) return;
+    setWizardStep((s) => Math.min(WIZARD_STEPS.length - 1, s + 1));
+  }
+
+  function goBack() {
+    setWizardStep((s) => Math.max(0, s - 1));
+  }
+
+  function goToStep(index: number) {
+    if (index === wizardStep) return;
+    if (index < wizardStep) {
+      setWizardStep(index);
+      return;
+    }
+    for (let i = wizardStep; i < index; i += 1) {
+      if (!stepComplete(i)) {
+        toast.error("Complete earlier steps first", {
+          description: `Finish “${WIZARD_STEPS[i].title}” before continuing.`,
+        });
+        setWizardStep(i);
+        return;
+      }
+    }
+    setWizardStep(index);
+  }
+
   async function handleSubmit() {
     if (!canSubmit) return;
     setSubmitting(true);
@@ -667,80 +804,133 @@ export function CreateBulkCampaignDialog({
       <DialogContent
         showCloseButton={false}
         className={cn(
-          "max-h-[min(94vh,900px)] max-w-[calc(100%-.5rem)] gap-0 overflow-hidden rounded-lg p-0",
-          "border border-violet-100 bg-white shadow-[0_22px_70px_rgba(72,43,132,0.18)]",
-          "sm:max-w-6xl dark:border-slate-800 dark:bg-slate-950"
+          "flex max-h-[min(94vh,900px)] max-w-[calc(100%-.5rem)] flex-col gap-0 overflow-hidden rounded-xl p-0",
+          "border border-border bg-card shadow-xl",
+          "sm:max-w-6xl md:flex-row"
         )}
       >
         <AiPanelErrorBoundary label="Campaign dialog crashed while updating.">
-        <DialogHeader className="relative border-b border-violet-100 bg-white px-6 pb-5 pt-6 text-left dark:border-slate-800 dark:bg-slate-950 sm:px-8 sm:pb-6 sm:pt-7">
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={() => onOpenChange(false)}
-            className="absolute top-4 right-4 inline-flex size-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            <X className="size-4" />
-          </button>
-          <div className="flex items-start gap-3 pr-8">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
-              <Send className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <DialogTitle className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
-                Build message campaign
+          {/* Sidebar wizard stepper */}
+          <aside className="flex shrink-0 flex-col border-b border-border bg-muted/60 md:w-70 md:border-b-0 md:border-r">
+            <DialogHeader className="space-y-1 px-5 pb-4 pt-5 text-left sm:px-6 sm:pt-6">
+              <DialogTitle className="font-heading text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                Build Campaign
               </DialogTitle>
-              <DialogDescription className="mt-1 text-[15px] leading-relaxed">
-                Configure sender devices, message content, audience, schedule,
-                and anti-block rules.
+              <DialogDescription className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                Follow each step, then confirm and send.
               </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+            </DialogHeader>
 
-        {contextLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-24 text-slate-500 dark:text-slate-400">
-            <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
-            <p className="text-sm">Loading devices and templates...</p>
-          </div>
-        ) : (
-          <>
-            <div className="max-h-[min(64vh,660px)] overflow-y-auto bg-slate-50/55 dark:bg-slate-950">
-              <div className="flex w-full flex-col gap-6 px-6 py-7 sm:px-8 sm:py-8 md:flex-row lg:items-start">
-                <div className="w-full space-y-5 md:w-[65%]">
-                  <div className={sectionClass}>
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                          Campaign setup
-                        </h3>
-                        <p className={helperClass}>
-                          Name the campaign and choose how WhatsApp sessions
-                          should share delivery.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2.5">
-                    <Label
-                      htmlFor="bulk-campaign-name"
-                      className="text-sm font-semibold"
+            <nav
+              aria-label="Campaign wizard steps"
+              className="flex gap-2 overflow-x-auto px-5 pb-4 sm:px-6 md:flex-col md:gap-0 md:overflow-visible md:px-4 md:pb-2"
+            >
+              {WIZARD_STEPS.map((step, index) => {
+                const isActive = wizardStep === index;
+                const isComplete = index < wizardStep && stepComplete(index);
+                const isUpcoming = index > wizardStep && !isComplete;
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => goToStep(index)}
+                    className={cn(
+                      "flex min-w-30 shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors md:min-w-0 md:w-full md:px-3 md:py-3",
+                      isActive && "bg-white shadow-sm dark:bg-slate-950/60",
+                      !isActive && "hover:bg-white/70 dark:hover:bg-slate-950/40"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        isActive &&
+                          "border-slate-900 bg-slate-900 dark:border-primary dark:bg-primary",
+                        isComplete &&
+                          !isActive &&
+                          "border-primary bg-primary text-white dark:border-primary dark:bg-primary",
+                        isUpcoming &&
+                          "border-slate-200 bg-transparent dark:border-slate-700"
+                      )}
                     >
-                      Campaign Name{" "}
-                      <span className="font-normal text-red-600 dark:text-red-400">
-                        *
-                      </span>
-                    </Label>
-                    <Input
-                      id="bulk-campaign-name"
-                      value={campaignName}
-                      onChange={(e) => setCampaignName(e.target.value)}
-                      placeholder="e.g., Product Launch Announcement"
-                      className={`${fieldClass} text-[15px]`}
-                    />
+                      {isComplete && !isActive ? (
+                        <Check className="size-3.5" strokeWidth={3} />
+                      ) : isActive ? (
+                        <span className="size-2 rounded-full bg-white" />
+                      ) : null}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-sm",
+                        isActive
+                          ? "font-semibold text-slate-900 dark:text-slate-100"
+                          : isComplete
+                            ? "font-medium text-slate-700 dark:text-slate-300"
+                            : "text-slate-400 dark:text-slate-500"
+                      )}
+                    >
+                      {step.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="mt-auto hidden border-t border-border px-5 py-4 md:block sm:px-6">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                disabled={submitting}
+                className="text-sm font-medium text-muted-foreground underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground disabled:opacity-50"
+              >
+                Save &amp; Close
+              </button>
+            </div>
+          </aside>
+
+          {/* Main content pane */}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
+            {contextLoading ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
+                <Loader2 className="size-10 animate-spin text-foreground" />
+                <p className="text-sm">Loading devices and templates...</p>
+              </div>
+            ) : (
+              <>
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8 sm:py-8">
+                  <div className="mb-6 space-y-1">
+                    <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                      {WIZARD_STEPS[wizardStep].title}
+                    </h2>
+                    <p className={helperClass}>{WIZARD_STEPS[wizardStep].blurb}</p>
                   </div>
 
-                  <div className="mt-5 space-y-3">
-                    <Label className="text-sm font-semibold">Device mode</Label>
+                  <div className="space-y-5">
+                    {WIZARD_STEPS[wizardStep].id === "setup" ? (
+                      <>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <div className="space-y-2.5">
+                            <Label
+                              htmlFor="bulk-campaign-name"
+                              className="text-sm font-semibold"
+                            >
+                              Campaign Name{" "}
+                              <span className="font-normal text-red-600 dark:text-red-400">
+                                *
+                              </span>
+                            </Label>
+                            <Input
+                              id="bulk-campaign-name"
+                              value={campaignName}
+                              onChange={(e) => setCampaignName(e.target.value)}
+                              placeholder="e.g., Product Launch Announcement"
+                              className={`${fieldClass} text-[15px]`}
+                            />
+                          </div>
+                        </div>
+
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <div className="space-y-3">
+                            <Label className="text-sm font-semibold">Device mode</Label>
                     <div className="grid gap-3 sm:grid-cols-3">
                       {DEVICE_MODE_OPTIONS.map((opt) => {
                         const Icon = opt.icon;
@@ -751,18 +941,18 @@ export function CreateBulkCampaignDialog({
                             type="button"
                             onClick={() => setDeviceMode(opt.value)}
                             className={cn(
-                              "flex min-h-24 flex-col items-start gap-2 rounded-lg border px-4 py-3.5 text-left shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-violet-500/20",
+                              "flex min-h-24 flex-col items-start gap-2 rounded-xl border px-4 py-3.5 text-left shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/20",
                               active
-                                ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40"
-                                : "border-slate-100 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
+                                ? "border-foreground/20 bg-muted text-foreground ring-2 ring-foreground/10"
+                                : "border-border bg-card text-muted-foreground hover:bg-muted/50"
                             )}
                           >
                             <span
                               className={cn(
                                 "flex size-10 items-center justify-center rounded-lg",
                                 active
-                                  ? "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200"
-                                  : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
+                                  ? "bg-foreground text-background"
+                                  : "bg-muted text-muted-foreground"
                               )}
                             >
                               <Icon
@@ -781,138 +971,146 @@ export function CreateBulkCampaignDialog({
                         );
                       })}
                     </div>
-                    <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                      <span className="font-medium text-slate-600 dark:text-slate-300">
-                        Single:
-                      </span>{" "}
-                      all sends use one session.{" "}
-                      <span className="font-medium text-slate-600 dark:text-slate-300">
-                        Failover:
-                      </span>{" "}
-                      try the next device if the previous is offline.{" "}
-                      <span className="font-medium text-slate-600 dark:text-slate-300">
-                        Round robin:
-                      </span>{" "}
-                      spread recipients across selected devices.
-                    </p>
-                  </div>
-                  </div>
+                            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                              <span className="font-medium text-slate-600 dark:text-slate-300">
+                                Single:
+                              </span>{" "}
+                              all sends use one session.{" "}
+                              <span className="font-medium text-slate-600 dark:text-slate-300">
+                                Failover:
+                              </span>{" "}
+                              try the next device if the previous is offline.{" "}
+                              <span className="font-medium text-slate-600 dark:text-slate-300">
+                                Round robin:
+                              </span>{" "}
+                              spread recipients across selected devices.
+                            </p>
+                          </div>
+                        </div>
 
-                  {deviceMode === "single" ? (
-                    <div className={sectionClass}>
-                    <div className="space-y-2.5">
-                      <Label
-                        htmlFor="bulk-single-device"
-                        className="text-sm font-semibold"
-                      >
-                        Device{" "}
-                        <span className="font-normal text-red-600 dark:text-red-400">
-                          *
-                        </span>
-                      </Label>
-                      <Select
-	                  value={singleDeviceId}
-	                  onValueChange={(v) => setSingleDeviceId(v ?? "")}
-                >
-                  <SelectTrigger
-                    id="device"
-                    size="default"
-                    className={`${fieldClass} w-full min-w-0`}
-                  >
-                    <SelectValue placeholder="Choose a connected device…">
-                      {selectedDevice ? deviceName(selectedDevice) : null}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {connected.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {deviceName(d)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedDevice ? (
-                  <p className={helperClass}>
-                    Outgoing messages will use this WhatsApp session (
-                    {selectedDevice.phone ?? "number on file"}).
-                  </p>
-                ) : null}
-                    </div>
-                    </div>
-                  ) : (
-                    <div className={sectionClass}>
-                    <div className="space-y-2.5">
-                      <Label className="text-sm font-semibold">
-                        WhatsApp sessions{" "}
-                        <span className="font-normal text-red-600 dark:text-red-400">
-                          *
-                        </span>
-                        <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
-                          (select one or more)
-                        </span>
-                      </Label>
-                      <div className="h-44 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
-                        <ul className="space-y-2 p-2">
-                          {allDevices.length === 0 ? (
-                            <li className="px-3 py-8 text-center text-sm text-slate-500">
-                              No devices yet — add a session under Devices.
-                            </li>
-                          ) : (
-                            allDevices.map((d) => {
-                              const connected = d.status === "connected";
-                              return (
-                                <li key={d.id}>
-                                  <label
-                                    className={cn(
-                                      "flex items-center gap-3 rounded-lg border px-3 py-3 transition-colors",
-                                      connected
-                                        ? sessionIds.has(d.id)
-                                          ? "cursor-pointer border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30"
-                                          : "cursor-pointer border-slate-100 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900"
-                                        : "cursor-not-allowed border-slate-100 bg-white opacity-60 dark:border-slate-800 dark:bg-slate-950"
-                                    )}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      disabled={!connected}
-                                      checked={sessionIds.has(d.id)}
-                                      onChange={(e) =>
-                                        toggleSession(d.id, e.target.checked)
-                                      }
-                                      className="size-4 shrink-0 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30 disabled:opacity-50"
-                                    />
-                                    <span className="text-[15px] text-slate-800 dark:text-slate-200">
-                                      {deviceLabel(d)}
-                                      {!connected ? (
-                                        <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-400">
-                                          (connect to use)
+                        {deviceMode === "single" ? (
+                          <div className={cn(sectionClass, "rounded-xl")}>
+                            <div className="space-y-2.5">
+                              <Label
+                                htmlFor="bulk-single-device"
+                                className="text-sm font-semibold"
+                              >
+                                Device{" "}
+                                <span className="font-normal text-red-600 dark:text-red-400">
+                                  *
+                                </span>
+                              </Label>
+                              <Select
+                                value={singleDeviceId}
+                                onValueChange={(v) => setSingleDeviceId(v ?? "")}
+                              >
+                                <SelectTrigger
+                                  id="bulk-single-device"
+                                  size="default"
+                                  className={`${fieldClass} w-full min-w-0`}
+                                >
+                                  <SelectValue placeholder="Choose a connected device…">
+                                    {selectedDevice ? deviceName(selectedDevice) : null}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {connected.map((d) => (
+                                    <SelectItem key={d.id} value={d.id}>
+                                      {deviceName(d)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {selectedDevice ? (
+                                <p className={helperClass}>
+                                  Outgoing messages will use this WhatsApp session (
+                                  {selectedDevice.phone ?? "number on file"}).
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={cn(sectionClass, "rounded-xl")}>
+                            <div className="space-y-2.5">
+                              <Label className="text-sm font-semibold">
+                                WhatsApp sessions{" "}
+                                <span className="font-normal text-red-600 dark:text-red-400">
+                                  *
+                                </span>
+                                <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
+                                  (select one or more)
+                                </span>
+                              </Label>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {allDevices.length === 0 ? (
+                                  <p className="col-span-full px-3 py-8 text-center text-sm text-slate-500">
+                                    No devices yet — add a session under Devices.
+                                  </p>
+                                ) : (
+                                  allDevices.map((d) => {
+                                    const isConnected = d.status === "connected";
+                                    return (
+                                      <label
+                                        key={d.id}
+                                        className={cn(
+                                          "flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors",
+                                          isConnected
+                                            ? sessionIds.has(d.id)
+                                              ? "cursor-pointer border-border bg-muted dark:border-border dark:bg-muted/30"
+                                              : "cursor-pointer border-slate-100 bg-white hover:border-border hover:bg-muted/50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-border"
+                                            : "cursor-not-allowed border-slate-100 bg-white opacity-60 dark:border-slate-800 dark:bg-slate-950"
+                                        )}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          disabled={!isConnected}
+                                          checked={sessionIds.has(d.id)}
+                                          onChange={(e) =>
+                                            toggleSession(d.id, e.target.checked)
+                                          }
+                                          className="size-4 shrink-0 rounded border-slate-300 text-foreground focus:ring-ring/20 disabled:opacity-50"
+                                        />
+                                        <span className="min-w-0 flex-1">
+                                          <span className="block truncate text-sm font-medium text-slate-800 dark:text-slate-200">
+                                            {deviceLabel(d)}
+                                          </span>
                                         </span>
-                                      ) : null}
-                                    </span>
-                                  </label>
-                                </li>
-                              );
-                            })
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                    </div>
-                  )}
+                                        <span
+                                          className={cn(
+                                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                                            isConnected
+                                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                                              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                                          )}
+                                        >
+                                          {isConnected ? "Connected" : "Inactive"}
+                                        </span>
+                                      </label>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : null}
 
-                  <div className={sectionClass}>
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold">Message Type</Label>
-                    <MessageTypeCards
-                      value={messageType}
-                      onChange={setMessageType}
-                    />
-                  </div>
-                  </div>
+                    {WIZARD_STEPS[wizardStep].id === "message" ? (
+                      <>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <div className="space-y-3">
+                            <Label className="text-sm font-semibold">Message Type</Label>
+                            <MessageTypeCards
+                              value={messageType}
+                              onChange={setMessageType}
+                            />
+                          </div>
+                        </div>
 
-                  {messageType === "text" ? (
-                    <>
-                    <div className={sectionClass}>
+                        {messageType === "text" ? (
+                          <>
+                            <div className={cn(sectionClass, "rounded-xl")}>
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="space-y-1">
@@ -928,7 +1126,7 @@ export function CreateBulkCampaignDialog({
                             total (custom + AI).
                           </p>
                         </div>
-                        <span className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800 dark:bg-violet-900/70 dark:text-violet-200">
+                        <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground dark:bg-muted dark:text-foreground">
                           {customFilledCount +
                             (aiRewriteEnabled ? safeAiCount : 0)}
                           /{maxMessageContents}
@@ -993,7 +1191,7 @@ export function CreateBulkCampaignDialog({
                     <div
                       className={cn(
                         sectionClass,
-                        "border-sky-200/80 bg-sky-50/40 dark:border-sky-900/60 dark:bg-sky-950/20"
+                        "rounded-xl border-sky-200/80 bg-sky-50/40 dark:border-sky-900/60 dark:bg-sky-950/20"
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -1036,20 +1234,20 @@ export function CreateBulkCampaignDialog({
                       {aiRewriteEnabled ? (
                         <div className="mt-4 space-y-4 border-t border-sky-200/70 pt-4 dark:border-sky-900/50">
                           <div className="space-y-2">
-                            <label
+                            <Label
                               htmlFor="bulk-ai-rewrite-count"
                               className="text-sm font-semibold"
                             >
                               Number of AI variants
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                               id="bulk-ai-rewrite-count"
                               type="number"
                               min={1}
                               max={Math.max(1, maxAiSlots)}
                               value={aiRewriteCount}
                               onChange={(e) => setAiRewriteCount(e.target.value)}
-                              className={`${fieldClass} w-full`}
+                              className={cn(fieldClass, "w-full", tintedFieldClass)}
                             />
                             <p className={helperClass}>
                               Remaining slots after custom messages: {maxAiSlots}.
@@ -1065,47 +1263,67 @@ export function CreateBulkCampaignDialog({
                             </p>
                           ) : (
                             <div className="space-y-2">
-                              <label
+                              <Label
                                 htmlFor="bulk-ai-credential"
                                 className="text-xs font-semibold"
                               >
                                 Credential{" "}
                                 <span className="text-red-600">*</span>
-                              </label>
-                              <select
-                                id="bulk-ai-credential"
-                                value={aiRewriteSettings.credentialId}
-                                onChange={(e) =>
+                              </Label>
+                              <Select
+                                value={
+                                  aiRewriteSettings.credentialId.trim() &&
+                                  activeCredentials.some(
+                                    (c) => c.id === aiRewriteSettings.credentialId
+                                  )
+                                    ? aiRewriteSettings.credentialId
+                                    : CREDENTIAL_NONE
+                                }
+                                onValueChange={(v) =>
                                   setAiRewriteSettings((prev) => ({
                                     ...prev,
-                                    credentialId: e.target.value,
+                                    credentialId:
+                                      !v || v === CREDENTIAL_NONE ? "" : v,
                                     model: "",
                                   }))
                                 }
-                                className={`${fieldClass} w-full`}
                               >
-                                <option value="">Select credential…</option>
-                                {activeCredentials.map((c) => (
-                                  <option key={c.id} value={c.id}>
-                                    {c.name} ·{" "}
-                                    {c.provider === "gemini"
-                                      ? "Gemini"
-                                      : "OpenRouter"}{" "}
-                                    ({c.apiKeyMasked})
-                                  </option>
-                                ))}
-                              </select>
+                                <SelectTrigger
+                                  id="bulk-ai-credential"
+                                  className={cn(
+                                    fieldClass,
+                                    "w-full",
+                                    tintedFieldClass
+                                  )}
+                                >
+                                  <SelectValue placeholder="Select credential…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={CREDENTIAL_NONE}>
+                                    Select credential…
+                                  </SelectItem>
+                                  {activeCredentials.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                      {c.name} ·{" "}
+                                      {c.provider === "gemini"
+                                        ? "Gemini"
+                                        : "OpenRouter"}{" "}
+                                      ({c.apiKeyMasked})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                           )}
 
                           <div className="space-y-2">
-                            <label
+                            <Label
                               htmlFor="bulk-ai-system-prompt"
                               className="text-xs font-semibold"
                             >
                               System prompt (optional)
-                            </label>
-                            <textarea
+                            </Label>
+                            <Textarea
                               id="bulk-ai-system-prompt"
                               value={aiRewriteSettings.systemPrompt}
                               onChange={(e) =>
@@ -1115,19 +1333,23 @@ export function CreateBulkCampaignDialog({
                                 }))
                               }
                               placeholder="Keep the same meaning; vary wording naturally…"
-                              className={`${textareaClass} block w-full min-h-28`}
+                              className={cn(
+                                textareaClass,
+                                "min-h-28 w-full",
+                                tintedFieldClass
+                              )}
                             />
                           </div>
 
                           <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <label
+                              <Label
                                 htmlFor="bulk-ai-temperature"
                                 className="text-xs font-semibold"
                               >
                                 Temperature
-                              </label>
-                              <input
+                              </Label>
+                              <Input
                                 id="bulk-ai-temperature"
                                 type="number"
                                 step="0.1"
@@ -1140,17 +1362,21 @@ export function CreateBulkCampaignDialog({
                                     temperature: e.target.value,
                                   }))
                                 }
-                                className={`${fieldClass} w-full`}
+                                className={cn(
+                                  fieldClass,
+                                  "w-full",
+                                  tintedFieldClass
+                                )}
                               />
                             </div>
                             <div className="space-y-2">
-                              <label
+                              <Label
                                 htmlFor="bulk-ai-max-tokens"
                                 className="text-xs font-semibold"
                               >
                                 Max tokens (optional)
-                              </label>
-                              <input
+                              </Label>
+                              <Input
                                 id="bulk-ai-max-tokens"
                                 value={aiRewriteSettings.maxTokens}
                                 onChange={(e) =>
@@ -1160,16 +1386,20 @@ export function CreateBulkCampaignDialog({
                                   }))
                                 }
                                 placeholder="Leave empty for default"
-                                className={`${fieldClass} w-full`}
+                                className={cn(
+                                  fieldClass,
+                                  "w-full",
+                                  tintedFieldClass
+                                )}
                               />
                             </div>
                           </div>
                         </div>
                       ) : null}
                     </div>
-                    </>
-                  ) : (
-                    <div className={sectionClass}>
+                          </>
+                        ) : (
+                          <div className={cn(sectionClass, "rounded-xl")}>
                     <div className="space-y-2.5">
                       <Label
                         htmlFor="bulk-template"
@@ -1197,7 +1427,12 @@ export function CreateBulkCampaignDialog({
                             id="bulk-template"
                             className={`${fieldClass} w-full`}
                           >
-                            <SelectValue placeholder="Choose a template..." />
+                            <SelectValue placeholder="Choose a template...">
+                              {templateId
+                                ? templates.find((t) => t.id === templateId)
+                                    ?.name ?? null
+                                : null}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__none__">
@@ -1211,21 +1446,21 @@ export function CreateBulkCampaignDialog({
                           </SelectContent>
                         </Select>
                       )}
-                    </div>
-                    </div>
-                  )}
+                            </div>
+                          </div>
+                        )}
 
-                  <div className={sectionClass}>
-                    <div className="mb-4 flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                          Attachment
-                        </h3>
-                        <p className={helperClass}>
-                          Optional media or document attached to each text send.
-                        </p>
-                      </div>
-                    </div>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <div className="mb-4 flex items-start justify-between gap-3">
+                            <div>
+                              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                Attachment
+                              </h3>
+                              <p className={helperClass}>
+                                Optional media or document attached to each text send.
+                              </p>
+                            </div>
+                          </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         Attachment type
@@ -1261,7 +1496,7 @@ export function CreateBulkCampaignDialog({
                           onChange={(e) => void handleAttachmentFile(e)}
                           className="sr-only"
                         />
-                        <span className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-violet-100 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm transition-colors hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200 dark:hover:bg-violet-950/20">
+                        <span className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted dark:border-border dark:bg-slate-950 dark:text-foreground dark:hover:bg-muted/50">
                           {attachmentUploading ? (
                             <Loader2 className="size-4 animate-spin" />
                           ) : (
@@ -1297,9 +1532,219 @@ export function CreateBulkCampaignDialog({
                         </p>
                       )}
                     </div>
-                  </div>
+                        </div>
+                      </>
+                    ) : null}
 
-                  <div className={`${sectionClass} grid gap-5 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-5`}>
+                    {WIZARD_STEPS[wizardStep].id === "audience" ? (
+                      <>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <div className="flex flex-col gap-2.5">
+                            {(
+                              [
+                                {
+                                  value: "groups" as const,
+                                  title: "Contact Groups (Recommended)",
+                                },
+                                {
+                                  value: "allVerified" as const,
+                                  title: "All Verified Contacts",
+                                },
+                                {
+                                  value: "manual" as const,
+                                  title: "Manual Selection",
+                                },
+                              ] satisfies { value: SelectionMode; title: string }[]
+                            ).map((opt) => (
+                              <label
+                                key={opt.value}
+                                className={cn(
+                                  "flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 shadow-sm transition-colors",
+                                  selectionMode === opt.value
+                                    ? "border-foreground/20 bg-muted text-foreground ring-2 ring-foreground/10"
+                                    : "border-border bg-card hover:bg-muted/50"
+                                )}
+                              >
+                                <input
+                                  type="radio"
+                                  name="bulk-selection"
+                                  className="size-4 shrink-0 text-foreground focus:ring-ring/30"
+                                  checked={selectionMode === opt.value}
+                                  onChange={() => setSelectionMode(opt.value)}
+                                />
+                                <span className="text-[15px] font-medium text-slate-800 dark:text-slate-100">
+                                  {opt.title}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {selectionMode === "groups" ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <Label className="text-sm font-semibold">
+                                {groups.length}{" "}
+                                {groups.length === 1 ? "Group" : "Groups"} Found
+                              </Label>
+                              {selectedGroupIds.size > 0 ? (
+                                <button
+                                  type="button"
+                                  className="text-sm font-medium text-slate-500 underline decoration-dashed underline-offset-4 hover:text-foreground dark:hover:text-foreground"
+                                  onClick={() => setSelectedGroupIds(new Set())}
+                                >
+                                  Clear
+                                </button>
+                              ) : null}
+                            </div>
+                            {groups.length === 0 ? (
+                              <p className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-950">
+                                No groups yet — create one under Contacts.
+                              </p>
+                            ) : (
+                              <div className="grid max-h-[min(48vh,420px)] gap-3 overflow-y-auto sm:grid-cols-2">
+                                {groups.map((gr) => {
+                                  const st = groupStats(gr.id);
+                                  const selected = selectedGroupIds.has(gr.id);
+                                  return (
+                                    <div
+                                      key={gr.id}
+                                      className={cn(
+                                        "flex flex-col rounded-xl border bg-white p-4 shadow-sm transition-colors dark:bg-slate-950",
+                                        selected
+                                          ? "border-border ring-2 ring-ring/20 dark:border-border"
+                                          : "border-slate-200 dark:border-slate-800"
+                                      )}
+                                    >
+                                      <div className="mb-4 flex items-start justify-between gap-2">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                            {gr.name.slice(0, 2).toUpperCase()}
+                                          </span>
+                                          <div className="min-w-0">
+                                            <p className="truncate text-[15px] font-semibold text-slate-900 dark:text-slate-100">
+                                              {gr.name}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                              {st.total} contacts
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <span
+                                          className={cn(
+                                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                                            st.verified > 0
+                                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                                              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                                          )}
+                                        >
+                                          {st.verified > 0 ? "Active" : "Empty"}
+                                        </span>
+                                      </div>
+                                      <div className="mb-4 grid grid-cols-2 gap-3">
+                                        <div>
+                                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                            Verified
+                                          </p>
+                                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                            {st.verified}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                            Total
+                                          </p>
+                                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                            {st.total}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        className={cn(
+                                          "mt-auto h-10 w-full rounded-lg font-semibold",
+                                          selected
+                                            ? "bg-slate-900 text-white hover:bg-slate-800 dark:bg-primary dark:hover:bg-primary/90"
+                                            : "bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                                        )}
+                                        onClick={() =>
+                                          toggleGroup(gr.id, !selected)
+                                        }
+                                      >
+                                        {selected ? "Selected" : "Select"}
+                                        <ChevronRight className="size-4" />
+                                      </Button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
+
+                        {selectionMode === "manual" ? (
+                          <div className={cn(sectionClass, "rounded-xl")}>
+                            <div className="space-y-2.5">
+                              <Label
+                                htmlFor="bulk-manual"
+                                className="text-sm font-semibold"
+                              >
+                                Phone numbers
+                              </Label>
+                              <Textarea
+                                id="bulk-manual"
+                                value={manualNumbers}
+                                onChange={(e) => setManualNumbers(e.target.value)}
+                                placeholder={
+                                  "One number per line (E.164, e.g. +1234567890)"
+                                }
+                                className={`${textareaClass} min-h-36 font-mono text-sm`}
+                              />
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {selectionMode === "allVerified" ? (
+                          <p className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+                            Every verified contact across all groups will be included.
+                          </p>
+                        ) : null}
+
+                        <div className="rounded-xl border border-border bg-muted/50 px-5 py-4 shadow-sm">
+                          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <CheckCircle2 className="size-4" />
+                            Campaign reach
+                          </div>
+                          {verifiedOnly ? (
+                            <>
+                              <p className="text-[15px] font-semibold leading-snug">
+                                {recipientCount} verified{" "}
+                                {recipientCount === 1 ? "contact" : "contacts"} will
+                                receive this message
+                              </p>
+                              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                                Only WhatsApp verified contacts will be included.
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-[15px] font-semibold leading-snug">
+                                {recipientCount}{" "}
+                                {recipientCount === 1 ? "recipient" : "recipients"}{" "}
+                                from your manual list
+                              </p>
+                              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                                Numbers are validated at send time; invalid lines are
+                                skipped.
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    ) : null}
+
+                    {WIZARD_STEPS[wizardStep].id === "schedule" ? (
+                      <div className={cn(sectionClass, "rounded-xl grid gap-5 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-5")}>
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold">
                         Schedule type
@@ -1407,366 +1852,389 @@ export function CreateBulkCampaignDialog({
                         className={fieldClass}
                       />
                     </div>
-                    <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/60 sm:col-span-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <Label className="text-sm font-semibold">
-                            Anti-block protection
-                          </Label>
-                          <p className={helperClass}>
-                            Control pacing, filtering, and send windows.
-                          </p>
+                      </div>
+                    ) : null}
+
+                    {WIZARD_STEPS[wizardStep].id === "protection" ? (
+                      <>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <Label className="text-sm font-semibold">
+                                Anti-block protection
+                              </Label>
+                              <p className={helperClass}>
+                                Control pacing, filtering, and send windows.
+                              </p>
+                            </div>
+                            <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-3 text-xs font-semibold text-foreground shadow-sm dark:border-border dark:bg-slate-950 dark:text-foreground">
+                              <input
+                                type="checkbox"
+                                checked={antiBlockEnabled}
+                                onChange={(e) => setAntiBlockEnabled(e.target.checked)}
+                                className="size-4 rounded border-slate-300 text-foreground focus:ring-ring/20"
+                              />
+                              Enabled
+                            </label>
+                          </div>
                         </div>
-                        <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-violet-100 bg-white px-3 text-xs font-semibold text-violet-700 shadow-sm dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200">
-                          <input
-                            type="checkbox"
-                            checked={antiBlockEnabled}
-                            onChange={(e) => setAntiBlockEnabled(e.target.checked)}
-                            className="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
-                          />
-                          Enabled
-                        </label>
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {(
-                          [
-                            ["spintax", "Spintax", spintaxEnabled, setSpintaxEnabled],
-                            ["verify", "Verify Numbers", verifyNumbers, setVerifyNumbers],
-                            ["replied", "Replied Only", repliedOnly, setRepliedOnly],
-                            ["window24", "24h Window", recent24hOnly, setRecent24hOnly],
-                          ] as const
-                        ).map(([key, title, value, setter]) => (
-                          <label
-                            key={key}
-                            className={cn(
-                              "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
-                              value
-                                ? "border-violet-200 bg-violet-50 text-violet-950 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-100"
-                                : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900"
-                            )}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={value}
-                              onChange={(e) => setter(e.target.checked)}
-                              className="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
-                            />
-                            {title}
-                          </label>
-                        ))}
-                      </div>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500">Uniqueness</Label>
-                          <Select
-                            value={uniquenessMode}
-                            onValueChange={(v) =>
-                              setUniquenessMode((v ?? "none") as UniquenessMode)
+
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <button
+                            type="button"
+                            aria-expanded={protectionOpen.filters}
+                            onClick={() =>
+                              setProtectionOpen((p) => ({ ...p, filters: !p.filters }))
                             }
+                            className="flex w-full items-center gap-3 text-left"
                           >
-                            <SelectTrigger className={`${fieldClass} h-10`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">None</SelectItem>
-                              <SelectItem value="campaign">Campaign</SelectItem>
-                              <SelectItem value="workspace_window">
-                                Workspace (24h)
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500">
-                            Batch pause
-                          </Label>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Input
-                              type="number"
-                              min={1}
-                              value={batchPauseEvery}
-                              onChange={(e) => setBatchPauseEvery(e.target.value)}
-                              className={`${fieldClass} h-10 w-20`}
-                            />
-                            <span>msgs, wait</span>
-                            <Input
-                              type="number"
-                              min={1}
-                              value={batchPauseSec}
-                              onChange={(e) => setBatchPauseSec(e.target.value)}
-                              className={`${fieldClass} h-10 w-20`}
-                            />
-                            <span>sec</span>
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500">
-                            Fail limit in a row
-                          </Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            value={failLimitInRow}
-                            onChange={(e) => setFailLimitInRow(e.target.value)}
-                            className={`${fieldClass} h-10 w-20`}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500">Active hours</Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="time"
-                              value={activeHoursStart}
-                              onChange={(e) => setActiveHoursStart(e.target.value)}
-                              className={`${fieldClass} h-10`}
-                            />
-                            <span className="text-xs text-slate-500">to</span>
-                            <Input
-                              type="time"
-                              value={activeHoursEnd}
-                              onChange={(e) => setActiveHoursEnd(e.target.value)}
-                              className={`${fieldClass} h-10`}
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500">Inactive hours</Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="time"
-                              value={inactiveHoursStart}
-                              onChange={(e) => setInactiveHoursStart(e.target.value)}
-                              className={`${fieldClass} h-10 dark:text-white`}
-                              disabled={!activeHoursEnabled}
-                            />
-                            <span className="text-xs text-slate-500">to</span>
-                            <Input
-                              type="time"
-                              value={inactiveHoursEnd}
-                              onChange={(e) => setInactiveHoursEnd(e.target.value)}
-                              className={`${fieldClass} h-10 dark:text-white`}
-                              disabled={!activeHoursEnabled}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      {!activeHoursPairOk ? (
-                        <p className="text-xs text-red-600 dark:text-red-400">
-                          Set both active-hours start and end, or leave both empty.
-                        </p>
-                      ) : null}
-                      {!inactiveHoursPairOk ? (
-                        <p className="text-xs text-red-600 dark:text-red-400">
-                          Set both inactive-hours start and end, or leave both empty.
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="w-full space-y-5 md:w-[35%] lg:sticky lg:top-0">
-                  <div className={sectionClass}>
-                    <div className="mb-4 flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
-                        <Users className="size-4" />
-                      </span>
-                      <div>
-                        <Label className="text-sm font-semibold">
-                          Audience
-                        </Label>
-                        <p className={helperClass}>
-                          Choose who should receive this campaign.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2.5">
-                      {(
-                        [
-                          {
-                            value: "groups" as const,
-                            title: "Contact Groups (Recommended)",
-                          },
-                          {
-                            value: "allVerified" as const,
-                            title: "All Verified Contacts",
-                          },
-                          {
-                            value: "manual" as const,
-                            title: "Manual Selection",
-                          },
-                        ] satisfies { value: SelectionMode; title: string }[]
-                      ).map((opt) => (
-                        <label
-                          key={opt.value}
-                          className={cn(
-                            "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3.5 shadow-sm transition-colors",
-                            selectionMode === opt.value
-                              ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40"
-                              : "border-slate-100 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
-                          )}
-                        >
-                          <input
-                            type="radio"
-                            name="bulk-selection"
-                            className="size-4 shrink-0 text-violet-600 focus:ring-violet-500/30"
-                            checked={selectionMode === opt.value}
-                            onChange={() => setSelectionMode(opt.value)}
-                          />
-                          <span className="text-[15px] font-medium text-slate-800 dark:text-slate-100">
-                            {opt.title}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {selectionMode === "groups" ? (
-                    <div className={sectionClass}>
-                    <div className="space-y-2.5">
-                      <Label className="text-sm font-semibold">
-                        Select contact groups
-                      </Label>
-                      <div className="h-52 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 shadow-inner shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/70">
-                        <ul className="space-y-2 p-2">
-                          {groups.length === 0 ? (
-                            <li className="px-3 py-8 text-center text-sm text-slate-500">
-                              No groups yet — create one under Contacts.
-                            </li>
-                          ) : (
-                            groups.map((gr) => {
-                              const st = groupStats(gr.id);
-                              return (
-                                <li key={gr.id}>
+                            <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                              {protectionOpen.filters ? (
+                                <Minus className="size-4" />
+                              ) : (
+                                <Plus className="size-4" />
+                              )}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              Filters
+                            </span>
+                          </button>
+                          {protectionOpen.filters ? (
+                            <div className="mt-4 space-y-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Filter options
+                              </p>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {(
+                                  [
+                                    ["spintax", "Spintax", spintaxEnabled, setSpintaxEnabled],
+                                    ["verify", "Verify Numbers", verifyNumbers, setVerifyNumbers],
+                                    ["replied", "Replied Only", repliedOnly, setRepliedOnly],
+                                    ["window24", "24h Window", recent24hOnly, setRecent24hOnly],
+                                  ] as const
+                                ).map(([key, title, value, setter]) => (
                                   <label
+                                    key={key}
                                     className={cn(
-                                      "flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-3 transition-colors",
-                                      selectedGroupIds.has(gr.id)
-                                        ? "border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30"
-                                        : "border-slate-100 bg-white hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-900"
+                                      "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                                      value
+                                        ? "border-border bg-muted text-foreground dark:border-border dark:bg-muted/30 dark:text-foreground"
+                                        : "border-slate-200 bg-white hover:border-border hover:bg-muted/50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-border"
                                     )}
                                   >
-                                    <span className="flex items-center gap-3">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedGroupIds.has(gr.id)}
-                                        onChange={(e) =>
-                                          toggleGroup(gr.id, e.target.checked)
-                                        }
-                                        className="size-4 shrink-0 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
-                                      />
-                                      <span className="text-[15px] font-medium text-slate-800 dark:text-slate-200">
-                                        {gr.name}
-                                      </span>
-                                    </span>
-                                    <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
-                                      {st.verified} verified / {st.total} total
-                                    </span>
+                                    <input
+                                      type="checkbox"
+                                      checked={value}
+                                      onChange={(e) => setter(e.target.checked)}
+                                      className="size-4 rounded border-slate-300 text-foreground focus:ring-ring/20"
+                                    />
+                                    {title}
                                   </label>
-                                </li>
-                              );
-                            })
-                          )}
-                        </ul>
+                                ))}
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                  Uniqueness
+                                </Label>
+                                <Select
+                                  value={uniquenessMode}
+                                  onValueChange={(v) =>
+                                    setUniquenessMode((v ?? "none") as UniquenessMode)
+                                  }
+                                >
+                                  <SelectTrigger className={`${fieldClass} h-10`}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    <SelectItem value="campaign">Campaign</SelectItem>
+                                    <SelectItem value="workspace_window">
+                                      Workspace (24h)
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <button
+                            type="button"
+                            aria-expanded={protectionOpen.pacing}
+                            onClick={() =>
+                              setProtectionOpen((p) => ({ ...p, pacing: !p.pacing }))
+                            }
+                            className="flex w-full items-center gap-3 text-left"
+                          >
+                            <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                              {protectionOpen.pacing ? (
+                                <Minus className="size-4" />
+                              ) : (
+                                <Plus className="size-4" />
+                              )}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              Pacing
+                            </span>
+                          </button>
+                          {protectionOpen.pacing ? (
+                            <div className="mt-4 space-y-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Batch controls
+                              </p>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-slate-500">
+                                    Batch pause
+                                  </Label>
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      value={batchPauseEvery}
+                                      onChange={(e) => setBatchPauseEvery(e.target.value)}
+                                      className={`${fieldClass} h-10 w-20`}
+                                    />
+                                    <span>msgs, wait</span>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      value={batchPauseSec}
+                                      onChange={(e) => setBatchPauseSec(e.target.value)}
+                                      className={`${fieldClass} h-10 w-20`}
+                                    />
+                                    <span>sec</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-slate-500">
+                                    Fail limit in a row
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    value={failLimitInRow}
+                                    onChange={(e) => setFailLimitInRow(e.target.value)}
+                                    className={`${fieldClass} h-10 w-20`}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <button
+                            type="button"
+                            aria-expanded={protectionOpen.hours}
+                            onClick={() =>
+                              setProtectionOpen((p) => ({ ...p, hours: !p.hours }))
+                            }
+                            className="flex w-full items-center gap-3 text-left"
+                          >
+                            <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                              {protectionOpen.hours ? (
+                                <Minus className="size-4" />
+                              ) : (
+                                <Plus className="size-4" />
+                              )}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              Hours
+                            </span>
+                          </button>
+                          {protectionOpen.hours ? (
+                            <div className="mt-4 space-y-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Send windows
+                              </p>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-slate-500">Active hours</Label>
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="time"
+                                      value={activeHoursStart}
+                                      onChange={(e) => setActiveHoursStart(e.target.value)}
+                                      className={`${fieldClass} h-10`}
+                                    />
+                                    <span className="text-xs text-slate-500">to</span>
+                                    <Input
+                                      type="time"
+                                      value={activeHoursEnd}
+                                      onChange={(e) => setActiveHoursEnd(e.target.value)}
+                                      className={`${fieldClass} h-10`}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-slate-500">Inactive hours</Label>
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="time"
+                                      value={inactiveHoursStart}
+                                      onChange={(e) => setInactiveHoursStart(e.target.value)}
+                                      className={`${fieldClass} h-10 dark:text-white`}
+                                      disabled={!activeHoursEnabled}
+                                    />
+                                    <span className="text-xs text-slate-500">to</span>
+                                    <Input
+                                      type="time"
+                                      value={inactiveHoursEnd}
+                                      onChange={(e) => setInactiveHoursEnd(e.target.value)}
+                                      className={`${fieldClass} h-10 dark:text-white`}
+                                      disabled={!activeHoursEnabled}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              {!activeHoursPairOk ? (
+                                <p className="text-xs text-red-600 dark:text-red-400">
+                                  Set both active-hours start and end, or leave both empty.
+                                </p>
+                              ) : null}
+                              {!inactiveHoursPairOk ? (
+                                <p className="text-xs text-red-600 dark:text-red-400">
+                                  Set both inactive-hours start and end, or leave both empty.
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+                      </>
+                    ) : null}
+
+                    {WIZARD_STEPS[wizardStep].id === "summary" ? (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Campaign
+                          </p>
+                          <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            {campaignName.trim() || "—"}
+                          </p>
+                        </div>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Devices
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            {deviceMode === "single"
+                              ? selectedDevice
+                                ? deviceName(selectedDevice)
+                                : "—"
+                              : `${sessionIds.size} session(s) · ${DEVICE_MODE_OPTIONS.find((o) => o.value === deviceMode)?.title ?? deviceMode}`}
+                          </p>
+                        </div>
+                        <div className={cn(sectionClass, "rounded-xl sm:col-span-2")}>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Message
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            {messageType === "text"
+                              ? `${customFilledCount} variant(s)${aiRewriteEnabled ? ` + ${safeAiCount} AI rewrite(s)` : ""}`
+                              : templates.find((t) => t.id === templateId)?.name ?? "Template not selected"}
+                            {attachmentOriginalName
+                              ? ` · Attachment: ${attachmentOriginalName}`
+                              : ""}
+                          </p>
+                        </div>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Audience
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            {recipientCount}{" "}
+                            {verifiedOnly ? "verified contact(s)" : "recipient(s)"}
+                            {" · "}
+                            {selectionMode === "groups"
+                              ? `${selectedGroupIds.size} group(s)`
+                              : selectionMode === "allVerified"
+                                ? "All verified"
+                                : "Manual list"}
+                          </p>
+                        </div>
+                        <div className={cn(sectionClass, "rounded-xl")}>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Schedule
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            {scheduleType === "immediate"
+                              ? "Send immediately"
+                              : scheduledAt
+                                ? `Scheduled · ${scheduledAt}`
+                                : "Scheduled (time not set)"}
+                            {" · "}
+                            Delay {delayMinSec}–{delayMaxSec}s · {maxRetries} retries
+                          </p>
+                        </div>
+                        <div className={cn(sectionClass, "rounded-xl sm:col-span-2")}>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Protection
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            {antiBlockEnabled ? "Anti-block enabled" : "Anti-block disabled"}
+                            {antiBlockEnabled
+                              ? ` · Spintax ${spintaxEnabled ? "on" : "off"} · Verify ${verifyNumbers ? "on" : "off"} · Uniqueness ${uniquenessMode}`
+                              : ""}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    </div>
-                  ) : null}
-
-                  {selectionMode === "manual" ? (
-                    <div className={sectionClass}>
-                    <div className="space-y-2.5">
-                      <Label
-                        htmlFor="bulk-manual"
-                        className="text-sm font-semibold"
-                      >
-                        Phone numbers
-                      </Label>
-                      <Textarea
-                        id="bulk-manual"
-                        value={manualNumbers}
-                        onChange={(e) => setManualNumbers(e.target.value)}
-                        placeholder={
-                          "One number per line (E.164, e.g. +1234567890)"
-                        }
-                        className={`${textareaClass} min-h-36 font-mono text-sm`}
-                      />
-                    </div>
-                    </div>
-                  ) : null}
-
-                  {selectionMode === "allVerified" ? (
-                    <p className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-                      Every verified contact across all groups will be included.
-                    </p>
-                  ) : null}
-
-                  <div
-                    className={cn(
-                      "rounded-lg border px-5 py-4 shadow-sm",
-                      "border-violet-200 bg-violet-50 text-violet-950",
-                      "dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-50"
-                    )}
-                  >
-                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                      <CheckCircle2 className="size-4" />
-                      Campaign reach
-                    </div>
-                    {verifiedOnly ? (
-                      <>
-                        <p className="text-[15px] font-semibold leading-snug">
-                          {recipientCount} verified{" "}
-                          {recipientCount === 1 ? "contact" : "contacts"} will
-                          receive this message
-                        </p>
-                        <p className="mt-1.5 text-sm leading-relaxed text-violet-900/80 dark:text-violet-100/85">
-                          Only WhatsApp verified contacts will be included.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-[15px] font-semibold leading-snug">
-                          {recipientCount}{" "}
-                          {recipientCount === 1 ? "recipient" : "recipients"}{" "}
-                          from your manual list
-                        </p>
-                        <p className="mt-1.5 text-sm leading-relaxed text-violet-900/80 dark:text-violet-100/85">
-                          Numbers are validated at send time; invalid lines are
-                          skipped.
-                        </p>
-                      </>
-                    )}
+                    ) : null}
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-violet-100 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 rounded-lg border-violet-100 bg-white px-6 font-semibold text-violet-700 shadow-sm hover:bg-violet-50 dark:border-violet-900 dark:bg-slate-950 dark:text-violet-200 dark:hover:bg-violet-950/20 sm:w-auto"
-                disabled={submitting}
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                disabled={!canSubmit}
-                className="h-11 gap-2 rounded-lg bg-violet-600 px-6 font-semibold text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
-                onClick={() => void handleSubmit()}
-              >
-                {submitting ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Send className="size-4" />
-                )}
-                Create &amp; send
-              </Button>
-            </div>
-          </>
-        )}
+                <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-border bg-card px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="lg"
+                      disabled={wizardStep === 0 || submitting}
+                      onClick={goBack}
+                    >
+                      Back
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenChange(false)}
+                      disabled={submitting}
+                      className="text-sm font-medium text-muted-foreground underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground disabled:opacity-50 md:hidden"
+                    >
+                      Save &amp; Close
+                    </button>
+                  </div>
+                  {WIZARD_STEPS[wizardStep].id === "summary" ? (
+                    <Button
+                      type="button"
+                      size="lg"
+                      disabled={!canSubmit}
+                      className="w-full sm:w-auto"
+                      onClick={() => void handleSubmit()}
+                    >
+                      {submitting ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Send className="size-4" />
+                      )}
+                      Create &amp; send
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                      onClick={goNext}
+                    >
+                      Continue
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </AiPanelErrorBoundary>
       </DialogContent>
     </Dialog>

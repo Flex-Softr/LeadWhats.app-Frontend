@@ -32,29 +32,24 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "group flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3.5 py-2.5 transition-all duration-200",
+                "group flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-200",
                 active
-                  ? "bg-[#f0eaff] text-[#5630a7] shadow-[inset_4px_0_0_#7d58d6]"
-                  : "text-slate-600 hover:bg-[#f7f2ff] hover:text-[#5630a7] dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-violet-300"
+                  ? "bg-card text-foreground shadow-sm ring-1 ring-border"
+                  : "text-muted-foreground hover:bg-card/70 hover:text-foreground"
               )}
             >
               <span
                 className={cn(
                   "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
                   active
-                    ? "bg-white text-[#6d45c8] shadow-sm"
-                    : "bg-transparent text-slate-400 group-hover:bg-white group-hover:text-[#6d45c8] dark:group-hover:bg-slate-800"
+                    ? "bg-foreground text-background"
+                    : "bg-transparent text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
                 )}
               >
-              <Icon
-                className={cn(
-                  "size-[18px] shrink-0 transition-colors",
-                  active
-                    ? "text-[#6d45c8]"
-                    : "text-current"
-                )}
-                strokeWidth={active ? 2.3 : 2}
-              />
+                <Icon
+                  className="size-[18px] shrink-0"
+                  strokeWidth={active ? 2.3 : 2}
+                />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] font-semibold leading-snug">
@@ -64,8 +59,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   className={cn(
                     "mt-0.5 block truncate text-[11px] font-medium leading-snug",
                     active
-                      ? "text-[#8a75b5]"
-                      : "text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400"
+                      ? "text-muted-foreground"
+                      : "text-muted-foreground/80 group-hover:text-muted-foreground"
                   )}
                 >
                   {item.description}
@@ -75,8 +70,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 className={cn(
                   "size-4 shrink-0 opacity-70 transition-transform duration-200",
                   active
-                    ? "text-[#6d45c8]"
-                    : "text-slate-300 group-hover:translate-x-0.5 group-hover:text-violet-400 dark:text-slate-600"
+                    ? "text-foreground"
+                    : "text-border group-hover:translate-x-0.5 group-hover:text-muted-foreground"
                 )}
               />
             </Link>

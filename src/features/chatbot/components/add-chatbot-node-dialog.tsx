@@ -157,7 +157,7 @@ export function AddChatbotNodeDialog({
         showCloseButton
         className={cn(
           "max-h-[min(92vh,760px)] max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-lg",
-          "border border-white/70 bg-white/95 shadow-2xl shadow-violet-950/10 backdrop-blur-md",
+          "border border-white/70 bg-white/95 shadow-2xl shadow-sm backdrop-blur-md",
           "dark:border-slate-800 dark:bg-slate-950/95"
         )}
       >
@@ -169,7 +169,7 @@ export function AddChatbotNodeDialog({
 
         {contextLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
-            <Loader2 className="size-9 animate-spin text-violet-600" />
+            <Loader2 className="size-9 animate-spin text-foreground" />
             <p className="text-sm">Loading templates…</p>
           </div>
         ) : (

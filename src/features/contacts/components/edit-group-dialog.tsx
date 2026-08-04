@@ -55,10 +55,10 @@ export function EditGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-border sm:max-w-md" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
               <Pencil className="size-4" />
             </div>
             <DialogTitle>Rename group</DialogTitle>
@@ -91,7 +91,7 @@ export function EditGroupDialog({
             </Button>
             <Button
               type="submit"
-              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
+              className="rounded-md bg-primary font-semibold text-white hover:bg-primary/90"
               disabled={!name.trim() || saving}
             >
               {saving ? "Saving..." : "Save"}

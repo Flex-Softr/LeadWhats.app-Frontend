@@ -20,7 +20,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   if (isBootstrapping) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
-        <Loader2 className="size-8 animate-spin text-violet-600 dark:text-violet-400" />
+        <Loader2 className="size-8 animate-spin text-foreground dark:text-muted-foreground" />
         <p className="text-sm">Loading your session…</p>
       </div>
     );

@@ -29,11 +29,11 @@ const KPI_ICON_STYLES: Record<
   DashboardKpiCardData["iconKey"],
   string
 > = {
-  users: "bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-300",
+  users: "bg-muted text-foreground dark:bg-muted dark:text-muted-foreground",
   revenue:
     "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-300",
   messages:
-    "bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-950 dark:text-fuchsia-300",
+    "bg-muted text-foreground dark:bg-muted dark:text-muted-foreground",
   delivery:
     "bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300",
   sessions:
@@ -64,7 +64,7 @@ export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
   return (
     <Card
       className={cn(
-        "rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] transition-transform duration-200 hover:-translate-y-0.5 dark:bg-slate-900",
+        "rounded-lg border-0 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-0.5 dark:bg-slate-900",
         className
       )}
     >
@@ -78,7 +78,7 @@ export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
           <Icon className="size-4" strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-[#251c32] dark:text-slate-100">
+          <p className="text-sm font-bold text-foreground dark:text-slate-100">
             {data.label}
           </p>
           <p className="mt-2 text-3xl font-extrabold tracking-tight text-black tabular-nums dark:text-white">

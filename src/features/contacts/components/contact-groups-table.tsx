@@ -48,13 +48,13 @@ export function ContactGroupsTable({
         {groups.map((g) => {
           const s = groupStats(g.id);
           return (
-            <TableRow key={g.id} className="hover:bg-violet-50/45 dark:hover:bg-violet-950/20">
+            <TableRow key={g.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
               <TableCell>
                 <Link
                   href={`/contacts/${g.id}`}
                   className="flex cursor-pointer items-start gap-3 rounded-md text-left font-medium text-primary"
                 >
-                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-foreground dark:bg-muted/40 dark:text-foreground">
                     <Folder className="size-4" />
                   </span>
                   <span className="min-w-0">
@@ -86,7 +86,7 @@ export function ContactGroupsTable({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    className="rounded-md text-muted-foreground hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/30"
+                    className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
                     aria-label={`Edit ${g.name}`}
                     onClick={() => onEdit(g)}
                   >

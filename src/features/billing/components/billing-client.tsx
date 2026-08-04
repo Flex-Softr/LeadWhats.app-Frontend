@@ -149,7 +149,7 @@ export function BillingClient() {
   return (
     <div className="mx-auto w-full max-w-[1500px] space-y-6">
       <section className="grid gap-5 xl:grid-cols-12">
-        <div className="relative min-h-[260px] overflow-hidden rounded-lg bg-gradient-to-br from-[#7a58d8] via-[#a777df] to-[#e166cc] px-6 py-7 text-white shadow-[0_22px_60px_rgba(101,67,164,0.22)] sm:px-8 xl:col-span-7">
+        <div className="relative min-h-[260px] overflow-hidden rounded-lg bg-gradient-to-br from-neutral-800 via-neutral-700 to-neutral-600 px-6 py-7 text-white shadow-sm sm:px-8 xl:col-span-7">
           <div className="relative z-10 max-w-xl">
             <Badge className="mb-5 rounded-full border-white/25 bg-white/16 px-3 py-1 text-xs font-semibold text-white shadow-none">
               <Sparkles className="mr-1 size-3.5" />
@@ -199,10 +199,10 @@ export function BillingClient() {
           </div>
         </div>
 
-        <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900 xl:col-span-5">
+        <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900 xl:col-span-5">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg font-extrabold text-[#251c32] dark:text-slate-50">
-              <CreditCard className="size-5 text-[#6d45c8]" />
+            <CardTitle className="flex items-center gap-2 text-lg font-extrabold text-foreground dark:text-slate-50">
+              <CreditCard className="size-5 text-foreground" />
               Payment gateway
             </CardTitle>
             <CardDescription>
@@ -220,13 +220,13 @@ export function BillingClient() {
                 className={cn(
                   "rounded-lg border-0 p-4 text-left shadow-[inset_0_0_0_1px_rgba(110,69,200,0.1)] transition-all",
                   gateway === g.id
-                    ? "bg-[#f0eaff] ring-2 ring-[#7d58d6]/30"
-                    : "bg-[#faf8ff] hover:bg-[#f4efff] dark:bg-slate-950 dark:hover:bg-slate-800",
+                    ? "bg-muted ring-2 ring-ring/30"
+                    : "bg-[#faf8ff] hover:bg-muted dark:bg-slate-950 dark:hover:bg-slate-800",
                   !g.configured && "opacity-70"
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-[#251c32] dark:text-slate-50">
+                  <span className="font-bold text-foreground dark:text-slate-50">
                     {g.displayName}
                   </span>
                   {g.configured ? (
@@ -256,7 +256,7 @@ export function BillingClient() {
                 placeholder="e.g. 01712345678"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="h-11 rounded-full border-0 bg-white px-4 shadow-inner shadow-violet-950/5 dark:bg-slate-900"
+                className="h-11 rounded-full border-0 bg-white px-4 shadow-inner shadow-foreground/5 dark:bg-slate-900"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Required by SSLCommerz for receipts. Use a real number in
@@ -283,15 +283,15 @@ export function BillingClient() {
             <Card
               key={plan.id}
               className={cn(
-                "relative flex flex-col rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900",
+                "relative flex flex-col rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900",
                 plan.highlight && "overflow-visible",
                 plan.highlight
-                  ? "ring-2 ring-[#7d58d6]/35"
+                  ? "ring-2 ring-ring/30"
                   : "ring-1 ring-transparent"
               )}
             >
               {plan.highlight ? (
-                <div className="absolute -top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-r from-[#7d58d6] to-[#f05ad6] px-3 py-1 text-xs font-bold text-white shadow-md">
+                <div className="absolute -top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-md">
                   <Sparkles className="size-3.5" />
                   Popular
                 </div>
@@ -299,7 +299,7 @@ export function BillingClient() {
               <CardHeader className="pb-2 pt-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="flex size-10 items-center justify-center rounded-lg bg-[#f0eaff] text-[#6d45c8] dark:bg-slate-800 dark:text-violet-300">
+                    <span className="flex size-10 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-slate-800 dark:text-muted-foreground">
                       {plan.id === "free" ? (
                         <ShieldCheck className="size-5" />
                       ) : plan.id === "pro" ? (
@@ -308,12 +308,12 @@ export function BillingClient() {
                         <Gem className="size-5" />
                       )}
                     </span>
-                    <CardTitle className="text-xl font-extrabold text-[#251c32] dark:text-slate-50">
+                    <CardTitle className="text-xl font-extrabold text-foreground dark:text-slate-50">
                       {plan.name}
                     </CardTitle>
                   </div>
                   {current ? (
-                    <Badge className="shrink-0 rounded-full bg-[#f0eaff] font-semibold text-[#5630a7] shadow-none">
+                    <Badge className="shrink-0 rounded-full bg-muted font-semibold text-foreground shadow-none">
                       Current
                     </Badge>
                   ) : null}
@@ -348,7 +348,7 @@ export function BillingClient() {
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter className="mt-auto flex flex-col gap-2 border-t border-[#eee9f8] pt-5 dark:border-slate-800">
+              <CardFooter className="mt-auto flex flex-col gap-2 border-t border-border pt-5 dark:border-slate-800">
                 {current ? (
                   <Button type="button" variant="outline" className="h-11 w-full rounded-full" disabled>
                     Your current plan
@@ -363,7 +363,7 @@ export function BillingClient() {
                     className={cn(
                       "h-11 w-full rounded-full font-bold",
                       plan.highlight &&
-                        "bg-gradient-to-r from-[#7d58d6] to-[#f05ad6] text-white shadow-[0_14px_28px_rgba(125,88,214,0.25)] hover:opacity-95"
+                        "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                     )}
                     disabled={loading !== null || !hydrated || !canCheckoutPaid}
                     onClick={() => startUpgrade(plan.id)}
@@ -379,14 +379,14 @@ export function BillingClient() {
         })}
       </div>
 
-      <Card className="rounded-lg border-0 bg-white shadow-[0_18px_45px_rgba(77,53,128,0.08)] dark:bg-slate-900">
+      <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
         <CardContent className="flex flex-col gap-4 p-5 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between dark:text-slate-400">
           <div className="flex gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#f0eaff] text-[#6d45c8] dark:bg-slate-800 dark:text-violet-300">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-slate-800 dark:text-muted-foreground">
               <RotateCcw className="size-5" />
             </span>
             <div>
-              <p className="font-bold text-[#251c32] dark:text-slate-100">
+              <p className="font-bold text-foreground dark:text-slate-100">
                 Reset workspace to Free
               </p>
               <p className="mt-1 max-w-2xl">

@@ -50,8 +50,8 @@ export function DeviceCard({
   }, [device.name]);
 
   return (
-    <Card className="overflow-hidden rounded-lg border-violet-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
-      <CardHeader className="space-y-3 border-b border-slate-100 bg-gradient-to-br from-white to-violet-50/80 pb-4 dark:border-slate-800 dark:from-slate-950 dark:to-violet-950/20">
+    <Card className="overflow-hidden rounded-lg border-border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
+      <CardHeader className="space-y-3 border-b border-slate-100 bg-gradient-to-br from-white to-muted/50 pb-4 dark:border-slate-800 dark:from-slate-950 dark:to-muted/20">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-3">
             <div className="relative shrink-0">
@@ -66,7 +66,7 @@ export function DeviceCard({
                   size="lg"
                   className="ring-2 ring-amber-400/70 ring-offset-2 ring-offset-white dark:ring-offset-slate-950"
                 >
-                  <AvatarFallback className="bg-violet-100 font-semibold text-violet-700 dark:bg-violet-950 dark:text-violet-200">
+                  <AvatarFallback className="bg-muted font-semibold text-foreground dark:bg-muted dark:text-foreground">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -146,7 +146,7 @@ export function DeviceCard({
           <>
             <Button
               type="button"
-              className="h-10 w-full rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
+              className="h-10 w-full rounded-md bg-primary font-semibold text-white hover:bg-primary/90"
               disabled={busy}
               onClick={() => onShowQr(device)}
             >

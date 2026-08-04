@@ -52,8 +52,8 @@ export function AddDeviceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-6 overflow-hidden rounded-lg border-violet-100 p-0 sm:max-w-md" showCloseButton>
-        <DialogHeader className="gap-4 bg-gradient-to-br from-violet-600 to-fuchsia-500 px-6 py-6 text-left text-white">
+      <DialogContent className="gap-6 overflow-hidden rounded-lg border-border p-0 sm:max-w-md" showCloseButton>
+        <DialogHeader className="gap-4 bg-primary px-6 py-6 text-left text-white">
           <div className="flex items-start gap-3 pr-8">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white shadow-sm ring-1 ring-white/20">
               <MessageCircleMore className="size-5" />
@@ -83,7 +83,7 @@ export function AddDeviceDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Main sales WhatsApp"
-              className="h-11 rounded-md border-violet-200 bg-white focus-visible:border-violet-400 focus-visible:ring-violet-400/25 dark:border-violet-900"
+              className="h-11 rounded-md border-border bg-white focus-visible:border-ring focus-visible:ring-ring/20 dark:border-border"
               autoComplete="off"
               autoFocus
             />
@@ -129,7 +129,7 @@ export function AddDeviceDialog({
             </Button>
             <Button
               type="submit"
-              className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700 sm:w-auto"
+              className="rounded-md bg-primary font-semibold text-white hover:bg-primary/90 sm:w-auto"
               disabled={submitting}
             >
               <Plus className="size-4" />

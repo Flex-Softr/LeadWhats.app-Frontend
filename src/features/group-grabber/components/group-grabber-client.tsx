@@ -264,20 +264,20 @@ export function GroupGrabberClient() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-7">
-      <div className="rounded-lg border border-violet-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+      <div className="rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
         <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
           Group Grabber
         </h2>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
           Pull WhatsApp groups, inspect members, and import numbers into{" "}
-          <Link href="/contacts" className="font-semibold text-violet-700 underline dark:text-violet-300">
+          <Link href="/contacts" className="font-semibold text-foreground underline dark:text-muted-foreground">
             Contacts
           </Link>
           .
         </p>
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:p-6">
           <div className="min-w-0 flex-1 space-y-2">
             <Label htmlFor="gg-device" className="text-sm font-semibold">
@@ -413,7 +413,7 @@ export function GroupGrabberClient() {
         />
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="p-5 sm:p-6 lg:p-7">
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
             Quick Analytics
@@ -453,7 +453,7 @@ export function GroupGrabberClient() {
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="space-y-5 p-4 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col items-start gap-2">
@@ -464,7 +464,7 @@ export function GroupGrabberClient() {
                   className={cn(
                     "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                     viewMode === "groups"
-                      ? "bg-violet-100 text-violet-900 shadow-sm dark:bg-violet-500/25 dark:text-violet-100"
+                      ? "bg-muted text-foreground shadow-sm dark:bg-primary/25 dark:text-foreground"
                       : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                   )}
                 >
@@ -476,7 +476,7 @@ export function GroupGrabberClient() {
                   className={cn(
                     "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                     viewMode === "communities"
-                      ? "bg-violet-100 text-violet-900 shadow-sm dark:bg-violet-500/25 dark:text-violet-100"
+                      ? "bg-muted text-foreground shadow-sm dark:bg-primary/25 dark:text-foreground"
                       : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                   )}
                 >
@@ -538,7 +538,7 @@ export function GroupGrabberClient() {
           <div className="border-t border-slate-100 pt-5 dark:border-slate-800">
             {groupsLoading && groups.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-500">
-                <Loader2 className="size-8 animate-spin text-violet-600" />
+                <Loader2 className="size-8 animate-spin text-foreground" />
                 <p className="text-sm">Loading groups…</p>
               </div>
             ) : (

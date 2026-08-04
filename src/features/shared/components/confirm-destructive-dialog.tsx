@@ -61,7 +61,7 @@ export function ConfirmDestructiveDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-border sm:max-w-md" showCloseButton>
         <DialogHeader className="pb-1">
           <div className="flex items-start gap-3">
             <div

@@ -355,7 +355,7 @@ export function CreateAutoReplyRuleDialog({
         showCloseButton
         className={cn(
           "max-h-[min(92vh,820px)] max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden rounded-3xl p-0",
-          "border border-white/70 bg-white/95 shadow-2xl shadow-violet-950/10 backdrop-blur-md",
+          "border border-white/70 bg-white/95 shadow-2xl shadow-sm backdrop-blur-md",
           "dark:border-slate-800 dark:bg-slate-950/95 sm:max-w-2xl"
         )}
       >
@@ -373,7 +373,7 @@ export function CreateAutoReplyRuleDialog({
 
         {contextLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
-            <Loader2 className="size-10 animate-spin text-violet-600 dark:text-violet-400" />
+            <Loader2 className="size-10 animate-spin text-foreground dark:text-muted-foreground" />
             <p className="text-sm">Loading devices, templates, and media…</p>
           </div>
         ) : (

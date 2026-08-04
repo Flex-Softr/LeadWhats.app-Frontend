@@ -18,33 +18,24 @@ export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
         type="button"
         onClick={() => onChange("text")}
         className={cn(
-          "flex min-h-32 flex-col items-start gap-2 rounded-lg border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30",
+          "flex min-h-32 flex-col items-start gap-2 rounded-xl border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
           value === "text"
-            ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
-            : "border-slate-100 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
+            ? "border-foreground/20 bg-muted text-foreground ring-2 ring-foreground/10"
+            : "border-border bg-card text-muted-foreground hover:bg-muted/50"
         )}
       >
         <span
           className={cn(
             "flex size-10 items-center justify-center rounded-lg",
             value === "text"
-              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200"
-              : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
+              ? "bg-foreground text-background"
+              : "bg-muted text-muted-foreground"
           )}
         >
           <MessageSquare className="size-5" />
         </span>
-        <span
-          className={cn(
-            "font-semibold",
-            value === "text"
-              ? "text-violet-900 dark:text-violet-100"
-              : "text-slate-900 dark:text-slate-100"
-          )}
-        >
-          Text Message
-        </span>
-        <span className="text-sm leading-5 text-slate-500 dark:text-slate-400">
+        <span className="font-semibold text-foreground">Text Message</span>
+        <span className="text-sm leading-5 text-muted-foreground">
           Write a direct one-off WhatsApp message.
         </span>
       </button>
@@ -53,33 +44,24 @@ export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
         type="button"
         onClick={() => onChange("template")}
         className={cn(
-          "flex min-h-32 flex-col items-start gap-2 rounded-lg border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30",
+          "flex min-h-32 flex-col items-start gap-2 rounded-xl border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
           value === "template"
-            ? "border-violet-200 bg-violet-50 text-violet-950 ring-2 ring-violet-500/15 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
-            : "border-slate-100 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/40 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-violet-900 dark:hover:bg-violet-950/20"
+            ? "border-foreground/20 bg-muted text-foreground ring-2 ring-foreground/10"
+            : "border-border bg-card text-muted-foreground hover:bg-muted/50"
         )}
       >
         <span
           className={cn(
             "flex size-10 items-center justify-center rounded-lg",
             value === "template"
-              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200"
-              : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
+              ? "bg-foreground text-background"
+              : "bg-muted text-muted-foreground"
           )}
         >
           <FileText className="size-5" />
         </span>
-        <span
-          className={cn(
-            "font-semibold",
-            value === "template"
-              ? "text-violet-900 dark:text-violet-100"
-              : "text-slate-900 dark:text-slate-100"
-          )}
-        >
-          Template Message
-        </span>
-        <span className="text-sm leading-5 text-slate-500 dark:text-slate-400">
+        <span className="font-semibold text-foreground">Template Message</span>
+        <span className="text-sm leading-5 text-muted-foreground">
           Send from your saved template library.
         </span>
       </button>

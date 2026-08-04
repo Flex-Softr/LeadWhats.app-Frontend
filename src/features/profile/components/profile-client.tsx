@@ -58,7 +58,7 @@ export function ProfileClient() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
-      <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardHeader className="border-b border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40">
           <CardTitle className="text-xl">Account</CardTitle>
           <CardDescription>
@@ -67,7 +67,7 @@ export function ProfileClient() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-start">
           <Avatar className="size-20 border border-slate-200 dark:border-slate-700">
-            <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-2xl font-semibold text-white">
+            <AvatarFallback className="bg-primary text-2xl font-semibold text-white">
               {userInitials(user)}
             </AvatarFallback>
           </Avatar>
@@ -95,7 +95,7 @@ export function ProfileClient() {
       </Card>
 
       {workspace ? (
-        <Card className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <CardHeader className="border-b border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40">
             <CardTitle className="text-xl">Workspace</CardTitle>
             <CardDescription>
@@ -104,7 +104,7 @@ export function ProfileClient() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3 rounded-lg border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-              <Building2 className="mt-0.5 size-5 shrink-0 text-violet-600 dark:text-violet-400" />
+              <Building2 className="mt-0.5 size-5 shrink-0 text-foreground dark:text-muted-foreground" />
               <div className="min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-slate-50">
                   {workspace.name}

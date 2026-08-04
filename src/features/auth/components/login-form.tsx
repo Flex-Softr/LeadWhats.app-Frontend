@@ -231,7 +231,7 @@ export function LoginForm() {
         <Button
           type="submit"
           disabled={pending}
-          className="h-11 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 font-semibold text-white shadow-md shadow-violet-950/20 hover:from-violet-500 hover:to-fuchsia-500 dark:shadow-violet-950/30"
+          className="h-11 w-full rounded-xl bg-primary font-semibold text-primary-foreground shadow-md shadow-sm hover:bg-primary/90"
         >
           {pending
             ? mode === "forgot"

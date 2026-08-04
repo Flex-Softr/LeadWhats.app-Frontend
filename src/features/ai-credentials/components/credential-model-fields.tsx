@@ -343,7 +343,7 @@ export function CredentialModelFields({
       </div>
 
       {showContinuousChat ? (
-        <div className="rounded-xl border border-violet-200/80 bg-violet-50/60 p-3 dark:border-violet-900/50 dark:bg-violet-950/25">
+        <div className="rounded-xl border border-border bg-muted/50 p-3 dark:border-border dark:bg-muted/25">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">

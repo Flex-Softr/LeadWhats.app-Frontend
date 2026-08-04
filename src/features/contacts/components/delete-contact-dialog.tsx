@@ -53,7 +53,7 @@ export function DeleteContactDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {contact ? (
-      <DialogContent className="rounded-lg border-violet-100 sm:max-w-md" showCloseButton>
+      <DialogContent className="rounded-lg border-border sm:max-w-md" showCloseButton>
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/15 text-destructive">

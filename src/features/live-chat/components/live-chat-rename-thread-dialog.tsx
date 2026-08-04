@@ -73,12 +73,12 @@ export function LiveChatRenameThreadDialog({
         showCloseButton
         className={cn(
           "max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-md",
-          "border border-violet-100 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+          "border border-border bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
         )}
       >
-        <DialogHeader className="border-b border-violet-100 bg-slate-50/70 px-6 pb-4 pt-6 text-left dark:border-slate-800 dark:bg-slate-900/40">
+        <DialogHeader className="border-b border-border bg-slate-50/70 px-6 pb-4 pt-6 text-left dark:border-slate-800 dark:bg-slate-900/40">
           <DialogTitle className="font-heading flex items-center gap-2 pr-8 text-lg font-semibold">
-            <Pencil className="size-5 text-violet-600 dark:text-violet-400" />
+            <Pencil className="size-5 text-foreground dark:text-muted-foreground" />
             Rename conversation
           </DialogTitle>
         </DialogHeader>
@@ -112,7 +112,7 @@ export function LiveChatRenameThreadDialog({
           </Button>
           <Button
             type="button"
-            className="rounded-md bg-violet-600 font-semibold text-white hover:bg-violet-700"
+            className="rounded-md bg-primary font-semibold text-white hover:bg-primary/90"
             disabled={!canSubmit}
             onClick={() => void handleSubmit()}
           >

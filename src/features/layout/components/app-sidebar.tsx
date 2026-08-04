@@ -8,7 +8,7 @@ export function AppSidebar() {
       <div className="px-4">
         <BrandMark />
       </div>
-      <div className="mx-4 my-4 h-px bg-violet-100 dark:bg-slate-800" />
+      <div className="mx-4 my-4 h-px bg-muted dark:bg-slate-800" />
       <SidebarNav />
       <SidebarFooter />
     </aside>

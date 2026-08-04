@@ -89,7 +89,7 @@ export function GroupGrabberList({
                   type="checkbox"
                   checked={selectedIds.has(g.id)}
                   onChange={(e) => onToggle(g.id, e.target.checked)}
-                  className="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500/30"
+                  className="size-4 rounded border-slate-300 text-foreground focus:ring-ring/20"
                   aria-label={`Select ${g.name}`}
                 />
               </div>
