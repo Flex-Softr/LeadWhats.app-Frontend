@@ -178,6 +178,33 @@ export function DevicesClient() {
     }
   }
 
+  async function handleSetDefault(device: WhatsAppDevice) {
+    setPendingId(device.id);
+    try {
+      const updated = await apiJson<DeviceApiRecord>(
+        `/v1/devices/${encodeURIComponent(device.id)}/set-default`,
+        { method: "POST" }
+      );
+      const mapped = deviceFromApi(updated);
+      setDevices((prev) =>
+        prev.map((d) => {
+          if (d.id === mapped.id) return mapped;
+          return d.isDefault ? { ...d, isDefault: false } : d;
+        })
+      );
+      toast.success("Default device updated", {
+        description: `${device.name} is now used for Open API sends.`,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Could not set default device.";
+      toast.error("Set default failed", { description: msg });
+      throw err;
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   async function handleDisconnect(device: WhatsAppDevice) {
     setPendingId(device.id);
     try {
@@ -386,6 +413,7 @@ export function DevicesClient() {
                 busy={pendingId === device.id}
                 onShowQr={handleShowQr}
                 onPairingCode={handlePairingCode}
+                onSetDefault={(d) => void handleSetDefault(d)}
                 onDisconnect={(d) => setDisconnectTarget(d)}
                 onDelete={(d) => setDeleteTarget(d)}
               />

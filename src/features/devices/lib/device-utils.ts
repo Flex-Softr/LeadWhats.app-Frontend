@@ -8,6 +8,7 @@ export function deviceFromApi(record: DeviceApiRecord): WhatsAppDevice {
     status: record.status,
     phone: record.phone ?? undefined,
     profilePictureUrl: record.profilePictureUrl ?? undefined,
+    isDefault: Boolean(record.isDefault),
     createdAtLabel: formatDeviceCreatedAt(new Date(record.createdAt)),
   };
 }

@@ -8,6 +8,7 @@ export type WhatsAppDevice = {
   createdAtLabel: string;
   phone?: string;
   profilePictureUrl?: string;
+  isDefault: boolean;
 };
 
 /** API shape from `GET/POST /v1/devices` */
@@ -19,6 +20,7 @@ export type DeviceApiRecord = {
   status: DeviceConnectionStatus;
   phone: string | null;
   profilePictureUrl: string | null;
+  isDefault: boolean;
   createdAt: string;
   updatedAt: string;
 };

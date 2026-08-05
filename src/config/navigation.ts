@@ -1,9 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  BookOpen,
   Bot,
   CreditCard,
   KeyRound,
   LayoutDashboard,
+  LockKeyhole,
   MessageCircle,
   MessageSquare,
   MessagesSquare,
@@ -46,6 +48,18 @@ export const NAV_ITEMS: NavItem[] = [
     description: "Gemini & OpenRouter keys",
     href: "/ai-credentials",
     icon: KeyRound,
+  },
+  {
+    title: "API Credentials",
+    description: "Open API client keys",
+    href: "/api-credentials",
+    icon: LockKeyhole,
+  },
+  {
+    title: "API Docs",
+    description: "Open API reference",
+    href: "/api-docs",
+    icon: BookOpen,
   },
   {
     title: "Single Message",

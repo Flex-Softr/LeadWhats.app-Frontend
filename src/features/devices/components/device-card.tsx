@@ -6,6 +6,7 @@ import {
   Clock,
   Loader2,
   QrCode,
+  Star,
   Trash2,
   Unplug,
 } from "lucide-react";
@@ -27,6 +28,7 @@ type DeviceCardProps = {
   busy?: boolean;
   onShowQr: (device: WhatsAppDevice) => void;
   onPairingCode: (device: WhatsAppDevice) => void;
+  onSetDefault: (device: WhatsAppDevice) => void | Promise<void>;
   onDisconnect: (device: WhatsAppDevice) => void | Promise<void>;
   onDelete: (device: WhatsAppDevice) => void | Promise<void>;
 };
@@ -36,6 +38,7 @@ export function DeviceCard({
   busy = false,
   onShowQr,
   onPairingCode,
+  onSetDefault,
   onDisconnect,
   onDelete,
 }: DeviceCardProps) {
@@ -94,6 +97,11 @@ export function DeviceCard({
                     Connected
                   </Badge>
                 )}
+                {device.isDefault ? (
+                  <Badge className="rounded-md border-sky-200 bg-sky-100 font-medium text-sky-900 hover:bg-sky-100 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-200">
+                    Default
+                  </Badge>
+                ) : null}
               </div>
               <p className="mt-1 max-w-[230px] truncate font-mono text-xs tabular-nums text-slate-500 dark:text-slate-400">
                 {device.phone ?? "No phone linked"}
@@ -165,6 +173,22 @@ export function DeviceCard({
           </>
         ) : (
           <>
+            {!device.isDefault ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full rounded-md border-sky-200 bg-sky-50 font-semibold text-sky-800 hover:bg-sky-100 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200"
+                disabled={busy}
+                onClick={() => void onSetDefault(device)}
+              >
+                {busy ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Star className="size-4" />
+                )}
+                Set as default
+              </Button>
+            ) : null}
             <Button
               type="button"
               className="h-10 w-full rounded-md bg-amber-500 font-semibold text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500"
