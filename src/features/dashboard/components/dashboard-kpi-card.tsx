@@ -2,8 +2,10 @@ import type { LucideIcon } from "lucide-react";
 import {
   ArrowDownRight,
   ArrowUpRight,
+  ContactRound,
   DollarSign,
   Gauge,
+  Megaphone,
   MessageCircle,
   Minus,
   Send,
@@ -23,6 +25,8 @@ const KPI_ICONS: Record<DashboardKpiCardData["iconKey"], LucideIcon> = {
   delivery: Send,
   sessions: Smartphone,
   response: Gauge,
+  contacts: ContactRound,
+  campaigns: Megaphone,
 };
 
 const KPI_ICON_STYLES: Record<
@@ -40,6 +44,10 @@ const KPI_ICON_STYLES: Record<
     "bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300",
   response:
     "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  contacts:
+    "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  campaigns:
+    "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-300",
 };
 
 type DashboardKpiCardProps = {
@@ -57,8 +65,9 @@ function resolveTrend(
 }
 
 export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
-  const Icon = KPI_ICONS[data.iconKey];
-  const iconStyle = KPI_ICON_STYLES[data.iconKey];
+  const Icon = KPI_ICONS[data.iconKey] ?? MessageCircle;
+  const iconStyle =
+    KPI_ICON_STYLES[data.iconKey] ?? KPI_ICON_STYLES.messages;
   const trend = resolveTrend(data);
 
   return (

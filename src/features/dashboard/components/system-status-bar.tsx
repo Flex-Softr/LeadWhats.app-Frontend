@@ -30,10 +30,15 @@ const statusCopy: Record<
 type SystemStatusBarProps = {
   status: SystemStatus;
   lastUpdated: string;
+  onRefresh?: () => void;
 };
 
-export function SystemStatusBar({ status, lastUpdated }: SystemStatusBarProps) {
-  const cfg = statusCopy[status];
+export function SystemStatusBar({
+  status,
+  lastUpdated,
+  onRefresh,
+}: SystemStatusBarProps) {
+  const cfg = statusCopy[status] ?? statusCopy.degraded;
 
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-white px-4 py-3 text-xs shadow-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
@@ -62,7 +67,13 @@ export function SystemStatusBar({ status, lastUpdated }: SystemStatusBarProps) {
             type="button"
             variant="link"
             className="h-auto rounded-md p-0 text-xs sm:text-sm"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              if (onRefresh) {
+                onRefresh();
+                return;
+              }
+              window.location.reload();
+            }}
           >
             Refresh
           </Button>

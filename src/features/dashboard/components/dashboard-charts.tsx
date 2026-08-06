@@ -81,7 +81,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
             </SelectContent>
           </Select>
         </CardHeader>
-        <CardContent className="min-h-[250px] px-5 pb-5 pt-1">
+        <CardContent className="h-[250px] px-5 pb-5 pt-1">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={barData}
@@ -135,7 +135,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
               Campaign, direct text, template, live chat (daily)
             </CardDescription>
         </CardHeader>
-        <CardContent className="min-h-[250px] px-5 pb-5 pt-1">
+        <CardContent className="h-[250px] px-5 pb-5 pt-1">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={lineSeries}

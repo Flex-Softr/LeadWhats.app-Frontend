@@ -57,7 +57,9 @@ export type DashboardKpiIconKey =
   | "messages"
   | "delivery"
   | "sessions"
-  | "response";
+  | "response"
+  | "contacts"
+  | "campaigns";
 
 export type DashboardKpiTrend = "positive" | "negative" | "neutral";
 

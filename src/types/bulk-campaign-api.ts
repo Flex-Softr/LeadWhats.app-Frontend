@@ -75,6 +75,7 @@ export type BulkCampaignAiRewritePayload = {
   enabled: true;
   count: number;
   credentialId: string;
+  model?: string;
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number | null;

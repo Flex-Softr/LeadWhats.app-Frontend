@@ -9,6 +9,7 @@ export function maxBulkMessageContentsForPlan(planId: PlanId): number {
       return 20;
     case "free":
     default:
-      return 1;
+      // 1 custom seed + 1 AI rewrite (mirrors backend).
+      return 2;
   }
 }

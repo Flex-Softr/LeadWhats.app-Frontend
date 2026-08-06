@@ -14,9 +14,9 @@ import { useSessionIdentity } from "@/hooks/use-session-identity";
 import { ApiError, apiJson } from "@/lib/api";
 import type { DashboardOverviewResponse } from "@/types/dashboard";
 
-const emptyBar = Array.from({ length: 6 }, (_, i) => {
+const emptyBar = Array.from({ length: 12 }, (_, i) => {
   const t = new Date();
-  t.setUTCMonth(t.getUTCMonth() - (5 - i), 1);
+  t.setUTCMonth(t.getUTCMonth() - (11 - i), 1);
   return {
     label: t.toLocaleString("en-US", { month: "short", timeZone: "UTC" }),
     value: 0,
@@ -37,22 +37,31 @@ const emptyLine = Array.from({ length: 14 }, (_, i) => {
 
 export function DashboardHome() {
   const { userId, workspaceId, routeKey } = useSessionIdentity();
+  const identityKey = `${userId ?? ""}:${workspaceId ?? ""}:${routeKey}`;
   const [data, setData] = React.useState<DashboardOverviewResponse | null>(
     null
   );
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const requestSeq = React.useRef(0);
+  const loadedIdentity = React.useRef<string | null>(null);
 
-  const load = React.useCallback(async () => {
-    setLoading(true);
+  const load = React.useCallback(async (soft = false) => {
+    const seq = ++requestSeq.current;
+    if (!soft) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const json = await apiJson<DashboardOverviewResponse>(
         "/v1/dashboard/overview"
       );
+      if (seq !== requestSeq.current) return;
       setData(json);
+      loadedIdentity.current = identityKey;
       setError(null);
     } catch (e) {
+      if (seq !== requestSeq.current) return;
       if (e instanceof ApiError) {
         if (e.status === 503 && e.code === "DATABASE_UNAVAILABLE") {
           setError(e.message);
@@ -66,17 +75,24 @@ export function DashboardHome() {
       } else {
         setError(e instanceof Error ? e.message : "Failed to load dashboard");
       }
+      if (!soft) {
+        setData(null);
+      }
     } finally {
-      setLoading(false);
+      if (seq === requestSeq.current) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [identityKey]);
 
   React.useEffect(() => {
-    setData(null);
-    void load();
-  }, [load, userId, workspaceId, routeKey]);
+    void load(false);
+  }, [load]);
 
-  if (loading && !data) {
+  const showSkeleton =
+    loading && (!data || loadedIdentity.current !== identityKey);
+
+  if (showSkeleton) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 lg:gap-6">
         <div className="h-14 animate-pulse rounded-lg bg-slate-200/80 dark:bg-slate-800/80" />
@@ -121,7 +137,12 @@ export function DashboardHome() {
                 </p>
               </div>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={load}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void load(false)}
+            >
               Retry
             </Button>
           </CardContent>
@@ -144,6 +165,7 @@ export function DashboardHome() {
       <SystemStatusBar
         status={data.systemStatus}
         lastUpdated={data.lastUpdatedLabel}
+        onRefresh={() => void load(true)}
       />
 
       <div className="grid gap-5 xl:grid-cols-12">

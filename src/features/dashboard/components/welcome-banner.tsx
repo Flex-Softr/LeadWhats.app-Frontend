@@ -33,12 +33,18 @@ export function WelcomeBanner({
         </p>
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs leading-relaxed text-white/90 sm:text-sm">
           <span className="inline-flex items-center gap-2">
-            <span className="size-1.5 shrink-0 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.8)]" />
+            <span
+              className={
+                devicesOnline > 0
+                  ? "size-1.5 shrink-0 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.8)]"
+                  : "size-1.5 shrink-0 rounded-full bg-white/40"
+              }
+            />
             {devicesOnline} devices online
           </span>
           <span className="inline-flex items-center gap-2">
             <span className="size-1.5 shrink-0 rounded-full bg-sky-300 shadow-[0_0_8px_rgba(125,211,252,0.7)]" />
-            {messagesToday} messages today
+            {messagesToday} outbound today
           </span>
           <span className="inline-flex items-center gap-2">
             <span className="size-1.5 shrink-0 rounded-full bg-white/50" />

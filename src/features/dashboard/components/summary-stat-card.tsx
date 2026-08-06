@@ -11,7 +11,7 @@ const summaryIcons = {
 } as const;
 
 export function SummaryStatCard({ data }: { data: SummaryCardData }) {
-  const Icon = summaryIcons[data.icon];
+  const Icon = summaryIcons[data.icon] ?? Send;
 
   return (
     <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">

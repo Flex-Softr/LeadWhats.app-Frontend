@@ -33,7 +33,11 @@ import { PasteContactsDialog } from "@/features/contacts/components/paste-contac
 import { usePathname } from "next/navigation";
 
 import { useContacts } from "@/features/contacts/contacts-provider";
-import type { ContactRow, ContactRowStatus } from "@/types/contacts";
+import type {
+  ContactGroupRecord,
+  ContactRow,
+  ContactRowStatus,
+} from "@/types/contacts";
 import { ApiError, apiFetch } from "@/lib/api";
 import { ListEmptyState } from "@/features/shared/components/list-empty-state";
 import { StatCard } from "@/features/shared/components/stat-card";
@@ -79,6 +83,9 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     revalidateGroupPhones,
   } = useContacts();
   const [detailLoading, setDetailLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [loadedGroup, setLoadedGroup] =
+    React.useState<ContactGroupRecord | null>(null);
   const [addOpen, setAddOpen] = React.useState(false);
   const [pasteOpen, setPasteOpen] = React.useState(false);
   const [fileImportOpen, setFileImportOpen] = React.useState(false);
@@ -94,18 +101,25 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     () => new Set()
   );
 
-  const group = groups.find((g) => g.id === groupId);
+  const groupFromList = groups.find((g) => g.id === groupId);
+  const group = loadedGroup?.id === groupId ? loadedGroup : groupFromList ?? null;
 
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       setDetailLoading(true);
+      setLoadError(null);
+      setLoadedGroup(null);
       try {
-        await ensureGroupContacts(groupId);
+        const rec = await ensureGroupContacts(groupId);
+        if (!cancelled) {
+          setLoadedGroup(rec);
+        }
       } catch (err) {
         if (!cancelled) {
           const msg =
             err instanceof ApiError ? err.message : "Could not load group.";
+          setLoadError(msg);
           toast.error("Load failed", { description: msg });
         }
       } finally {
@@ -243,7 +257,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     return (
       <div className="mx-auto w-full max-w-6xl space-y-5 rounded-lg border border-border bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <p className="text-[15px] text-muted-foreground">
-          This group could not be found.
+          {loadError ?? "This group could not be found."}
         </p>
         <Link
           href="/contacts"

@@ -34,7 +34,7 @@ type ContactsState = {
   contactsByGroup: Record<string, ContactRow[]>;
   /** Refreshes groups from the API and returns the latest list (for consumers that need ids before React re-renders). */
   refreshGroups: () => Promise<ContactGroupRecord[]>;
-  ensureGroupContacts: (groupId: string) => Promise<void>;
+  ensureGroupContacts: (groupId: string) => Promise<ContactGroupRecord>;
   addGroup: (name: string) => Promise<ContactGroupRecord>;
   renameGroup: (groupId: string, name: string) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
@@ -158,9 +158,9 @@ export function ContactsProvider({ children }: { children: React.ReactNode }) {
       `/v1/contact-groups/${groupId}`
     );
     const rows = detail.contacts.map(contactApiToRow);
+    const rec = groupApiToRecord(detail.group);
     setContactsByGroup((prev) => ({ ...prev, [groupId]: rows }));
     setGroups((prev) => {
-      const rec = groupApiToRecord(detail.group);
       const idx = prev.findIndex((g) => g.id === groupId);
       if (idx === -1) {
         return [rec, ...prev];
@@ -169,6 +169,7 @@ export function ContactsProvider({ children }: { children: React.ReactNode }) {
       next[idx] = rec;
       return next;
     });
+    return rec;
   }, []);
 
   const contactsForGroup = React.useCallback(

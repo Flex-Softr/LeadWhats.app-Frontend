@@ -691,6 +691,21 @@ export function CreateBulkCampaignDialog({
         ? buildAiSettingsPayload(aiRewriteSettings)
         : null;
 
+      if (messageType === "text" && aiRewriteEnabled) {
+        if (!aiSettingsPayload?.credentialId) {
+          toast.error("AI rewrite incomplete", {
+            description: "Select an AI credential before creating the campaign.",
+          });
+          return;
+        }
+        if (safeAiCount < 1) {
+          toast.error("AI rewrite unavailable", {
+            description: `Your plan allows ${maxMessageContents} total message content(s). Reduce custom variants or lower the AI count.`,
+          });
+          return;
+        }
+      }
+
       const payload: CreateBulkCampaignPayload = {
         name: campaignName.trim(),
         deviceIds,
@@ -741,6 +756,9 @@ export function CreateBulkCampaignDialog({
                 enabled: true,
                 count: safeAiCount,
                 credentialId: aiSettingsPayload.credentialId,
+                ...(aiSettingsPayload.model
+                  ? { model: aiSettingsPayload.model }
+                  : {}),
                 systemPrompt: aiSettingsPayload.systemPrompt,
                 temperature: aiSettingsPayload.temperature,
                 maxTokens: aiSettingsPayload.maxTokens,
@@ -773,11 +791,15 @@ export function CreateBulkCampaignDialog({
         }
       );
 
+      const aiNote =
+        messageType === "text" && aiRewriteEnabled && safeAiCount >= 1
+          ? ` Includes ${safeAiCount} AI rewrite(s) in the send pool.`
+          : "";
       toast.success("Campaign created", {
         description:
           out.dispatchedMessages > 0
-            ? `“${out.campaign.name}” — ${out.dispatchedMessages} message(s) recorded (${out.campaign.recipientCount} recipients).`
-            : `“${out.campaign.name}” is scheduled (${out.campaign.recipientCount} recipients).`,
+            ? `“${out.campaign.name}” — ${out.dispatchedMessages} message(s) recorded (${out.campaign.recipientCount} recipients).${aiNote}`
+            : `“${out.campaign.name}” is scheduled (${out.campaign.recipientCount} recipients).${aiNote}`,
       });
       if (out.note) {
         toast.message("Note", { description: out.note });
