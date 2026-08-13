@@ -42,7 +42,13 @@ export function GoogleOAuthCallbackClient() {
 
       markAuthSessionActive();
       const next = searchParams.get("next");
-      router.replace(isSafeInternalPath(next) ? next : "/");
+      router.replace(
+        isSafeInternalPath(next)
+          ? next
+          : session.user.role === "ADMIN"
+            ? "/admin"
+            : "/"
+      );
     })();
 
     return () => {

@@ -20,6 +20,7 @@ import { getPageMeta } from "@/config/pages";
 import { useSubscription } from "@/features/billing/subscription-context";
 import { userDisplayName, userInitials } from "@/lib/user-display";
 import { MobileSidebar } from "@/features/layout/components/mobile-sidebar";
+import { useSidebar } from "@/features/layout/sidebar-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export function AppHeader() {
   const { license, hydrated } = useSubscription();
   const { user: authUser, logout } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
+  const { isCollapsed, toggleSidebar } = useSidebar();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
 
@@ -50,9 +52,17 @@ export function AppHeader() {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-7">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <MobileSidebar />
-          <div className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-foreground lg:flex">
-            <Menu className="size-6" />
-          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="hidden size-9 shrink-0 rounded-lg text-foreground hover:bg-muted lg:flex"
+            aria-label="Toggle sidebar collapse"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <Menu className="size-5" />
+          </Button>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               {meta.title}

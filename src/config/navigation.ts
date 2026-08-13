@@ -15,7 +15,10 @@ import {
   UserRound,
   Users,
   FileText,
+  Wallet,
 } from "lucide-react";
+
+import type { AuthUserRole } from "@/types/auth";
 
 export type NavItem = {
   title: string;
@@ -24,6 +27,7 @@ export type NavItem = {
   icon: LucideIcon;
 };
 
+/** Customer product navigation (all non-admin app pages). */
 export const NAV_ITEMS: NavItem[] = [
   {
     title: "Overview",
@@ -116,3 +120,38 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Users,
   },
 ];
+
+/** Platform admin navigation (ops tasks — not customer product pages). */
+export const ADMIN_NAV_ITEMS: NavItem[] = [
+  {
+    title: "Admin Overview",
+    description: "Platform ops dashboard",
+    href: "/admin",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Users",
+    description: "Manage & block accounts",
+    href: "/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Subscriptions",
+    description: "Manage customer plans",
+    href: "/admin/subscriptions",
+    icon: CreditCard,
+  },
+  {
+    title: "Payments",
+    description: "Verify payment transactions",
+    href: "/admin/payments",
+    icon: Wallet,
+  },
+];
+
+export function getNavItemsForRole(role?: AuthUserRole | null): NavItem[] {
+  if (role === "ADMIN") {
+    return ADMIN_NAV_ITEMS;
+  }
+  return NAV_ITEMS;
+}

@@ -627,11 +627,16 @@ export function LiveChatClient() {
               Add a device under Devices to use live chat.
             </p>
           ) : (
-            <Select value={deviceId} onValueChange={(v) => setDeviceId(v ?? "")}>
+            <Select
+              value={deviceId}
+              onValueChange={(v) => setDeviceId(v ?? "")}
+              items={devices.map((d) => ({
+                value: d.id,
+                label: deviceOptionLabel(d),
+              }))}
+            >
               <SelectTrigger className="h-10 w-full rounded-md sm:w-[min(100%,320px)]">
-                <SelectValue placeholder="Select session...">
-                  {selectedDevice ? deviceName(selectedDevice) : null}
-                </SelectValue>
+                <SelectValue placeholder="Select session..." />
               </SelectTrigger>
               <SelectContent>
                 {devices.map((d) => (

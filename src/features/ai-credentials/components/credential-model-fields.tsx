@@ -216,6 +216,13 @@ export function CredentialModelFields({
               });
             }}
             disabled={disabled || activeCredentials.length === 0}
+            items={[
+              { value: CREDENTIAL_NONE, label: "Select credential…" },
+              ...activeCredentials.map((c) => ({
+                value: c.id,
+                label: `${c.name} · ${providerLabel(c.provider)} (${c.apiKeyMasked})`,
+              })),
+            ]}
           >
             <SelectTrigger className="h-11 w-full rounded-xl">
               <SelectValue placeholder="Select credential" />
@@ -247,6 +254,16 @@ export function CredentialModelFields({
               })
             }
             disabled={disabled || !selectedCredential || modelsLoading}
+            items={[
+              {
+                value: MODEL_DEFAULT,
+                label: selectedCredential?.modelLabel
+                  ? `Default · ${selectedCredential.modelLabel}`
+                  : "Use credential default",
+              },
+              ...freeModels.map((m) => ({ value: m.id, label: m.label })),
+              ...paidModels.map((m) => ({ value: m.id, label: m.label })),
+            ]}
           >
             <SelectTrigger className="h-11 w-full rounded-xl">
               <SelectValue

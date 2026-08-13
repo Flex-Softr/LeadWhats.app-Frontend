@@ -162,6 +162,11 @@ function EditContactDialogContent({
             onValueChange={(v) =>
               setStatus((v ?? "unverified") as ContactRowStatus)
             }
+            items={[
+              { value: "verified", label: "Verified" },
+              { value: "unverified", label: "Unverified" },
+              { value: "invalid", label: "Invalid" },
+            ]}
           >
             <SelectTrigger id="edit-c-status" className="h-10 w-full rounded-md">
               <SelectValue />

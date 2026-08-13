@@ -72,6 +72,22 @@ export const PAGE_META = {
     title: "Subscription confirmed",
     description: "Your plan is being activated.",
   },
+  "/admin": {
+    title: "Admin Overview",
+    description: "Platform operations dashboard.",
+  },
+  "/admin/users": {
+    title: "Users",
+    description: "Manage and block customer accounts.",
+  },
+  "/admin/subscriptions": {
+    title: "Subscriptions",
+    description: "Review and manage customer subscriptions.",
+  },
+  "/admin/payments": {
+    title: "Payments",
+    description: "Verify and reconcile payment transactions.",
+  },
   "/login": {
     title: "Sign in",
     description: "Access your FlexoWhats workspace.",

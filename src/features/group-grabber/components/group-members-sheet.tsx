@@ -524,6 +524,10 @@ export function GroupMembersSheet({
                       value={targetGroupId}
                       onValueChange={(v) => setTargetGroupId(v ?? "")}
                       disabled={groupsLoading || !!newGroupName.trim()}
+                      items={contactGroups.map((g) => ({
+                        value: g.id,
+                        label: `${g.name} (${g.stats.total})`,
+                      }))}
                     >
                       <SelectTrigger id="gg-target-group" className="w-full">
                         <SelectValue placeholder="Select a group…" />

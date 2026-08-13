@@ -191,7 +191,6 @@ export function CreateChatbotFlowDialog({
     deviceId.length > 0 &&
     triggerKeywords.trim().length > 0 &&
     (!aiEnabled || aiSettingsFormValid(aiSettings));
-  const selectedDevice = devices.find((d) => d.id === deviceId);
 
   function removeNode(id: string) {
     setDraftNodes((prev) => prev.filter((n) => n.id !== id));
@@ -343,14 +342,19 @@ export function CreateChatbotFlowDialog({
                           No devices — add one under Devices.
                         </p>
                       ) : (
-                        <Select value={deviceId} onValueChange={(v) => setDeviceId(v ?? "")}>
+                        <Select
+                          value={deviceId}
+                          onValueChange={(v) => setDeviceId(v ?? "")}
+                          items={devices.map((d) => ({
+                            value: d.id,
+                            label: deviceOptionLabel(d),
+                          }))}
+                        >
                           <SelectTrigger
                             id="cb-session"
                             className="h-11 w-full rounded-xl"
                           >
-                            <SelectValue placeholder="Select a session">
-                              {selectedDevice ? deviceName(selectedDevice) : null}
-                            </SelectValue>
+                            <SelectValue placeholder="Select a session" />
                           </SelectTrigger>
                           <SelectContent>
                             {devices.map((d) => (

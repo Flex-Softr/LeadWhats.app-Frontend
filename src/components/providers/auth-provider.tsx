@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { AuthUser, AuthWorkspace } from "@/types/auth";
+import type { AuthUser, AuthWorkspace, AuthSessionPayload } from "@/types/auth";
 import {
   getAccessToken,
   isAccessTokenExpired,
@@ -25,12 +25,12 @@ type AuthContextValue = {
   /** True until first refresh/bootstrap attempt finishes */
   isBootstrapping: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthSessionPayload>;
   register: (input: {
     email: string;
     password: string;
     name?: string;
-  }) => Promise<void>;
+  }) => Promise<AuthSessionPayload>;
   logout: () => Promise<void>;
 };
 
@@ -104,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     markAuthSessionActive();
     setUser(data.user);
     setWorkspace(data.workspace);
+    return data;
   }, []);
 
   const register = React.useCallback(
@@ -112,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       markAuthSessionActive();
       setUser(data.user);
       setWorkspace(data.workspace);
+      return data;
     },
     []
   );

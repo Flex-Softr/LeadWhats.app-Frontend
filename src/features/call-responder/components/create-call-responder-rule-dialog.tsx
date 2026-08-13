@@ -176,6 +176,10 @@ export function CreateCallResponderRuleDialog({
               <Select
                 value={deviceId ?? undefined}
                 onValueChange={(v) => setDeviceId(v ?? null)}
+                items={devices.map((d) => ({
+                  value: d.id,
+                  label: d.phone ? `${d.name} · ${d.phone}` : d.name,
+                }))}
               >
                 <SelectTrigger id="cr-session" className="h-11 w-full rounded-xl">
                   <SelectValue placeholder="Select a session" />
@@ -277,6 +281,10 @@ export function CreateCallResponderRuleDialog({
               <Select
                 value={templateId ?? undefined}
                 onValueChange={(v) => setTemplateId(v ?? null)}
+                items={templates.map((t) => ({
+                  value: t.id,
+                  label: t.name,
+                }))}
               >
                 <SelectTrigger id="cr-template" className="h-11 w-full rounded-xl">
                   <SelectValue placeholder="Select a template…" />

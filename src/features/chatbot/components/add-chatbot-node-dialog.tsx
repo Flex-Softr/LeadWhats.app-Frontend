@@ -200,6 +200,12 @@ export function AddChatbotNodeDialog({
                   onValueChange={(v) =>
                     setKind((v ?? "message") as ChatbotNodeKind)
                   }
+                  items={[
+                    { value: "message", label: "Message" },
+                    { value: "question", label: "Question" },
+                    { value: "action", label: "Action" },
+                    { value: "condition", label: "Condition" },
+                  ]}
                 >
                   <SelectTrigger id="an-kind" className="h-11 w-full rounded-xl">
                     <SelectValue />
@@ -256,6 +262,13 @@ export function AddChatbotNodeDialog({
                         onValueChange={(v) =>
                           setTemplateId(v === "__none__" ? "" : (v ?? ""))
                         }
+                        items={[
+                          { value: "__none__", label: "Choose…" },
+                          ...templates.map((t) => ({
+                            value: t.id,
+                            label: t.name,
+                          })),
+                        ]}
                       >
                         <SelectTrigger
                           id="an-template"
@@ -282,6 +295,10 @@ export function AddChatbotNodeDialog({
                     <Select
                       value={attachment}
                       onValueChange={(v) => setAttachment(v ?? "__none__")}
+                      items={ATTACHMENT_TYPES.map((t) => ({
+                        value: t.value,
+                        label: t.label,
+                      }))}
                     >
                       <SelectTrigger id="an-attach" className="h-11 w-full rounded-xl">
                         <SelectValue />

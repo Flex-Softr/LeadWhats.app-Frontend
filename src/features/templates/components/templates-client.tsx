@@ -207,6 +207,13 @@ export function TemplatesClient() {
               onValueChange={(v) =>
                 setTypeFilter((v ?? "all") as "all" | TemplateTypeId)
               }
+              items={[
+                { value: "all", label: "All types" },
+                ...TEMPLATE_TYPE_OPTIONS.map((opt) => ({
+                  value: opt.id,
+                  label: opt.label,
+                })),
+              ]}
             >
               <SelectTrigger
                 id="tpl-type-filter"

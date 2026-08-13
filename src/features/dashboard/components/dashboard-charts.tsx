@@ -70,6 +70,11 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
           <Select
             value={range}
             onValueChange={(v) => setRange(v ?? "6")}
+            items={[
+              { value: "3", label: "3 months" },
+              { value: "6", label: "6 months" },
+              { value: "12", label: "12 months" },
+            ]}
           >
             <SelectTrigger className="h-9 w-[132px] rounded-lg border-0 bg-muted text-xs text-foreground sm:text-sm dark:bg-slate-800 dark:text-muted-foreground">
               <SelectValue placeholder="Range" />

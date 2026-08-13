@@ -112,6 +112,10 @@ export function TablePagination({
               value={String(pageSize)}
               onValueChange={(v) => v && setPageSize(Number(v))}
               disabled={disabled || totalItems === 0}
+              items={pageSizeOptions.map((n) => ({
+                value: String(n),
+                label: String(n),
+              }))}
             >
               <SelectTrigger size="sm" className="h-8 w-[4.5rem]">
                 <SelectValue />

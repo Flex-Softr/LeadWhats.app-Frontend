@@ -518,6 +518,11 @@ export function BulkMessagesClient() {
   <Select
     value={statusFilter}
     onValueChange={(value) => setStatusFilter(value ?? "all")}
+    items={[
+      { value: "all", label: "All" },
+      { value: "completed", label: "Completed" },
+      { value: "failed", label: "Failed" },
+    ]}
   >
     <SelectTrigger className="h-10 w-full rounded-md sm:w-[180px]">
       <SelectValue placeholder="Filter status" />

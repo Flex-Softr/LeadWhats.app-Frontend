@@ -14,6 +14,14 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     if (isBootstrapping) return;
     if (!user) {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    const normalized =
+      pathname.length > 1 && pathname.endsWith("/")
+        ? pathname.slice(0, -1)
+        : pathname;
+    if (user.role === "ADMIN" && normalized === "/") {
+      router.replace("/admin");
     }
   }, [isBootstrapping, user, router, pathname]);
 
@@ -30,6 +38,18 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
         Redirecting to sign in…
+      </div>
+    );
+  }
+
+  const normalized =
+    pathname.length > 1 && pathname.endsWith("/")
+      ? pathname.slice(0, -1)
+      : pathname;
+  if (user.role === "ADMIN" && normalized === "/") {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+        Redirecting to admin…
       </div>
     );
   }

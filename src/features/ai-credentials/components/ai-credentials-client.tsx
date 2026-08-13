@@ -416,6 +416,23 @@ function CredentialFormDialog({
     }
   }
 
+  const providerOptions =
+    providers.length > 0
+      ? providers
+      : [
+          {
+            id: "gemini" as const,
+            label: "Google Gemini",
+            defaultApiEndpoint:
+              "https://generativelanguage.googleapis.com/v1beta/openai",
+          },
+          {
+            id: "openrouter" as const,
+            label: "OpenRouter",
+            defaultApiEndpoint: "https://openrouter.ai/api/v1",
+          },
+        ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -450,27 +467,16 @@ function CredentialFormDialog({
                   setProvider(next);
                   setModel("");
                 }}
+                items={providerOptions.map((p) => ({
+                  value: p.id,
+                  label: p.label,
+                }))}
               >
                 <SelectTrigger className="h-11 w-full rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(providers.length
-                    ? providers
-                    : [
-                        {
-                          id: "gemini" as const,
-                          label: "Google Gemini",
-                          defaultApiEndpoint:
-                            "https://generativelanguage.googleapis.com/v1beta/openai",
-                        },
-                        {
-                          id: "openrouter" as const,
-                          label: "OpenRouter",
-                          defaultApiEndpoint: "https://openrouter.ai/api/v1",
-                        },
-                      ]
-                  ).map((p) => (
+                  {providerOptions.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.label}
                     </SelectItem>
@@ -496,6 +502,10 @@ function CredentialFormDialog({
               value={model}
               onValueChange={(v) => setModel(v ?? "")}
               disabled={modelsLoading}
+              items={[
+                ...freeModels.map((m) => ({ value: m.id, label: m.label })),
+                ...paidModels.map((m) => ({ value: m.id, label: m.label })),
+              ]}
             >
               <SelectTrigger className="h-11 w-full rounded-xl">
                 <SelectValue

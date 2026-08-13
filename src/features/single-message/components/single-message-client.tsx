@@ -377,15 +377,17 @@ export function SingleMessageClient() {
                     value={deviceId}
                     onValueChange={(v) => setDeviceId(v ?? "")}
                     disabled={connected.length === 0}
+                    items={connected.map((d) => ({
+                      value: d.id,
+                      label: deviceName(d),
+                    }))}
                   >
                     <SelectTrigger
                       id="device"
                       size="default"
                       className={`${fieldClass} w-full min-w-0`}
                     >
-                      <SelectValue placeholder="Choose a connected device...">
-                        {selectedDevice ? deviceName(selectedDevice) : null}
-                      </SelectValue>
+                      <SelectValue placeholder="Choose a connected device..." />
                     </SelectTrigger>
                     <SelectContent>
                       {connected.map((d) => (
@@ -517,6 +519,10 @@ export function SingleMessageClient() {
                     <Select
                       value={templateId}
                       onValueChange={(v) => setTemplateId(v ?? "")}
+                      items={templates.map((t) => ({
+                        value: t.id,
+                        label: t.name,
+                      }))}
                     >
                       <SelectTrigger
                         id="template"

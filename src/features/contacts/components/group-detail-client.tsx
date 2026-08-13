@@ -490,6 +490,12 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             <Select
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v ?? "all")}
+              items={[
+                { value: "all", label: "All Status" },
+                { value: "verified", label: "Verified" },
+                { value: "unverified", label: "Unverified" },
+                { value: "invalid", label: "Invalid" },
+              ]}
             >
               <SelectTrigger className="h-10 w-full rounded-md sm:w-[155px]">
                 <SelectValue placeholder="All Status" />

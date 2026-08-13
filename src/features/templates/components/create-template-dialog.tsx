@@ -368,6 +368,10 @@ export function CreateTemplateDialog({
                   <Select
                     value={category}
                     onValueChange={(v) => setCategory(v ?? "general")}
+                    items={TEMPLATE_CATEGORIES.map((c) => ({
+                      value: c.value,
+                      label: c.label,
+                    }))}
                   >
                     <SelectTrigger id="tpl-cat" className="h-10 w-full">
                       <SelectValue placeholder="General" />

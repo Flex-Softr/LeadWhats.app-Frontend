@@ -22,6 +22,10 @@ import {
 } from "@/lib/auth-api";
 import { isSafeInternalPath } from "@/lib/safe-redirect";
 
+function homePathForRole(role?: string | null): string {
+  return role === "ADMIN" ? "/admin" : "/";
+}
+
 type LoginMode = "signin" | "forgot" | "reset";
 
 export function LoginForm() {
@@ -33,7 +37,9 @@ export function LoginForm() {
   React.useEffect(() => {
     if (!isBootstrapping && user && !resetToken) {
       const next = searchParams.get("next");
-      router.replace(isSafeInternalPath(next) ? next : "/");
+      router.replace(
+        isSafeInternalPath(next) ? next : homePathForRole(user.role)
+      );
     }
   }, [isBootstrapping, user, router, searchParams, resetToken]);
 
@@ -63,10 +69,12 @@ export function LoginForm() {
 
     setPending(true);
     try {
-      await login(email, password);
+      const session = await login(email, password);
       toast.success("Signed in");
       const next = searchParams.get("next");
-      router.replace(isSafeInternalPath(next) ? next : "/");
+      router.replace(
+        isSafeInternalPath(next) ? next : homePathForRole(session.user.role)
+      );
     } catch (err) {
       const msg =
         err instanceof ApiError

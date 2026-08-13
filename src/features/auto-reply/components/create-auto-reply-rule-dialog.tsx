@@ -617,16 +617,16 @@ export function CreateAutoReplyRuleDialog({
                                 <Select
                                   value={deviceId}
                                   onValueChange={(v) => setDeviceId(v ?? "")}
+                                  items={devices.map((d) => ({
+                                    value: d.id,
+                                    label: deviceOptionLabel(d),
+                                  }))}
                                 >
                                   <SelectTrigger
                                     id="ar-device"
                                     className={cn(fieldClass, "w-full")}
                                   >
-                                    <SelectValue placeholder="Select device">
-                                      {selectedDevice
-                                        ? deviceName(selectedDevice)
-                                        : null}
-                                    </SelectValue>
+                                    <SelectValue placeholder="Select device" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {devices.map((d) => (
@@ -676,6 +676,10 @@ export function CreateAutoReplyRuleDialog({
                                       "contains") as AutoReplyRule["triggerType"]
                                   )
                                 }
+                                items={TRIGGER_OPTIONS.map((o) => ({
+                                  value: o.value,
+                                  label: o.label,
+                                }))}
                               >
                                 <SelectTrigger className={cn(fieldClass, "w-full")}>
                                   <SelectValue />
@@ -746,6 +750,10 @@ export function CreateAutoReplyRuleDialog({
                                   (v ?? "text") as AutoReplyRule["messageMode"]
                                 )
                               }
+                              items={MESSAGE_MODES.map((m) => ({
+                                value: m.value,
+                                label: m.label,
+                              }))}
                             >
                               <SelectTrigger className={cn(fieldClass, "w-full")}>
                                 <SelectValue />
@@ -784,6 +792,13 @@ export function CreateAutoReplyRuleDialog({
                                   onValueChange={(v) =>
                                     setTemplateId(v ?? "__none__")
                                   }
+                                  items={[
+                                    { value: "__none__", label: "Select template" },
+                                    ...templates.map((t) => ({
+                                      value: t.id,
+                                      label: t.name,
+                                    })),
+                                  ]}
                                 >
                                   <SelectTrigger
                                     id="ar-template"
@@ -843,6 +858,13 @@ export function CreateAutoReplyRuleDialog({
                                     const x = v ?? "";
                                     setMediaAssetId(x === "__pick__" ? "" : x);
                                   }}
+                                  items={[
+                                    { value: "__pick__", label: "— Choose —" },
+                                    ...mediaAssets.map((a) => ({
+                                      value: a.id,
+                                      label: a.originalName,
+                                    })),
+                                  ]}
                                 >
                                   <SelectTrigger className="h-11 min-w-[200px] flex-1 rounded-xl">
                                     <SelectValue placeholder="Or pick uploaded file" />

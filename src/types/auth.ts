@@ -1,7 +1,10 @@
+export type AuthUserRole = "ADMIN" | "CUSTOMER";
+
 export type AuthUser = {
   id: string;
   email: string;
   name: string | null;
+  role: AuthUserRole;
 };
 
 export type AuthWorkspace = {

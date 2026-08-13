@@ -57,6 +57,10 @@ export function PhoneNumberWithCountryInput({
         value={selectedCountry.iso2}
         onValueChange={(value) => onCountryIso2Change(value ?? selectedCountry.iso2)}
         disabled={disabled}
+        items={PHONE_COUNTRY_PREFIXES.map((item) => ({
+          value: item.iso2,
+          label: `${item.name} (${item.dialCode})`,
+        }))}
       >
         <SelectTrigger
           size="default"

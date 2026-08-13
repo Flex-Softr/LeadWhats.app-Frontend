@@ -276,6 +276,10 @@ export function ImportContactsFileDialog({
                 <Select
                   value={String(phoneCol)}
                   onValueChange={(v) => setPhoneCol(Number(v))}
+                  items={colIndices.map((i) => ({
+                    value: String(i),
+                    label: columnLabel(rows!, i, firstRowIsHeader),
+                  }))}
                 >
                   <SelectTrigger
                     id="import-phone-col"
@@ -302,6 +306,16 @@ export function ImportContactsFileDialog({
                 <Select
                   value={nameCol}
                   onValueChange={(v) => setNameCol(v ?? NONE)}
+                  items={[
+                    {
+                      value: NONE,
+                      label: "None — use “Contact”",
+                    },
+                    ...colIndices.map((i) => ({
+                      value: String(i),
+                      label: columnLabel(rows!, i, firstRowIsHeader),
+                    })),
+                  ]}
                 >
                   <SelectTrigger
                     id="import-name-col"

@@ -287,15 +287,19 @@ export function GroupGrabberClient() {
               value={deviceId}
               onValueChange={(v) => setDeviceId(v ?? "")}
               disabled={devicesLoading || devices.length === 0}
+              items={devices.map((d) => ({
+                value: d.id,
+                label: `${deviceName(d.name)}${d.phone ? ` · ${d.phone}` : ""} · ${
+                  d.status === "connected" ? "Connected" : "QR ready"
+                }`,
+              }))}
             >
               <SelectTrigger id="gg-device" className="h-10 w-full rounded-md sm:max-w-md">
                 <SelectValue
                   placeholder={
                     devicesLoading ? "Loading..." : "Choose a session..."
                   }
-                >
-                  {selectedDevice ? deviceName(selectedDevice.name) : null}
-                </SelectValue>
+                />
               </SelectTrigger>
               <SelectContent>
                 {devices.map((d) => (
@@ -508,6 +512,11 @@ export function GroupGrabberClient() {
               <Select
                 value={roleFilter}
                 onValueChange={(v) => setRoleFilter((v ?? "all") as RoleFilter)}
+                items={[
+                  { value: "all", label: "All" },
+                  { value: "admin", label: "Admin" },
+                  { value: "member", label: "Member" },
+                ]}
               >
                 <SelectTrigger className="h-10 w-full shrink-0 rounded-md sm:w-[130px]">
                   <SelectValue />
@@ -523,6 +532,10 @@ export function GroupGrabberClient() {
                 onValueChange={(v) =>
                   setSortKey((v ?? "name") as SortKey)
                 }
+                items={[
+                  { value: "name", label: "Name" },
+                  { value: "participants", label: "Participants" },
+                ]}
               >
                 <SelectTrigger className="h-10 w-full shrink-0 rounded-md sm:w-[140px]">
                   <SelectValue />

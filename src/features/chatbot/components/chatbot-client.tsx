@@ -233,6 +233,11 @@ export function ChatbotClient() {
           <Select
             value={filter}
             onValueChange={(v) => setFilter((v ?? "all") as FlowFilter)}
+            items={[
+              { value: "all", label: "All Flows" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ]}
           >
             <SelectTrigger className="h-10 w-full rounded-md sm:w-[200px]">
               <SelectValue placeholder="All Flows" />

@@ -1025,15 +1025,17 @@ export function CreateBulkCampaignDialog({
                               <Select
                                 value={singleDeviceId}
                                 onValueChange={(v) => setSingleDeviceId(v ?? "")}
+                                items={connected.map((d) => ({
+                                  value: d.id,
+                                  label: deviceName(d),
+                                }))}
                               >
                                 <SelectTrigger
                                   id="bulk-single-device"
                                   size="default"
                                   className={`${fieldClass} w-full min-w-0`}
                                 >
-                                  <SelectValue placeholder="Choose a connected device…">
-                                    {selectedDevice ? deviceName(selectedDevice) : null}
-                                  </SelectValue>
+                                  <SelectValue placeholder="Choose a connected device…" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {connected.map((d) => (
@@ -1309,6 +1311,20 @@ export function CreateBulkCampaignDialog({
                                     model: "",
                                   }))
                                 }
+                                items={[
+                                  {
+                                    value: CREDENTIAL_NONE,
+                                    label: "Select credential…",
+                                  },
+                                  ...activeCredentials.map((c) => ({
+                                    value: c.id,
+                                    label: `${c.name} · ${
+                                      c.provider === "gemini"
+                                        ? "Gemini"
+                                        : "OpenRouter"
+                                    } (${c.apiKeyMasked})`,
+                                  })),
+                                ]}
                               >
                                 <SelectTrigger
                                   id="bulk-ai-credential"
@@ -1444,17 +1460,19 @@ export function CreateBulkCampaignDialog({
                               v === "__none__" || v == null ? "" : v
                             )
                           }
+                          items={[
+                            { value: "__none__", label: "Choose a template…" },
+                            ...templates.map((t) => ({
+                              value: t.id,
+                              label: t.name,
+                            })),
+                          ]}
                         >
                           <SelectTrigger
                             id="bulk-template"
                             className={`${fieldClass} w-full`}
                           >
-                            <SelectValue placeholder="Choose a template...">
-                              {templateId
-                                ? templates.find((t) => t.id === templateId)
-                                    ?.name ?? null
-                                : null}
-                            </SelectValue>
+                            <SelectValue placeholder="Choose a template..." />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__none__">
@@ -1492,6 +1510,10 @@ export function CreateBulkCampaignDialog({
                         onValueChange={(v) =>
                           setAttachmentType(v as AttachmentType)
                         }
+                        items={ATTACHMENT_TYPES.map((t) => ({
+                          value: t.value,
+                          label: t.label,
+                        }))}
                       >
                         <SelectTrigger className={`${fieldClass} w-full`}>
                           <SelectValue />
@@ -1776,6 +1798,10 @@ export function CreateBulkCampaignDialog({
                         onValueChange={(v) =>
                           setScheduleType((v ?? "immediate") as ScheduleType)
                         }
+                        items={[
+                          { value: "immediate", label: "Send immediately" },
+                          { value: "scheduled", label: "Scheduled" },
+                        ]}
                       >
                         <SelectTrigger className={`${fieldClass} w-full`}>
                           <SelectValue />
@@ -1963,6 +1989,14 @@ export function CreateBulkCampaignDialog({
                                   onValueChange={(v) =>
                                     setUniquenessMode((v ?? "none") as UniquenessMode)
                                   }
+                                  items={[
+                                    { value: "none", label: "None" },
+                                    { value: "campaign", label: "Campaign" },
+                                    {
+                                      value: "workspace_window",
+                                      label: "Workspace (24h)",
+                                    },
+                                  ]}
                                 >
                                   <SelectTrigger className={`${fieldClass} h-10`}>
                                     <SelectValue />
