@@ -91,7 +91,7 @@ export function AppHeader() {
             size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="size-10 rounded-full text-foreground hover:bg-white dark:text-muted-foreground dark:hover:bg-slate-900"
+            className="size-10 rounded-full text-foreground hover:bg-muted"
           >
             {mounted ? (
               isDark ? (
@@ -106,10 +106,10 @@ export function AppHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative size-10 rounded-full text-foreground hover:bg-white dark:text-muted-foreground dark:hover:bg-slate-900"
+            className="relative size-10 rounded-full text-foreground hover:bg-muted"
             aria-label="Notifications"
           >
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500 ring-2 ring-background dark:ring-slate-950" />
+            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500 ring-2 ring-background" />
             <Bell className="size-[20px]" />
           </Button>
 
@@ -136,7 +136,7 @@ export function AppHeader() {
               render={
                 <Button
                   variant="outline"
-                  className="h-12 shrink-0 gap-1.5 rounded-full border-0 bg-white px-2.5 shadow-[0_12px_30px_rgba(66,48,106,0.1)] dark:bg-slate-900 dark:shadow-none"
+                  className="h-12 shrink-0 gap-1.5 rounded-full border-0 bg-card px-2.5 shadow-[0_12px_30px_rgba(66,48,106,0.1)] dark:shadow-none"
                   aria-label="Open account menu"
                   aria-haspopup="menu"
                 />

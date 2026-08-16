@@ -23,7 +23,7 @@ export function MobileSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden size-10 shrink-0 rounded-full bg-white text-foreground shadow-sm dark:bg-slate-900 dark:text-muted-foreground"
+            className="lg:hidden size-10 shrink-0 rounded-full bg-card text-foreground shadow-sm"
             aria-label="Open navigation"
           />
         }
@@ -32,11 +32,11 @@ export function MobileSidebar() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-[300px] gap-0 border-white/50 bg-white/95 p-0 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 sm:w-[308px]"
+        className="w-[300px] gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground backdrop-blur-xl sm:w-[308px]"
       >
         <div className="flex h-full flex-col px-4 py-6">
           <BrandMark />
-          <div className="my-4 h-px bg-muted dark:bg-slate-800" />
+          <div className="my-4 h-px bg-sidebar-border" />
           <SidebarNav onNavigate={() => setOpen(false)} />
           <SidebarFooter />
         </div>

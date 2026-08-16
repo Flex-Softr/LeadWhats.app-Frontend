@@ -41,7 +41,7 @@ export function SystemStatusBar({
   const cfg = statusCopy[status] ?? statusCopy.degraded;
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-white px-4 py-3 text-xs shadow-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
+    <div className="flex flex-col gap-2 rounded-lg bg-card px-4 py-3 text-xs shadow-sm sm:flex-row sm:items-center sm:justify-between sm:text-sm">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-slate-700 dark:text-slate-200">
           System Status:

@@ -73,7 +73,7 @@ export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
   return (
     <Card
       className={cn(
-        "rounded-lg border-0 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-0.5 dark:bg-slate-900",
+        "rounded-lg border-0 bg-card shadow-sm transition-transform duration-200 hover:-translate-y-0.5",
         className
       )}
     >
@@ -87,10 +87,10 @@ export function DashboardKpiCard({ data, className }: DashboardKpiCardProps) {
           <Icon className="size-4" strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground dark:text-slate-100">
+          <p className="text-sm font-bold text-card-foreground">
             {data.label}
           </p>
-          <p className="mt-2 text-3xl font-extrabold tracking-tight text-black tabular-nums dark:text-white">
+          <p className="mt-2 text-3xl font-extrabold tracking-tight text-foreground tabular-nums">
             {data.value}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">

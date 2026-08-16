@@ -46,7 +46,7 @@ export function SidebarNav({
                 isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
                 active
                   ? "bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-violet-600/25 ring-1 ring-white/20"
-                  : "text-slate-600 hover:bg-violet-500/10 hover:text-violet-950 dark:text-slate-300 dark:hover:bg-violet-500/20 dark:hover:text-white"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               )}
             >
               <span
@@ -54,7 +54,7 @@ export function SidebarNav({
                   "flex size-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200",
                   active
                     ? "bg-white/20 text-white shadow-inner"
-                    : "bg-slate-100/80 text-slate-600 group-hover:bg-violet-100 group-hover:text-violet-700 dark:bg-slate-850 dark:text-slate-400 dark:group-hover:bg-violet-900/60 dark:group-hover:text-violet-300"
+                    : "bg-sidebar-foreground/10 text-sidebar-foreground group-hover:bg-sidebar-primary/15 group-hover:text-sidebar-primary"
                 )}
               >
                 <Icon
@@ -70,7 +70,7 @@ export function SidebarNav({
                         "block truncate text-[13.5px] font-bold leading-tight tracking-tight transition-colors",
                         active
                           ? "text-white"
-                          : "text-slate-800 group-hover:text-violet-950 dark:text-slate-200 dark:group-hover:text-white"
+                          : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground"
                       )}
                     >
                       {item.title}
@@ -80,7 +80,7 @@ export function SidebarNav({
                         "mt-0.5 block truncate text-[11px] font-medium leading-tight transition-colors",
                         active
                           ? "text-violet-100/90"
-                          : "text-slate-500 group-hover:text-violet-800/90 dark:text-slate-400 dark:group-hover:text-slate-300"
+                          : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground/80"
                       )}
                     >
                       {item.description}
@@ -91,7 +91,7 @@ export function SidebarNav({
                       "size-4 shrink-0 transition-transform duration-200",
                       active
                         ? "text-white opacity-90 translate-x-0.5"
-                        : "text-slate-400 opacity-60 group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-violet-600 dark:text-slate-500 dark:group-hover:text-violet-400"
+                        : "text-sidebar-foreground/40 opacity-60 group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-sidebar-accent-foreground"
                     )}
                   />
                 </>

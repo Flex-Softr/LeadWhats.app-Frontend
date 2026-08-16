@@ -4,6 +4,7 @@ import { Geist_Mono, Inter } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { CanonicalRouteProvider } from "@/components/providers/canonical-route-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { themeInitScript } from "@/components/providers/theme-script";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
@@ -36,6 +37,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+          suppressHydrationWarning
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

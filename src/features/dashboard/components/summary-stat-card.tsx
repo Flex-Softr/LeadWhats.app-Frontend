@@ -14,12 +14,12 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
   const Icon = summaryIcons[data.icon] ?? Send;
 
   return (
-    <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
+    <Card className="rounded-lg border-0 bg-card shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-5 pb-1 pt-5">
-        <CardTitle className="text-sm font-bold text-foreground dark:text-slate-100">
+        <CardTitle className="text-sm font-bold text-card-foreground">
           {data.title}
         </CardTitle>
-        <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-slate-800 dark:text-muted-foreground">
+        <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
           <Icon className="size-4" />
         </span>
       </CardHeader>

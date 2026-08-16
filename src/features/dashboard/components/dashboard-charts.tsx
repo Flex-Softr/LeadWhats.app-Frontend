@@ -34,13 +34,13 @@ import {
 
 const tooltipStyle = {
   borderRadius: 12,
-  border: "1px solid rgb(226 232 240)",
+  border: "1px solid var(--border)",
   boxShadow: "0 12px 40px -12px rgba(91, 33, 182, 0.2)",
-  background: "rgba(15, 23, 42, 0.94)",
-  color: "#f8fafc",
+  background: "var(--popover)",
+  color: "var(--popover-foreground)",
 };
 
-const axisTick = { fill: "#64748b", fontSize: 12 };
+const axisTick = { fill: "var(--muted-foreground)", fontSize: 12 };
 
 type DashboardChartsProps = {
   barSeries: DashboardBarPoint[];
@@ -57,10 +57,10 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
+      <Card className="rounded-lg border-0 bg-card shadow-sm">
         <CardHeader className="flex flex-col gap-2 space-y-0 px-5 pb-1 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-0.5">
-            <CardTitle className="text-base font-bold text-foreground dark:text-slate-100">
+            <CardTitle className="text-base font-bold text-card-foreground">
               Message volume
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -76,7 +76,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
               { value: "12", label: "12 months" },
             ]}
           >
-            <SelectTrigger className="h-9 w-[132px] rounded-lg border-0 bg-muted text-xs text-foreground sm:text-sm dark:bg-slate-800 dark:text-muted-foreground">
+            <SelectTrigger className="h-9 w-[132px] rounded-lg border-0 bg-muted text-xs text-foreground sm:text-sm">
               <SelectValue placeholder="Range" />
             </SelectTrigger>
             <SelectContent>
@@ -94,7 +94,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
             >
               <CartesianGrid
                 strokeDasharray="4 4"
-                className="stroke-slate-200/80 dark:stroke-slate-800"
+                className="stroke-border"
                 vertical={false}
               />
               <XAxis
@@ -131,9 +131,9 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
         </CardContent>
       </Card>
 
-      <Card className="rounded-lg border-0 bg-white shadow-sm dark:bg-slate-900">
+      <Card className="rounded-lg border-0 bg-card shadow-sm">
         <CardHeader className="space-y-0.5 px-5 pb-1 pt-5">
-          <CardTitle className="text-base font-bold text-foreground dark:text-slate-100">
+          <CardTitle className="text-base font-bold text-card-foreground">
             Channel mix
           </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -148,7 +148,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
             >
               <CartesianGrid
                 strokeDasharray="4 4"
-                className="stroke-slate-200/80 dark:stroke-slate-800"
+                className="stroke-border"
               />
               <XAxis
                 dataKey="x"

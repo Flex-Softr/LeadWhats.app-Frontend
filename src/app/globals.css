@@ -51,6 +51,7 @@
 }
 
 :root {
+  color-scheme: light;
   /* Clean grayscale system inspired by the product UI references */
   --background: oklch(0.985 0.002 260);
   --foreground: oklch(0.18 0.01 260);
@@ -89,6 +90,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.16 0.01 260);
   --foreground: oklch(0.97 0.005 260);
   --card: oklch(0.2 0.01 260);

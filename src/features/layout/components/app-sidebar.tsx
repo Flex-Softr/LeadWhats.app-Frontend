@@ -12,7 +12,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      className={`hidden h-full flex-col border-r border-slate-200/80 bg-white/95 py-5 shadow-[18px_0_45px_rgba(83,48,154,0.04)] backdrop-blur-xl transition-[width] duration-300 ease-in-out dark:border-slate-800/80 dark:bg-slate-950/95 lg:flex ${
+      className={`hidden h-full flex-col border-r border-sidebar-border bg-sidebar py-5 text-sidebar-foreground shadow-[18px_0_45px_rgba(83,48,154,0.04)] backdrop-blur-xl transition-[width] duration-300 ease-in-out lg:flex ${
         isCollapsed ? "w-[72px]" : "w-[240px]"
       }`}
     >
@@ -28,7 +28,7 @@ export function AppSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="size-8 rounded-lg text-slate-500 hover:bg-violet-100/80 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-violet-900/50 dark:hover:text-violet-200"
+            className="size-8 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             title="Collapse sidebar"
           >
             <PanelLeftClose className="size-4" />
@@ -43,7 +43,7 @@ export function AppSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="size-8 rounded-lg text-slate-500 hover:bg-violet-100/80 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-violet-900/50 dark:hover:text-violet-200"
+            className="size-8 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             title="Expand sidebar"
           >
             <PanelLeftOpen className="size-4" />
@@ -51,7 +51,7 @@ export function AppSidebar() {
         </div>
       )}
 
-      <div className="mx-4 my-3.5 h-px bg-slate-200/80 dark:bg-slate-800/80" />
+      <div className="mx-4 my-3.5 h-px bg-sidebar-border" />
 
       <SidebarNav isCollapsed={isCollapsed} />
       <SidebarFooter isCollapsed={isCollapsed} />

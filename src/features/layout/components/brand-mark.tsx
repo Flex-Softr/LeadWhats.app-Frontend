@@ -8,10 +8,10 @@ export function BrandMark({ isCollapsed }: { isCollapsed?: boolean }) {
       </div>
       {!isCollapsed && (
         <div className="min-w-0 leading-tight">
-          <p className="text-[1.45rem] font-extrabold tracking-tight text-[#21172d] dark:text-white">
+          <p className="text-[1.45rem] font-extrabold tracking-tight text-sidebar-foreground">
             FlexoWhats
           </p>
-          <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          <p className="mt-0.5 truncate text-[11px] font-medium text-sidebar-foreground/50">
             SaaS Messaging Dashboard
           </p>
         </div>
