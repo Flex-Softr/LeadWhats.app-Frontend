@@ -18,12 +18,6 @@ import { toast } from "sonner";
 import { BILLING_PLANS, isPaidPlan } from "@/config/plans";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useSubscription } from "@/features/billing/subscription-context";
-import { PhoneNumberWithCountryInput } from "@/features/shared/components/phone-number-with-country-input";
-import {
-  buildE164Phone,
-  DEFAULT_PHONE_COUNTRY_ISO2,
-  findCountryByIso2,
-} from "@/features/shared/lib/phone-country-prefixes";
 import type { PaymentGatewayId, PlanId } from "@/types/billing";
 import { ApiError, apiJson } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -60,8 +54,7 @@ export function BillingClient() {
   const [loading, setLoading] = React.useState<PlanId | null>(null);
   const [resetting, setResetting] = React.useState(false);
   const [gateway, setGateway] = React.useState<PaymentGatewayId>("sslcommerz");
-  const [countryIso2, setCountryIso2] = React.useState(DEFAULT_PHONE_COUNTRY_ISO2);
-  const [localPhone, setLocalPhone] = React.useState("");
+  const [customerPhone, setCustomerPhone] = React.useState("");
 
   const sslReady = paymentGateways.find((g) => g.id === "sslcommerz")?.configured;
   const canCheckoutPaid =
@@ -84,19 +77,25 @@ export function BillingClient() {
       return;
     }
 
-    const effectivePhone = hasAccountPhone
-      ? user!.phone!
-      : localPhone.trim()
-        ? buildE164Phone(
-            findCountryByIso2(countryIso2)?.dialCode ?? "+880",
-            localPhone
-          )
-        : "";
+    let effectivePhone = "";
+    if (hasAccountPhone) {
+      effectivePhone = user!.phone!;
+    } else if (customerPhone.trim()) {
+      const raw = customerPhone.trim();
+      const digits = raw.replace(/\D/g, "");
+      if (digits.startsWith("880")) {
+        effectivePhone = `+${digits}`;
+      } else if (digits.startsWith("0")) {
+        effectivePhone = `+880${digits.slice(1)}`;
+      } else {
+        effectivePhone = `+880${digits}`;
+      }
+    }
 
     if (gateway === "sslcommerz" && !effectivePhone) {
       toast.error("Phone required", {
         description:
-          "SSLCommerz needs a contact phone. Enter a valid number or add one in your profile.",
+          "SSLCommerz needs a contact phone. Enter a valid Bangladeshi number or add one in your profile.",
       });
       return;
     }
@@ -290,19 +289,24 @@ export function BillingClient() {
             ) : (
               <div className="space-y-2 rounded-lg bg-[#faf8ff] p-4 dark:bg-slate-950">
                 <Label htmlFor="cus-phone" className="text-xs font-semibold">
-                  Contact phone (SSLCommerz)
+                  Contact phone (SSLCommerz · Bangladesh)
                 </Label>
-                <PhoneNumberWithCountryInput
-                  id="cus-phone"
-                  countryIso2={countryIso2}
-                  onCountryIso2Change={setCountryIso2}
-                  localNumber={localPhone}
-                  onLocalNumberChange={setLocalPhone}
-                  placeholder="e.g. 1712345678"
-                  className="h-11 bg-white dark:bg-slate-900"
-                />
+                <div className="flex h-11 w-full items-stretch overflow-hidden rounded-lg border border-input bg-white shadow-xs focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-slate-900">
+                  <span className="flex items-center border-r border-input bg-slate-50/80 px-3.5 text-xs font-semibold text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+                    +880
+                  </span>
+                  <Input
+                    id="cus-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="1712345678"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="h-full rounded-none border-0 bg-transparent px-3 text-sm shadow-none focus-visible:border-0 focus-visible:ring-0"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Required by SSLCommerz for receipts.
+                  Required by SSLCommerz for receipts (e.g. 017XXXXXXXX).
                 </p>
               </div>
             )

@@ -392,7 +392,7 @@ export function ProfileClient() {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone-local" className="text-xs font-semibold">
-                    WhatsApp Phone Number
+                    Phone Number
                   </Label>
                   <PhoneNumberWithCountryInput
                     id="phone-local"
