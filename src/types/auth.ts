@@ -4,7 +4,9 @@ export type AuthUser = {
   id: string;
   email: string;
   name: string | null;
+  phone?: string | null;
   role: AuthUserRole;
+  hasPassword?: boolean;
 };
 
 export type AuthWorkspace = {

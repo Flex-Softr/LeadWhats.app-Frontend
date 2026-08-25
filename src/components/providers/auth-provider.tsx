@@ -18,6 +18,7 @@ import {
   logoutRequest,
   registerRequest,
 } from "@/lib/auth-api";
+import { logoutAllSessions } from "@/features/profile/lib/profile-api";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -32,6 +33,9 @@ type AuthContextValue = {
     name?: string;
   }) => Promise<AuthSessionPayload>;
   logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
+  updateUser: (user: AuthUser) => void;
+  updateWorkspace: (workspace: AuthWorkspace) => void;
 };
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
@@ -47,6 +51,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAccessToken(null);
     setUser(null);
     setWorkspace(null);
+  }, []);
+
+  const logoutAll = React.useCallback(async () => {
+    try {
+      await logoutAllSessions();
+    } catch {
+      /* ignore */
+    }
+    clearAuthSessionMarker();
+    setAccessToken(null);
+    setUser(null);
+    setWorkspace(null);
+  }, []);
+
+  const updateUser = React.useCallback((updated: AuthUser) => {
+    setUser(updated);
+  }, []);
+
+  const updateWorkspace = React.useCallback((updated: AuthWorkspace) => {
+    setWorkspace(updated);
   }, []);
 
   React.useEffect(() => {
@@ -127,8 +151,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
+      logoutAll,
+      updateUser,
+      updateWorkspace,
     }),
-    [user, workspace, isBootstrapping, login, register, logout]
+    [
+      user,
+      workspace,
+      isBootstrapping,
+      login,
+      register,
+      logout,
+      logoutAll,
+      updateUser,
+      updateWorkspace,
+    ]
   );
 
   return (

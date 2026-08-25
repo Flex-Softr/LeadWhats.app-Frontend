@@ -41,12 +41,12 @@ export function PhoneNumberWithCountryInput({
     () => findCountryByIso2(countryIso2) ?? PHONE_COUNTRY_PREFIXES[0],
     [countryIso2]
   );
-  const selectedCountryFlag = `https://flagcdn.com/w40/${selectedCountry.iso2.toLowerCase()}.png`;
+  const selectedCountryFlag = `https://flagcdn.com/w80/${selectedCountry.iso2.toLowerCase()}.png`;
 
   return (
     <div
       className={cn(
-        "flex h-11 w-full items-stretch overflow-hidden rounded-sm border border-input bg-transparent transition-colors",
+        "flex h-11 w-full items-stretch overflow-hidden rounded-lg border border-input bg-transparent shadow-xs transition-colors",
         "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         "dark:bg-input/30 dark:hover:bg-input/50",
         disabled && "cursor-not-allowed opacity-60",
@@ -64,30 +64,36 @@ export function PhoneNumberWithCountryInput({
       >
         <SelectTrigger
           size="default"
-          className="h-full w-[4rem] min-w-[4rem] rounded-none border-0 border-r border-input bg-transparent px-1.5 pr-1 shadow-none hover:bg-transparent focus-visible:border-r focus-visible:ring-0 data-[size=default]:h-full"
+          className="h-full w-auto min-w-[5.75rem] shrink-0 rounded-none border-0 border-r border-input bg-slate-50/70 px-2.5 shadow-none hover:bg-slate-100/80 focus-visible:border-r focus-visible:ring-0 data-[size=default]:h-full data-[size=default]:rounded-none dark:bg-slate-900/40 dark:hover:bg-slate-800/60"
         >
-          <SelectValue className="items-center pl-1">
-            <span className="inline-flex items-center">
+          <SelectValue className="flex items-center gap-1.5 pl-0.5">
+            <span className="inline-flex items-center gap-2">
               <img
                 src={selectedCountryFlag}
                 alt={`${selectedCountry.name} flag`}
-                className="h-4 w-6 rounded-[2px] object-cover"
+                className="h-5 w-7 shrink-0 rounded-[3px] border border-black/10 object-cover shadow-xs dark:border-white/15"
                 loading="lazy"
               />
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {selectedCountry.dialCode}
+              </span>
             </span>
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="max-h-72">
           {PHONE_COUNTRY_PREFIXES.map((item) => (
             <SelectItem key={`${item.iso2}-${item.dialCode}`} value={item.iso2}>
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-2.5">
                 <img
-                  src={`https://flagcdn.com/w40/${item.iso2.toLowerCase()}.png`}
+                  src={`https://flagcdn.com/w80/${item.iso2.toLowerCase()}.png`}
                   alt={`${item.name} flag`}
-                  className="h-4 w-6 rounded-[2px] object-cover"
+                  className="h-4.5 w-6.5 shrink-0 rounded-[3px] border border-black/10 object-cover shadow-xs dark:border-white/15"
                   loading="lazy"
                 />
-                <span className="text-sm">{item.dialCode}</span>
+                <span className="text-sm font-medium">{item.name}</span>
+                <span className="ml-auto font-mono text-xs text-muted-foreground">
+                  {item.dialCode}
+                </span>
               </span>
             </SelectItem>
           ))}

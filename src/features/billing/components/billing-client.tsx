@@ -16,7 +16,14 @@ import {
 import { toast } from "sonner";
 
 import { BILLING_PLANS, isPaidPlan } from "@/config/plans";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useSubscription } from "@/features/billing/subscription-context";
+import { PhoneNumberWithCountryInput } from "@/features/shared/components/phone-number-with-country-input";
+import {
+  buildE164Phone,
+  DEFAULT_PHONE_COUNTRY_ISO2,
+  findCountryByIso2,
+} from "@/features/shared/lib/phone-country-prefixes";
 import type { PaymentGatewayId, PlanId } from "@/types/billing";
 import { ApiError, apiJson } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +45,9 @@ type CheckoutResponse =
   | { demo: true; planId: PlanId };
 
 export function BillingClient() {
+  const { user } = useAuth();
+  const hasAccountPhone = Boolean(user?.phone && user.phone.trim());
+
   const {
     planId,
     refreshPlan,
@@ -50,7 +60,8 @@ export function BillingClient() {
   const [loading, setLoading] = React.useState<PlanId | null>(null);
   const [resetting, setResetting] = React.useState(false);
   const [gateway, setGateway] = React.useState<PaymentGatewayId>("sslcommerz");
-  const [customerPhone, setCustomerPhone] = React.useState("");
+  const [countryIso2, setCountryIso2] = React.useState(DEFAULT_PHONE_COUNTRY_ISO2);
+  const [localPhone, setLocalPhone] = React.useState("");
 
   const sslReady = paymentGateways.find((g) => g.id === "sslcommerz")?.configured;
   const canCheckoutPaid =
@@ -72,10 +83,20 @@ export function BillingClient() {
       });
       return;
     }
-    if (gateway === "sslcommerz" && !customerPhone.trim()) {
+
+    const effectivePhone = hasAccountPhone
+      ? user!.phone!
+      : localPhone.trim()
+        ? buildE164Phone(
+            findCountryByIso2(countryIso2)?.dialCode ?? "+880",
+            localPhone
+          )
+        : "";
+
+    if (gateway === "sslcommerz" && !effectivePhone) {
       toast.error("Phone required", {
         description:
-          "SSLCommerz needs a contact phone. Enter a valid number for receipts and support.",
+          "SSLCommerz needs a contact phone. Enter a valid number or add one in your profile.",
       });
       return;
     }
@@ -87,8 +108,8 @@ export function BillingClient() {
         body: JSON.stringify({
           planId: target,
           gateway,
-          ...(gateway === "sslcommerz"
-            ? { customerPhone: customerPhone.trim() }
+          ...(gateway === "sslcommerz" && effectivePhone
+            ? { customerPhone: effectivePhone }
             : {}),
         }),
       });
@@ -246,23 +267,45 @@ export function BillingClient() {
             ))}
           </div>
           {gateway === "sslcommerz" ? (
-            <div className="space-y-2 rounded-lg bg-[#faf8ff] p-4 dark:bg-slate-950">
-              <Label htmlFor="cus-phone">Contact phone (SSLCommerz)</Label>
-              <Input
-                id="cus-phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="e.g. 01712345678"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="h-11 rounded-full border-0 bg-white px-4 shadow-inner shadow-foreground/5 dark:bg-slate-900"
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Required by SSLCommerz for receipts. Use a real number in
-                production.
-              </p>
-            </div>
+            hasAccountPhone ? (
+              <div className="space-y-1.5 rounded-lg border border-emerald-200/70 bg-emerald-50/50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-emerald-900 dark:text-emerald-300">
+                    Contact phone (SSLCommerz)
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-300 bg-emerald-100/60 text-[10px] font-semibold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
+                  >
+                    From Profile
+                  </Badge>
+                </div>
+                <p className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-50">
+                  {user?.phone}
+                </p>
+                <p className="text-[11px] text-emerald-800/80 dark:text-emerald-400/80">
+                  SSLCommerz payment receipts will be sent to your account phone.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 rounded-lg bg-[#faf8ff] p-4 dark:bg-slate-950">
+                <Label htmlFor="cus-phone" className="text-xs font-semibold">
+                  Contact phone (SSLCommerz)
+                </Label>
+                <PhoneNumberWithCountryInput
+                  id="cus-phone"
+                  countryIso2={countryIso2}
+                  onCountryIso2Change={setCountryIso2}
+                  localNumber={localPhone}
+                  onLocalNumberChange={setLocalPhone}
+                  placeholder="e.g. 1712345678"
+                  className="h-11 bg-white dark:bg-slate-900"
+                />
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Required by SSLCommerz for receipts.
+                </p>
+              </div>
+            )
           ) : null}
             <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
               <strong className="font-semibold">Payments:</strong>{" "}
