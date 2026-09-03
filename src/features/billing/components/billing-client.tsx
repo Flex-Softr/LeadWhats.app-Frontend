@@ -175,7 +175,7 @@ export function BillingClient() {
               <Sparkles className="mr-1 size-3.5" />
               Billing control
             </Badge>
-            <h2 className="max-w-lg text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+            <h2 className="max-w-lg text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
               Choose the plan that fits your messaging scale
             </h2>
             <p className="mt-4 max-w-md text-sm font-medium leading-relaxed text-white/86">

@@ -293,7 +293,7 @@ export function ProfileClient() {
 
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   {userDisplayName(user)}
                 </h1>
                 <Badge

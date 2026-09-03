@@ -24,7 +24,7 @@ export function WelcomeBanner({
   return (
     <div className="relative min-h-[230px] overflow-hidden rounded-lg bg-gradient-to-br from-neutral-800 via-neutral-700 to-neutral-600 px-6 py-7 text-white shadow-sm sm:px-8 sm:py-8">
       <div className="relative z-10 max-w-md space-y-4">
-        <h2 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+        <h2 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           Manage your messaging in one touch
         </h2>
         <p className="max-w-sm text-sm font-medium leading-relaxed text-white/85">

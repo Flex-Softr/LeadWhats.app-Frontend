@@ -81,7 +81,7 @@ export function PaymentDetailsDialog({
       <DialogContent className="max-w-xl sm:max-w-2xl">
         <DialogHeader className="border-b border-border pb-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
               <CreditCard className="size-5 text-primary" />
               Payment Details
             </DialogTitle>

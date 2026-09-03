@@ -60,7 +60,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
       <Card className="rounded-lg border-0 bg-card shadow-sm">
         <CardHeader className="flex flex-col gap-2 space-y-0 px-5 pb-1 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-0.5">
-            <CardTitle className="text-base font-bold text-card-foreground">
+            <CardTitle className="text-base font-semibold text-card-foreground">
               Message volume
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -133,7 +133,7 @@ export function DashboardCharts({ barSeries, lineSeries }: DashboardChartsProps)
 
       <Card className="rounded-lg border-0 bg-card shadow-sm">
         <CardHeader className="space-y-0.5 px-5 pb-1 pt-5">
-          <CardTitle className="text-base font-bold text-card-foreground">
+          <CardTitle className="text-base font-semibold text-card-foreground">
             Channel mix
           </CardTitle>
             <CardDescription className="text-xs sm:text-sm">

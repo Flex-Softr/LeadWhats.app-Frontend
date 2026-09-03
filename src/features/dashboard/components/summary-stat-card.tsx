@@ -16,7 +16,7 @@ export function SummaryStatCard({ data }: { data: SummaryCardData }) {
   return (
     <Card className="rounded-lg border-0 bg-card shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-5 pb-1 pt-5">
-        <CardTitle className="text-sm font-bold text-card-foreground">
+        <CardTitle className="text-sm font-semibold text-card-foreground">
           {data.title}
         </CardTitle>
         <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">

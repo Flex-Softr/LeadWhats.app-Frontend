@@ -64,7 +64,7 @@ export function AppHeader() {
             <Menu className="size-5" />
           </Button>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            <h1 className="truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
               {meta.title}
             </h1>
             <p className="mt-0.5 max-w-2xl truncate text-xs font-medium text-muted-foreground sm:text-sm">
