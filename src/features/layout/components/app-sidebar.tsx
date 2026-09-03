@@ -12,12 +12,12 @@ export function AppSidebar() {
 
   return (
     <aside
-      className={`hidden h-full flex-col border-r border-sidebar-border bg-sidebar py-5 text-sidebar-foreground shadow-[18px_0_45px_rgba(83,48,154,0.04)] backdrop-blur-xl transition-[width] duration-300 ease-in-out lg:flex ${
+      className={`hidden h-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out lg:flex ${
         isCollapsed ? "w-[72px]" : "w-[240px]"
       }`}
     >
       <div
-        className={`flex items-center ${
+        className={`flex h-16 shrink-0 items-center border-b border-sidebar-border ${
           isCollapsed ? "justify-center px-2" : "justify-between px-4"
         }`}
       >
@@ -28,7 +28,7 @@ export function AppSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="size-8 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="size-8 shrink-0 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             title="Collapse sidebar"
           >
             <PanelLeftClose className="size-4" />
@@ -37,7 +37,7 @@ export function AppSidebar() {
       </div>
 
       {isCollapsed && (
-        <div className="mt-2 flex justify-center">
+        <div className="flex justify-center pt-2">
           <Button
             type="button"
             variant="ghost"
@@ -50,8 +50,6 @@ export function AppSidebar() {
           </Button>
         </div>
       )}
-
-      <div className="mx-4 my-3.5 h-px bg-sidebar-border" />
 
       <SidebarNav isCollapsed={isCollapsed} />
       <SidebarFooter isCollapsed={isCollapsed} />

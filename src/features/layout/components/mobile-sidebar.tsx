@@ -32,13 +32,14 @@ export function MobileSidebar() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-[300px] gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground backdrop-blur-xl sm:w-[308px]"
+        className="w-[280px] gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground sm:w-[280px]"
       >
-        <div className="flex h-full flex-col px-4 py-6">
-          <BrandMark />
-          <div className="my-4 h-px bg-sidebar-border" />
+        <div className="flex h-full flex-col">
+          <div className="flex h-16 shrink-0 items-center border-b border-sidebar-border px-4">
+            <BrandMark />
+          </div>
           <SidebarNav onNavigate={() => setOpen(false)} />
-          <SidebarFooter />
+          <SidebarFooter onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

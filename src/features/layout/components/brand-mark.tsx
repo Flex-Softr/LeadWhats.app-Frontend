@@ -1,21 +1,22 @@
-import { MessageCircleMore } from "lucide-react";
+import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 
 export function BrandMark({ isCollapsed }: { isCollapsed?: boolean }) {
   return (
-    <div className={`flex items-center gap-3 py-1 ${isCollapsed ? "justify-center px-0" : "px-2"}`}>
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#8d6ae8] to-[#5d35bd] text-white shadow-[0_12px_24px_rgba(93,53,189,0.28)]">
-        <MessageCircleMore className="size-[21px]" strokeWidth={2.1} />
+    <Link
+      href="/"
+      className={`flex items-center gap-3 min-w-0 transition-opacity hover:opacity-90 ${
+        isCollapsed ? "justify-center w-full" : ""
+      }`}
+    >
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#8d6ae8] to-[#5d35bd] text-white shadow-sm">
+        <MessageCircle className="size-4.5" strokeWidth={2.2} />
       </div>
       {!isCollapsed && (
-        <div className="min-w-0 leading-tight">
-          <p className="text-[1.45rem] font-extrabold tracking-tight text-sidebar-foreground">
-            FlexoWhats
-          </p>
-          <p className="mt-0.5 truncate text-[11px] font-medium text-sidebar-foreground/50">
-            SaaS Messaging Dashboard
-          </p>
-        </div>
+        <span className="font-bold text-lg text-sidebar-foreground truncate tracking-tight">
+          FlexoWhats
+        </span>
       )}
-    </div>
+    </Link>
   );
 }
