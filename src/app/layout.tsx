@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { Geist_Mono, Inter, Nunito_Sans, Outfit } from "next/font/google";
 
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { CanonicalRouteProvider } from "@/components/providers/canonical-route-provider";
@@ -8,6 +8,11 @@ import { themeInitScript } from "@/components/providers/theme-script";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const outfitHeading = Outfit({subsets:['latin'],variable:'--font-heading'});
+
+const nunitoSans = Nunito_Sans({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", inter.variable, geistMono.variable, "font-sans", nunitoSans.variable, outfitHeading.variable)}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
