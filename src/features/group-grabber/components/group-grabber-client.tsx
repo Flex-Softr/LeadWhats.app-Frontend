@@ -417,38 +417,38 @@ export function GroupGrabberClient() {
         />
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
         <CardContent className="p-5 sm:p-6 lg:p-7">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
+          <h3 className="text-base font-semibold text-foreground">
             Quick Analytics
           </h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Average group size
               </p>
-              <p className="mt-2 text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+              <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
                 {stats.avgSize}{" "}
-                <span className="text-base font-normal text-slate-500">
+                <span className="text-base font-normal text-muted-foreground">
                   participants
                 </span>
               </p>
             </div>
-            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Admin ratio
               </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
                 {stats.adminRatio}%
               </p>
             </div>
-            <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Largest group
               </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
                 {stats.largest}{" "}
-                <span className="text-base font-normal text-slate-500">
+                <span className="text-base font-normal text-muted-foreground">
                   participants
                 </span>
               </p>
@@ -457,7 +457,7 @@ export function GroupGrabberClient() {
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
         <CardContent className="space-y-5 p-4 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col items-start gap-2">

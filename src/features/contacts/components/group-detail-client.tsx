@@ -468,13 +468,13 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         />
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-        <CardHeader className="flex flex-col gap-4 space-y-0 border-b border-slate-100 bg-slate-50/60 px-5 py-5 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+        <CardHeader className="flex flex-col gap-4 space-y-0 border-b border-border bg-muted/20 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
             <h3 className="text-base font-semibold sm:text-lg">
               Contacts in {titleName}
             </h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {selectedCount > 0
                 ? `${selectedCount} selected — export downloads those rows.`
                 : "Export downloads the full group, or select rows first."}
@@ -541,7 +541,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         </CardHeader>
         <CardContent className="p-0">
           {detailLoading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-500 dark:text-slate-400">
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
               <Loader2 className="size-8 animate-spin text-foreground dark:text-muted-foreground" />
               <p className="text-sm">Loading contacts…</p>
             </div>
@@ -561,7 +561,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             />
           ) : (
             <>
-              <div className="flex flex-col gap-2 border-b border-slate-100 bg-white px-5 py-3 text-sm text-muted-foreground dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div className="flex flex-col gap-2 border-b border-border bg-muted/20 px-5 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <span>
                   {selectedCount === 0
                     ? "No contacts selected"
@@ -590,7 +590,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
               </div>
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+                  <TableRow>
                     <TableHead className="w-11">
                       <SelectionCheckbox
                         checked={allVisibleSelected}
@@ -614,7 +614,6 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                     <TableRow
                       key={r.id}
                       data-state={selectedContactIds.has(r.id) ? "selected" : undefined}
-                      className="hover:bg-muted/50 dark:hover:bg-muted/50"
                     >
                       <TableCell>
                         <SelectionCheckbox
@@ -654,7 +653,7 @@ export function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            className="rounded-md text-muted-foreground hover:bg-red-50 hover:text-destructive dark:hover:bg-red-950/30"
+                            className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
                             aria-label={`Delete ${r.name}`}
                             onClick={(e) => {
                               e.preventDefault();

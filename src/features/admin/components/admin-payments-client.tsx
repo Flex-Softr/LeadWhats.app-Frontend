@@ -148,7 +148,7 @@ export function AdminPaymentsClient() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="flex flex-col gap-4 rounded-lg border border-border bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-xs sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -209,7 +209,7 @@ export function AdminPaymentsClient() {
         </div>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-muted-foreground">
@@ -228,7 +228,7 @@ export function AdminPaymentsClient() {
             <>
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50/80 dark:bg-slate-900/60">
+                  <TableRow>
                     <TableHead>Transaction</TableHead>
                     <TableHead>Workspace</TableHead>
                     <TableHead>Amount</TableHead>

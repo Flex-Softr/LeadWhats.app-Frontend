@@ -958,8 +958,8 @@ export function BulkCampaignDetailPageClient({
               </Card>
             </div>
 
-            <Card size="sm" className="rounded-lg border-border shadow-sm dark:border-slate-800">
-              <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
+            <Card size="sm" className="rounded-xl border-border bg-card shadow-xs">
+              <CardHeader className="border-b border-border bg-muted/20 pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Smartphone className="size-4" />
                   Devices in campaign
@@ -988,10 +988,10 @@ export function BulkCampaignDetailPageClient({
                   ))}
                 </ul>
                 {detail.deviceSendStats.length > 0 ? (
-                  <div className="overflow-x-auto rounded-lg border border-slate-100 dark:border-slate-800">
+                  <div className="overflow-x-auto rounded-lg border border-border">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+                        <TableRow>
                           <TableHead>Device</TableHead>
                           <TableHead className="text-right">Sent</TableHead>
                           <TableHead className="text-right">Failed</TableHead>
@@ -1002,7 +1002,7 @@ export function BulkCampaignDetailPageClient({
                       </TableHeader>
                       <TableBody>
                         {detail.deviceSendStats.map((r) => (
-                          <TableRow key={r.deviceId} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+                          <TableRow key={r.deviceId}>
                             <TableCell className="font-medium">
                               <div>{r.deviceName}</div>
                               {r.phone ? (
@@ -1035,8 +1035,8 @@ export function BulkCampaignDetailPageClient({
               </CardContent>
             </Card>
 
-            <Card size="sm" className="overflow-hidden rounded-lg border-border shadow-sm dark:border-slate-800">
-              <CardHeader className="border-b border-slate-100 bg-slate-50/60 pb-3 dark:border-slate-800 dark:bg-slate-900/40">
+            <Card size="sm" className="overflow-hidden rounded-xl border-border bg-card shadow-xs">
+              <CardHeader className="border-b border-border bg-muted/20 pb-3">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <CardTitle className="text-base">
@@ -1080,7 +1080,7 @@ export function BulkCampaignDetailPageClient({
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+                        <TableRow>
                           <TableHead>Recipient</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="hidden sm:table-cell">
@@ -1115,7 +1115,7 @@ export function BulkCampaignDetailPageClient({
                           </TableRow>
                         ) : (
                           pagedRecipients.map((r) => (
-                          <TableRow key={r.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+                          <TableRow key={r.id}>
                             <TableCell className="align-top font-mono text-xs">
                               {r.phone}
                               {r.lastError ? (
@@ -1170,7 +1170,7 @@ export function BulkCampaignDetailPageClient({
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+                        <TableRow>
                           <TableHead>Recipient</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="hidden sm:table-cell">
@@ -1183,7 +1183,7 @@ export function BulkCampaignDetailPageClient({
                       </TableHeader>
                       <TableBody>
                         {pagedMessages.map((m) => (
-                          <TableRow key={m.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+                          <TableRow key={m.id}>
                             <TableCell className="align-top font-mono text-xs">
                               {m.toPhone}
                               {m.errorMessage ? (

@@ -64,7 +64,7 @@ export function AutoReplyRulesTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+        <TableRow>
           <TableHead>Rule</TableHead>
           <TableHead>Triggers</TableHead>
           <TableHead>Type</TableHead>
@@ -77,7 +77,7 @@ export function AutoReplyRulesTable({
       </TableHeader>
       <TableBody>
         {rules.map((r) => (
-          <TableRow key={r.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+          <TableRow key={r.id}>
             <TableCell>
               <div className="min-w-0">
                 <p className="font-medium text-foreground">{r.name}</p>

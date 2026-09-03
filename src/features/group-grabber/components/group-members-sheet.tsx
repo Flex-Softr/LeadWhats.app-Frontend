@@ -34,6 +34,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type GroupMembersSheetProps = {
   open: boolean;
@@ -430,45 +438,42 @@ export function GroupMembersSheet({
                   </p>
                 ) : null}
 
-                <div className="mt-4 max-h-[min(40vh,320px)] overflow-auto rounded-xl border border-slate-200 dark:border-slate-800 sm:max-h-[min(45vh,380px)]">
-                  <table className="w-full min-w-[320px] text-left text-sm">
-                    <thead className="sticky top-0 z-[1] bg-slate-50 text-xs font-medium uppercase text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-                      <tr>
-                        <th className="w-10 px-3 py-2" />
-                        <th className="px-3 py-2">Name</th>
-                        <th className="px-3 py-2">Phone</th>
-                        <th
-                          className="px-3 py-2"
+                <div className="mt-4 max-h-[min(40vh,320px)] overflow-auto rounded-xl border border-border bg-card shadow-xs sm:max-h-[min(45vh,380px)]">
+                  <Table className="w-full min-w-[320px]">
+                    <TableHeader className="sticky top-0 z-[1] bg-muted/80 backdrop-blur-xs">
+                      <TableRow>
+                        <TableHead className="w-10 px-3" />
+                        <TableHead className="px-3">Name</TableHead>
+                        <TableHead className="px-3">Phone</TableHead>
+                        <TableHead
+                          className="px-3"
                           title="Admin role in this WhatsApp group"
                         >
                           Role
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {members.map((m) => (
-                        <tr
-                          key={m.jid}
-                          className="border-t border-slate-100 dark:border-slate-800"
-                        >
-                          <td className="px-3 py-2 align-middle">
+                        <TableRow key={m.jid}>
+                          <TableCell className="px-3 py-2 align-middle">
                             <input
                               type="checkbox"
-                              className="size-4 rounded border-slate-300"
+                              className="size-4 rounded border-input accent-primary"
                               checked={selectedJids.has(m.jid)}
                               onChange={(e) =>
                                 toggleJid(m.jid, e.target.checked)
                               }
                               aria-label={`Select ${displayMemberName(m)}`}
                             />
-                          </td>
-                          <td
+                          </TableCell>
+                          <TableCell
                             className="max-w-[180px] truncate px-3 py-2 font-medium"
                             title={displayMemberName(m)}
                           >
                             {displayMemberName(m)}
-                          </td>
-                          <td className="px-3 py-2 font-mono text-xs">
+                          </TableCell>
+                          <TableCell className="px-3 py-2 font-mono text-xs">
                             {m.phone ? (
                               m.phone
                             ) : (
@@ -477,29 +482,29 @@ export function GroupMembersSheet({
                                   No phone (Linked ID)
                                 </span>
                                 <span
-                                  className="text-[10px] font-normal text-slate-500 dark:text-slate-500"
+                                  className="text-[10px] font-normal text-muted-foreground"
                                   title={m.jid}
                                 >
                                   {shortIdHint(m.jid)}
                                 </span>
                               </span>
                             )}
-                          </td>
-                          <td className="px-3 py-2 text-xs">
+                          </TableCell>
+                          <TableCell className="px-3 py-2 text-xs">
                             {m.isAdmin ? (
-                              <span className="text-emerald-600 dark:text-emerald-400">
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
                                 Admin
                               </span>
                             ) : (
-                              <span className="text-slate-400 dark:text-slate-600">
+                              <span className="text-muted-foreground">
                                 Member
                               </span>
                             )}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
 
                 <div className="mt-4 space-y-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">

@@ -351,9 +351,9 @@ export function BulkMessagesClient() {
 
 
         {(runningCampaigns.length > 0 || pendingCampaigns.length > 0) && (
-  <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+  <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
     <CardContent className="p-0">
-      <div className="border-b border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="border-b border-border bg-muted/20 px-6 py-4">
         <h3 className="text-lg font-semibold">
           Active Campaigns
         </h3>
@@ -364,7 +364,7 @@ export function BulkMessagesClient() {
 
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+          <TableRow>
             <TableHead>Campaign</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Recipients</TableHead>
@@ -380,7 +380,7 @@ export function BulkMessagesClient() {
 
         <TableBody>
           {[...runningCampaigns, ...pendingCampaigns].map((c) => (
-            <TableRow key={c.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+            <TableRow key={c.id}>
               <TableCell>
                 <Link
                   href={`/bulk-messages/${c.id}`}
@@ -417,7 +417,7 @@ export function BulkMessagesClient() {
                       />
                     ) : null}
                   </div>
-                  <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full bg-primary"
                       style={{ width: `${c.progress.percent}%` }}
@@ -440,13 +440,13 @@ export function BulkMessagesClient() {
                 {formatBulkCampaignWhen(c.createdAt)}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-1">
                   {c.status === "paused" ? (
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="icon-sm"
-                      className="rounded-md"
+                      className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                       aria-label="Resume campaign"
                       disabled={actionBusyId === c.id}
                       onClick={() => void updateCampaignStatus(c, "resume")}
@@ -456,9 +456,9 @@ export function BulkMessagesClient() {
                   ) : (
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="icon-sm"
-                      className="rounded-md"
+                      className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                       aria-label="Pause campaign"
                       disabled={actionBusyId === c.id}
                       onClick={() => void updateCampaignStatus(c, "pause")}
@@ -468,9 +468,9 @@ export function BulkMessagesClient() {
                   )}
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="icon-sm"
-                    className="rounded-md border-red-100 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                    className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
                     aria-label="Delete campaign"
                     disabled={actionBusyId === c.id}
                     onClick={() => setDeleteTarget(c)}
@@ -488,10 +488,10 @@ export function BulkMessagesClient() {
 )}
 
 
-        <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
           <CardContent className="p-0">
             {loading ? (
-              <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">
+              <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
                 <Loader2 className="size-9 animate-spin text-foreground dark:text-muted-foreground" />
                 <p className="text-sm">Loading campaigns…</p>
               </div>
@@ -505,7 +505,7 @@ export function BulkMessagesClient() {
               </div>
             ) : (
               <>
-              <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 border-b border-border bg-muted/20 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
   <div>
     <h3 className="text-lg font-semibold">
       Campaign History
@@ -537,7 +537,7 @@ export function BulkMessagesClient() {
 </div>
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+                  <TableRow>
                     <TableHead>Campaign</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="hidden sm:table-cell">Recipients</TableHead>
@@ -549,7 +549,7 @@ export function BulkMessagesClient() {
                 </TableHeader>
                 <TableBody>
                   {pagedCampaigns.map((c) => (
-                    <TableRow key={c.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+                    <TableRow key={c.id}>
                       <TableCell>
                         <Link
                           href={`/bulk-messages/${c.id}`}
@@ -566,7 +566,7 @@ export function BulkMessagesClient() {
                               <>
                                 {" "}
                                 · anti-block on
-                                {c.antiBlock.repliedOnly ? " · replied-only" : ""}
+                               {c.antiBlock.repliedOnly ? " · replied-only" : ""}
                                 {c.antiBlock.recent24hOnly ? " · 24h-window" : ""}
                               </>
                             ) : null}
@@ -603,9 +603,9 @@ export function BulkMessagesClient() {
                       <TableCell className="text-right">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
                           size="icon-sm"
-                          className="rounded-md border-red-100 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                          className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
                           aria-label="Delete campaign"
                           onClick={() => setDeleteTarget(c)}
                         >

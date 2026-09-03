@@ -180,7 +180,7 @@ export function ContactsGroupsClient() {
         />
       </div>
 
-      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">

@@ -36,7 +36,7 @@ export function ContactGroupsTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/60">
+        <TableRow>
           <TableHead>Group</TableHead>
           <TableHead>Total Contacts</TableHead>
           <TableHead>Verified</TableHead>
@@ -48,7 +48,7 @@ export function ContactGroupsTable({
         {groups.map((g) => {
           const s = groupStats(g.id);
           return (
-            <TableRow key={g.id} className="hover:bg-muted/50 dark:hover:bg-muted/50">
+            <TableRow key={g.id}>
               <TableCell>
                 <Link
                   href={`/contacts/${g.id}`}

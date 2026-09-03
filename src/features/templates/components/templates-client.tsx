@@ -184,22 +184,22 @@ export function TemplatesClient() {
       </div>
 
       {!loading && templates.length > 0 ? (
-        <div className="flex flex-col gap-4 rounded-lg border border-border bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-xs sm:flex-row sm:flex-wrap sm:items-end">
           <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
             <Label htmlFor="tpl-search" className="sr-only">
               Search templates
             </Label>
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="tpl-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, slug, or body..."
-              className="h-10 rounded-md border-slate-200 bg-white pl-10 dark:border-slate-700 dark:bg-slate-950"
+              className="h-10 rounded-md pl-10"
             />
           </div>
           <div className="w-full space-y-1.5 sm:w-52">
-            <Label htmlFor="tpl-type-filter" className="text-xs text-slate-500">
+            <Label htmlFor="tpl-type-filter" className="text-xs text-muted-foreground">
               Message type
             </Label>
             <Select
@@ -234,7 +234,7 @@ export function TemplatesClient() {
         </div>
       ) : null}
 
-      <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
         <CardContent className="p-4 sm:p-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-500 dark:text-slate-400">

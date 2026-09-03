@@ -219,9 +219,9 @@ export function ChatbotClient() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-lg border border-border bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs sm:flex-row sm:items-center sm:gap-4">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -283,7 +283,7 @@ export function ChatbotClient() {
           />
         </div>
 
-        <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
           <CardContent className="p-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
@@ -314,15 +314,13 @@ export function ChatbotClient() {
                 No flows match your search or filter.
               </div>
             ) : (
-              <div className="overflow-x-auto p-2 sm:p-4">
-                <ChatbotFlowsTable
-                  flows={pagedFlows}
-                  togglingId={togglingId}
-                  onToggleActive={(f, a) => void handleToggleActive(f, a)}
-                  onEdit={openEdit}
-                  onDelete={(f) => setDeleteTarget(f)}
-                />
-              </div>
+              <ChatbotFlowsTable
+                flows={pagedFlows}
+                togglingId={togglingId}
+                onToggleActive={(f, a) => void handleToggleActive(f, a)}
+                onEdit={openEdit}
+                onDelete={(f) => setDeleteTarget(f)}
+              />
             )}
             {!loading && visible.length > 0 ? (
               <TablePagination {...pagination} />
