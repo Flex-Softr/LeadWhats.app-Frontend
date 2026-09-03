@@ -3,7 +3,6 @@
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Bell,
   ChevronDown,
   CreditCard,
   Menu,
@@ -21,6 +20,7 @@ import { useSubscription } from "@/features/billing/subscription-context";
 import { userDisplayName, userInitials } from "@/lib/user-display";
 import { MobileSidebar } from "@/features/layout/components/mobile-sidebar";
 import { useSidebar } from "@/features/layout/sidebar-context";
+import { NotificationPopover } from "@/features/notifications/components/notification-popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -103,15 +103,7 @@ export function AppHeader() {
               <Moon className="size-[20px]" />
             )}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative size-10 rounded-full text-foreground hover:bg-muted"
-            aria-label="Notifications"
-          >
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500 ring-2 ring-background" />
-            <Bell className="size-[20px]" />
-          </Button>
+          <NotificationPopover />
 
           <div className="hidden flex-col items-end px-1 text-right sm:flex">
             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
