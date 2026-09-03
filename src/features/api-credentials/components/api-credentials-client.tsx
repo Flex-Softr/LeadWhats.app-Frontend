@@ -133,9 +133,9 @@ export function ApiCredentialsClient() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
-            type="button"
             variant="outline"
             className="gap-2"
+            nativeButton={false}
             render={<Link href="/api-docs" />}
           >
             <BookOpen className="size-4" />

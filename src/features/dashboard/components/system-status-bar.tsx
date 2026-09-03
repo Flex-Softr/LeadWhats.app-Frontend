@@ -59,6 +59,7 @@ export function SystemStatusBar({
           <Button
             variant="link"
             className="h-auto rounded-md p-0 text-xs sm:text-sm"
+            nativeButton={false}
             render={<Link href="/billing" />}
           >
             License
