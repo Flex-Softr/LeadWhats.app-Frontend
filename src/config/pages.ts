@@ -68,6 +68,10 @@ export const PAGE_META = {
     title: "Plans & billing",
     description: "Upgrade your workspace or manage your subscription.",
   },
+  "/notifications": {
+    title: "Notifications",
+    description: "View and manage your account and system notifications.",
+  },
   "/billing/success": {
     title: "Subscription confirmed",
     description: "Your plan is being activated.",

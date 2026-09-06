@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Bell,
   Check,
@@ -14,6 +16,7 @@ import {
   Loader2,
   Inbox,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +30,7 @@ import {
   fetchUnreadNotificationCount,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  deleteNotification,
 } from "@/features/notifications/lib/notifications-api";
 import type { AppNotification, NotificationType } from "@/types/notification";
 
@@ -163,6 +167,22 @@ export function NotificationPopover() {
     }
   };
 
+  const handleDeleteNotification = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const target = notifications.find((n) => n.id === id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (target && !target.isRead) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+    try {
+      await deleteNotification(id);
+      toast.success("Notification dismissed");
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+      toast.error("Could not dismiss notification");
+    }
+  };
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
@@ -278,9 +298,20 @@ export function NotificationPopover() {
                     >
                       {notif.title}
                     </p>
-                    <span className="text-[10px] shrink-0 text-muted-foreground">
-                      {formatTimeAgo(notif.createdAt)}
-                    </span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatTimeAgo(notif.createdAt)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => void handleDeleteNotification(e, notif.id)}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 text-muted-foreground hover:text-rose-500 transition-opacity rounded"
+                        title="Dismiss notification"
+                        aria-label="Dismiss notification"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -301,6 +332,17 @@ export function NotificationPopover() {
               </div>
             ))
           )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-border/60 bg-muted/30 p-2.5 text-center">
+          <Link
+            href="/notifications"
+            onClick={() => setOpen(false)}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            View all notifications
+          </Link>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
