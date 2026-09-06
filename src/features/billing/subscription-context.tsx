@@ -17,7 +17,15 @@ type BillingApiResponse = {
   planId: string;
   subscriptionStatus: string | null;
   currentPeriodEnd: string | null;
+  trialStartedAt?: string | null;
+  trialEndsAt?: string | null;
+  trialUsed?: boolean;
+  isTrial?: boolean;
+  isTrialExpired?: boolean;
+  hasActiveSubscription?: boolean;
+  daysRemaining?: number | null;
   stripeConfigured: boolean;
+  stripePortalEligible?: boolean;
   paymentGateways: PaymentGatewayMeta[];
 };
 
@@ -27,8 +35,16 @@ type SubscriptionContextValue = {
   /** True after auth + billing snapshot loaded (or skipped when logged out). */
   hydrated: boolean;
   stripeConfigured: boolean;
+  stripePortalEligible: boolean;
   subscriptionStatus: string | null;
   currentPeriodEnd: string | null;
+  trialStartedAt: string | null;
+  trialEndsAt: string | null;
+  trialUsed: boolean;
+  isTrial: boolean;
+  isTrialExpired: boolean;
+  hasActiveSubscription: boolean;
+  daysRemaining: number | null;
   /** Reload plan from API (after checkout, webhook delay, etc.). */
   refreshPlan: () => Promise<void>;
   /** Optimistic local update; prefer refreshPlan when server is source of truth. */
@@ -52,12 +68,20 @@ export function SubscriptionProvider({
   const [planId, setPlanId] = React.useState<PlanId>("free");
   const [hydrated, setHydrated] = React.useState(false);
   const [stripeConfigured, setStripeConfigured] = React.useState(false);
+  const [stripePortalEligible, setStripePortalEligible] = React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<
     string | null
   >(null);
   const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState<string | null>(
     null
   );
+  const [trialStartedAt, setTrialStartedAt] = React.useState<string | null>(null);
+  const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
+  const [trialUsed, setTrialUsed] = React.useState(false);
+  const [isTrial, setIsTrial] = React.useState(true);
+  const [isTrialExpired, setIsTrialExpired] = React.useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = React.useState(true);
+  const [daysRemaining, setDaysRemaining] = React.useState<number | null>(3);
   const [paymentGateways, setPaymentGateways] = React.useState<
     PaymentGatewayMeta[]
   >([]);
@@ -67,17 +91,48 @@ export function SubscriptionProvider({
       setPlanId(data.planId);
     }
     setStripeConfigured(data.stripeConfigured);
+    setStripePortalEligible(Boolean(data.stripePortalEligible));
     setSubscriptionStatus(data.subscriptionStatus);
     setCurrentPeriodEnd(data.currentPeriodEnd);
     setPaymentGateways(data.paymentGateways ?? []);
+    setTrialStartedAt(data.trialStartedAt ?? null);
+    setTrialEndsAt(data.trialEndsAt ?? null);
+    setTrialUsed(Boolean(data.trialUsed));
+
+    const isPaid = data.planId === "pro" || data.planId === "business";
+    const trialFlag = Boolean(data.isTrial ?? !isPaid);
+    setIsTrial(trialFlag);
+
+    const expiredFlag = Boolean(
+      data.isTrialExpired ?? (trialFlag && data.subscriptionStatus === "expired")
+    );
+    setIsTrialExpired(expiredFlag);
+
+    const activeSub = Boolean(
+      data.hasActiveSubscription ??
+        (isPaid
+          ? data.subscriptionStatus === "active" || data.subscriptionStatus === "demo"
+          : !expiredFlag)
+    );
+    setHasActiveSubscription(activeSub);
+
+    setDaysRemaining(data.daysRemaining ?? null);
   }, []);
 
   const refreshPlan = React.useCallback(async () => {
     if (!user) {
       setPlanId("free");
       setStripeConfigured(false);
+      setStripePortalEligible(false);
       setSubscriptionStatus(null);
       setCurrentPeriodEnd(null);
+      setTrialStartedAt(null);
+      setTrialEndsAt(null);
+      setTrialUsed(false);
+      setIsTrial(true);
+      setIsTrialExpired(false);
+      setHasActiveSubscription(true);
+      setDaysRemaining(null);
       setPaymentGateways([]);
       return;
     }
@@ -94,8 +149,16 @@ export function SubscriptionProvider({
         if (!cancelled) {
           setPlanId("free");
           setStripeConfigured(false);
+          setStripePortalEligible(false);
           setSubscriptionStatus(null);
           setCurrentPeriodEnd(null);
+          setTrialStartedAt(null);
+          setTrialEndsAt(null);
+          setTrialUsed(false);
+          setIsTrial(true);
+          setIsTrialExpired(false);
+          setHasActiveSubscription(true);
+          setDaysRemaining(null);
           setPaymentGateways([]);
           setHydrated(true);
         }
@@ -132,7 +195,16 @@ export function SubscriptionProvider({
     await refreshPlan();
   }, [refreshPlan]);
 
-  const license = React.useMemo(() => licenseFromPlan(planId), [planId]);
+  const license = React.useMemo(
+    () =>
+      licenseFromPlan(planId, {
+        subscriptionStatus,
+        isTrial,
+        isTrialExpired,
+        daysRemaining,
+      }),
+    [planId, subscriptionStatus, isTrial, isTrialExpired, daysRemaining]
+  );
 
   const value = React.useMemo(
     () => ({
@@ -140,8 +212,16 @@ export function SubscriptionProvider({
       license,
       hydrated,
       stripeConfigured,
+      stripePortalEligible,
       subscriptionStatus,
       currentPeriodEnd,
+      trialStartedAt,
+      trialEndsAt,
+      trialUsed,
+      isTrial,
+      isTrialExpired,
+      hasActiveSubscription,
+      daysRemaining,
       refreshPlan,
       setPlan,
       resetToFreeDemo,
@@ -152,8 +232,16 @@ export function SubscriptionProvider({
       license,
       hydrated,
       stripeConfigured,
+      stripePortalEligible,
       subscriptionStatus,
       currentPeriodEnd,
+      trialStartedAt,
+      trialEndsAt,
+      trialUsed,
+      isTrial,
+      isTrialExpired,
+      hasActiveSubscription,
+      daysRemaining,
       refreshPlan,
       setPlan,
       resetToFreeDemo,

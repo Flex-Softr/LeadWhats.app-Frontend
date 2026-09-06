@@ -18,16 +18,16 @@ export type BillingPlanDefinition = {
 export const BILLING_PLANS: BillingPlanDefinition[] = [
   {
     id: "free",
-    name: "Free",
-    description: "Try FlexoWhats on a single workspace.",
+    name: "3-Day Free Trial",
+    description: "Full access to FlexoWhats features for 3 days on your account.",
     priceUsd: 0,
     priceLabel: "$0",
-    periodLabel: "forever",
+    periodLabel: "3-day trial",
     features: [
       "1 WhatsApp session",
-      "Up to 100 messages / month",
-      "Auto-reply & templates (basic)",
-      "Community support",
+      "Full messaging capabilities",
+      "Auto-reply, chatbot & templates",
+      "One-time trial per account",
     ],
   },
   {

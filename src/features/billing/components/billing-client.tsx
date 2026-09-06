@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
+  AlertCircle,
   Check,
+  Clock,
   CreditCard,
   Gem,
   LockKeyhole,
@@ -40,6 +43,8 @@ type CheckoutResponse =
 
 export function BillingClient() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const isExpiredQuery = searchParams.get("expired") === "1";
   const hasAccountPhone = Boolean(user?.phone && user.phone.trim());
 
   const {
@@ -50,11 +55,16 @@ export function BillingClient() {
     currentPeriodEnd,
     paymentGateways,
     hydrated,
+    isTrial,
+    isTrialExpired,
+    daysRemaining,
   } = useSubscription();
   const [loading, setLoading] = React.useState<PlanId | null>(null);
   const [resetting, setResetting] = React.useState(false);
   const [gateway, setGateway] = React.useState<PaymentGatewayId>("sslcommerz");
   const [customerPhone, setCustomerPhone] = React.useState("");
+
+  const showExpiredBanner = isTrialExpired || isExpiredQuery;
 
   const sslReady = paymentGateways.find((g) => g.id === "sslcommerz")?.configured;
   const canCheckoutPaid =
@@ -164,10 +174,42 @@ export function BillingClient() {
 
   const anyGatewayReady = paymentGateways.some((g) => g.configured);
   const currentPlanName =
-    planId === "free" ? "Free" : planId === "pro" ? "Pro" : "Business";
+    planId === "free"
+      ? isTrialExpired
+        ? "Trial Expired"
+        : "3-Day Trial"
+      : planId === "pro"
+      ? "Pro"
+      : "Business";
 
   return (
     <div className="mx-auto w-full max-w-[1500px] space-y-6">
+      {showExpiredBanner ? (
+        <div className="flex items-start gap-3.5 rounded-xl border border-destructive/40 bg-destructive/10 p-4.5 text-destructive dark:border-destructive/50 dark:bg-destructive/15">
+          <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
+          <div className="flex-1 space-y-1">
+            <h4 className="text-sm font-bold text-foreground dark:text-slate-100">
+              Your 3-Day Free Trial Has Expired
+            </h4>
+            <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
+              Your trial period has concluded. To continue accessing your WhatsApp devices, live chats, automated campaigns, chatbot flows, and responder rules, please select a plan and upgrade below. Each account can only claim the 3-day trial once.
+            </p>
+          </div>
+        </div>
+      ) : isTrial ? (
+        <div className="flex items-start gap-3.5 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4.5 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200">
+          <Clock className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex-1 space-y-1">
+            <h4 className="text-sm font-bold text-foreground dark:text-slate-100">
+              Free Trial Active — {daysRemaining != null ? `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} remaining` : "3-day trial"}
+            </h4>
+            <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
+              You are currently enjoying full access under your 3-day free trial. Once your trial ends, you will need an active subscription to access your dashboard. Upgrade below anytime to ensure uninterrupted service.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <section className="grid gap-5 xl:grid-cols-12">
         <div className="relative min-h-[260px] overflow-hidden rounded-lg bg-gradient-to-br from-neutral-800 via-neutral-700 to-neutral-600 px-6 py-7 text-white shadow-sm sm:px-8 xl:col-span-7">
           <div className="relative z-10 max-w-xl">
@@ -194,7 +236,11 @@ export function BillingClient() {
                   Status
                 </p>
                 <p className="mt-1 text-xl font-extrabold">
-                  {subscriptionStatus ?? "Workspace"}
+                  {isTrialExpired
+                    ? "Expired"
+                    : isTrial
+                    ? `${daysRemaining ?? 3}d left`
+                    : subscriptionStatus ?? "Active"}
                 </p>
               </div>
               {periodLabel ? (
@@ -360,8 +406,23 @@ export function BillingClient() {
                     </CardTitle>
                   </div>
                   {current ? (
-                    <Badge className="shrink-0 rounded-full bg-muted font-semibold text-foreground shadow-none">
-                      Current
+                    <Badge
+                      variant={
+                        plan.id === "free" && isTrialExpired
+                          ? "destructive"
+                          : "secondary"
+                      }
+                      className="shrink-0 rounded-full font-semibold shadow-none"
+                    >
+                      {plan.id === "free"
+                        ? isTrialExpired
+                          ? "Trial Expired"
+                          : "Trial Active"
+                        : "Current"}
+                    </Badge>
+                  ) : plan.id === "free" ? (
+                    <Badge variant="outline" className="shrink-0 rounded-full text-xs font-normal">
+                      Trial Used
                     </Badge>
                   ) : null}
                 </div>
@@ -396,7 +457,15 @@ export function BillingClient() {
                 </ul>
               </CardContent>
               <CardFooter className="mt-auto flex flex-col gap-2 border-t border-border pt-5 dark:border-slate-800">
-                {current ? (
+                {plan.id === "free" ? (
+                  <Button type="button" variant="outline" className="h-11 w-full rounded-full" disabled>
+                    {isTrialExpired
+                      ? "Trial Expired"
+                      : current
+                      ? "Current Trial"
+                      : "Trial Already Used"}
+                  </Button>
+                ) : current ? (
                   <Button type="button" variant="outline" className="h-11 w-full rounded-full" disabled>
                     Your current plan
                   </Button>
@@ -434,10 +503,10 @@ export function BillingClient() {
             </span>
             <div>
               <p className="font-bold text-foreground dark:text-slate-100">
-                Reset workspace to Free
+                Cancel paid plan
               </p>
               <p className="mt-1 max-w-2xl">
-                Available when no active Stripe subscription is blocking it, and
+                Reverts to the expired trial state. Available when no active Stripe subscription is blocking it, and
                 when any SSLCommerz-paid period has ended.
               </p>
             </div>
@@ -447,10 +516,14 @@ export function BillingClient() {
             variant="outline"
             size="sm"
             className="h-10 shrink-0 rounded-full"
-            disabled={resetting}
+            disabled={resetting || planId === "free"}
             onClick={() => void onResetFree()}
           >
-            {resetting ? "Resetting…" : "Reset to Free"}
+            {resetting
+              ? "Cancelling…"
+              : planId === "free"
+              ? "No Active Paid Plan"
+              : "Cancel Paid Plan"}
           </Button>
         </CardContent>
       </Card>
