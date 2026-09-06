@@ -1,21 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   CreditCard,
-  Menu,
   LogOut,
   Moon,
-  Search,
+  PanelLeftClose,
+  PanelLeftOpen,
   SunMedium,
   UserCircle,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/theme-provider";
+import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { getPageMeta } from "@/config/pages";
 import { useSubscription } from "@/features/billing/subscription-context";
 import { userDisplayName, userInitials } from "@/lib/user-display";
 import { MobileSidebar } from "@/features/layout/components/mobile-sidebar";
@@ -24,7 +24,6 @@ import { NotificationPopover } from "@/features/notifications/components/notific
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,9 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AppHeader() {
-  const pathname = usePathname();
   const router = useRouter();
-  const meta = getPageMeta(pathname);
   const { license, hydrated } = useSubscription();
   const { user: authUser, logout } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
@@ -48,50 +45,35 @@ export function AppHeader() {
   const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/92 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-7">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-7">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+    <header className="sticky top-0 z-40 flex h-[68px] shrink-0 items-center border-b border-border/80 bg-background/92 px-4 backdrop-blur-xl sm:px-6 lg:px-7">
+      <div className="flex w-full items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           <MobileSidebar />
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="hidden size-9 shrink-0 rounded-lg text-foreground hover:bg-muted lg:flex"
-            aria-label="Toggle sidebar collapse"
+            className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors lg:flex"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <Menu className="size-5" />
+            {isCollapsed ? (
+              <PanelLeftOpen className="size-5" />
+            ) : (
+              <PanelLeftClose className="size-5" />
+            )}
           </Button>
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-              {meta.title}
-            </h1>
-            <p className="mt-0.5 max-w-2xl truncate text-xs font-medium text-muted-foreground sm:text-sm">
-              {meta.description}
-            </p>
-          </div>
         </div>
 
-        <div className="flex w-full flex-1 items-center xl:max-w-md 2xl:max-w-lg">
-          <div className="relative w-full">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search here..."
-              className="h-11 w-full rounded-full pl-11 pr-4 text-[14px]"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 md:justify-end sm:gap-2.5">
-          <div className="flex items-center justify-end gap-2 sm:gap-2.5">
+        <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-2.5">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="size-10 rounded-full text-foreground hover:bg-muted"
+            className="size-10 rounded-full text-foreground hover:bg-muted transition-colors"
           >
             {mounted ? (
               isDark ? (
@@ -105,95 +87,127 @@ export function AppHeader() {
           </Button>
           <NotificationPopover />
 
-          <div className="hidden flex-col items-end px-1 text-right sm:flex">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-              {hydrated ? license.tierLabel : "…"}
-            </span>
-            <div className="mt-1 flex items-center justify-end gap-2">
-              {hydrated && license.isUpgraded ? (
-                <Badge className="h-6 rounded-lg border-emerald-200/80 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-                  {license.statusLabel}
-                </Badge>
-              ) : null}
-              {hydrated && license.daysRemaining != null ? (
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {license.daysRemaining}d left
-                </span>
-              ) : null}
-            </div>
-          </div>
-
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
                 <Button
-                  variant="outline"
-                  className="h-12 shrink-0 gap-1.5 rounded-full border-0 bg-card px-2.5 shadow-[0_12px_30px_rgba(66,48,106,0.1)] dark:shadow-none"
-                  aria-label="Open account menu"
-                  aria-haspopup="menu"
+                  variant="ghost"
+                  className="group relative flex h-10 shrink-0 items-center gap-2 rounded-full border border-border/80 bg-card/60 p-1 pr-2 text-left transition-all duration-200 hover:border-border hover:bg-muted/80 hover:shadow-xs focus-visible:ring-2 focus-visible:ring-ring sm:gap-2.5 sm:pr-3"
+                  aria-label="Open user menu"
                 />
               }
             >
-              <Avatar className="size-10 border-2 border-white shadow-sm">
-                <AvatarFallback className="bg-primary text-xs font-semibold text-white">
-                  {authUser ? userInitials(authUser) : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <ChevronDown className="size-4 text-slate-500 dark:text-slate-400" />
+              <div className="relative flex size-8 shrink-0 items-center justify-center">
+                <Avatar className="size-8 ring-1 ring-border/80">
+                  <AvatarFallback className="bg-gradient-to-tr from-[#8d6ae8] to-[#5d35bd] text-xs font-semibold text-white">
+                    {authUser ? userInitials(authUser) : "?"}
+                  </AvatarFallback>
+                </Avatar>
+                {hydrated && (
+                  <span
+                    className={cn(
+                      "absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-background",
+                      license.isUpgraded ? "bg-emerald-500" : "bg-muted-foreground/40"
+                    )}
+                    title={license.isUpgraded ? "Active subscription" : "Free tier"}
+                  />
+                )}
+              </div>
+
+              <div className="hidden min-w-0 flex-col text-left leading-tight sm:flex">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-xs font-semibold text-foreground max-w-[120px]">
+                    {authUser ? userDisplayName(authUser) : "Account"}
+                  </span>
+                  {hydrated && license.isUpgraded && (
+                    <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.2 text-[9px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      PRO
+                    </span>
+                  )}
+                </div>
+                <span className="truncate text-[10px] font-medium text-muted-foreground">
+                  {hydrated
+                    ? license.isUpgraded && license.daysRemaining != null
+                      ? `${license.daysRemaining}d left`
+                      : license.tierLabel
+                    : "…"}
+                </span>
+              </div>
+
+              <ChevronDown className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-aria-expanded:rotate-180" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
               side="bottom"
               sideOffset={8}
-              className="min-w-[13.5rem] rounded-lg p-1.5"
+              className="w-64 rounded-xl border border-border/80 bg-popover/95 p-1.5 shadow-xl backdrop-blur-md"
             >
-              <DropdownMenuLabel className="px-3 py-2">
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium leading-tight">
-                    {authUser ? userDisplayName(authUser) : "Account"}
-                  </span>
-                  {authUser ? (
-                    <span className="truncate text-xs font-normal text-muted-foreground">
-                      {authUser.email}
+              <DropdownMenuLabel className="p-2.5 font-normal">
+                <div className="flex items-center gap-2.5">
+                  <Avatar className="size-9 ring-1 ring-border/80">
+                    <AvatarFallback className="bg-gradient-to-tr from-[#8d6ae8] to-[#5d35bd] text-xs font-semibold text-white">
+                      {authUser ? userInitials(authUser) : "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-sm font-semibold text-foreground">
+                      {authUser ? userDisplayName(authUser) : "Account"}
                     </span>
-                  ) : null}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {hydrated ? license.tierLabel : "…"}
-                  </span>
+                    {authUser?.email && (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {authUser.email}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs">
+                  <span className="font-medium text-muted-foreground">Subscription</span>
+                  <div className="flex items-center gap-1.5">
+                    <Badge
+                      variant={license.isUpgraded ? "default" : "secondary"}
+                      className="text-[10px] font-semibold px-2 py-0.5"
+                    >
+                      {hydrated ? license.tierLabel : "…"}
+                    </Badge>
+                    {hydrated && license.daysRemaining != null && (
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        ({license.daysRemaining}d left)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-1" />
               <DropdownMenuItem
-                className="cursor-pointer rounded-lg px-3 py-2.5"
+                className="cursor-pointer rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-accent focus:bg-accent"
                 onClick={() => router.push("/profile")}
               >
-                <UserCircle className="size-4" />
-                Profile
+                <UserCircle className="size-4 text-muted-foreground" />
+                <span>Profile Settings</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="cursor-pointer rounded-lg px-3 py-2.5"
+                className="cursor-pointer rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-accent focus:bg-accent"
                 onClick={() => router.push("/billing")}
               >
-                <CreditCard className="size-4" />
-                Billing
+                <CreditCard className="size-4 text-muted-foreground" />
+                <span>Billing & Plans</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-1" />
               <DropdownMenuItem
                 variant="destructive"
-                className="cursor-pointer rounded-lg px-3 py-2.5"
+                className="cursor-pointer rounded-lg px-2.5 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
                 onClick={async () => {
                   await logout();
                   router.push("/login");
                 }}
               >
                 <LogOut className="size-4" />
-                Log out
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-    </div> 
     </header>
   );
 }
