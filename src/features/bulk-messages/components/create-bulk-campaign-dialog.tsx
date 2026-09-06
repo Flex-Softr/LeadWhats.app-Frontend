@@ -21,6 +21,7 @@ import { toast } from "sonner";
 
 import { useSubscription } from "@/features/billing/subscription-context";
 import { AiPanelErrorBoundary } from "@/features/bulk-messages/components/ai-panel-error-boundary";
+import { DeviceConnectionAlert } from "@/features/shared/components/device-connection-alert";
 import { MessageTypeCards } from "@/features/single-message/components/message-type-cards";
 import type { MessageFormType } from "@/features/single-message/components/message-type-cards";
 import { useContacts } from "@/features/contacts/contacts-provider";
@@ -929,6 +930,14 @@ export function CreateBulkCampaignDialog({
                   <div className="space-y-5">
                     {WIZARD_STEPS[wizardStep].id === "setup" ? (
                       <>
+                        {!hasConnectedDevice && !contextLoading ? (
+                          <DeviceConnectionAlert
+                            title="No WhatsApp Device Connected"
+                            description="You need at least one connected WhatsApp device to send campaigns. Please link a device under Devices first."
+                            actionText="Connect Device"
+                            actionHref="/devices"
+                          />
+                        ) : null}
                         <div className={cn(sectionClass, "rounded-xl")}>
                           <div className="space-y-2.5">
                             <Label

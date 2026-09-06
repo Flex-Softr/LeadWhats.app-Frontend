@@ -5,8 +5,10 @@ import {
   ChevronDown,
   Circle,
   FileText,
+  Film,
   Image as ImageIcon,
   Loader2,
+  MapPin,
   Mic,
   MessageCircle,
   Paperclip,
@@ -18,11 +20,13 @@ import {
   Smile,
   Smartphone,
   Square,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { LiveChatNewThreadDialog } from "@/features/live-chat/components/live-chat-new-thread-dialog";
 import { LiveChatRenameThreadDialog } from "@/features/live-chat/components/live-chat-rename-thread-dialog";
+import { DeviceConnectionAlert } from "@/features/shared/components/device-connection-alert";
 import { useContacts } from "@/features/contacts/contacts-provider";
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import type {
@@ -202,12 +206,25 @@ export function LiveChatClient() {
     void loadDevices();
   }, [loadDevices, userId, workspaceId, routeKey]);
 
+  const connectedDevices = React.useMemo(
+    () => devices.filter((d) => d.status === "connected"),
+    [devices]
+  );
+  const hasConnectedDevice = connectedDevices.length > 0;
+
   React.useEffect(() => {
-    if (deviceId) return;
-    if (devices.length === 0) return;
-    const connected = devices.filter((d) => d.status === "connected");
-    setDeviceId(connected[0]?.id ?? devices[0].id);
-  }, [devices, deviceId]);
+    if (deviceId) {
+      if (!devices.some((d) => d.id === deviceId)) {
+        setDeviceId(connectedDevices[0]?.id ?? devices[0]?.id ?? "");
+      }
+      return;
+    }
+    if (connectedDevices.length > 0) {
+      setDeviceId(connectedDevices[0].id);
+    } else if (devices.length > 0) {
+      setDeviceId(devices[0].id);
+    }
+  }, [devices, deviceId, connectedDevices]);
 
   const selectedDevice = React.useMemo(
     () => devices.find((d) => d.id === deviceId),
@@ -216,7 +233,15 @@ export function LiveChatClient() {
 
   const loadThreads = React.useCallback(
     async (opts?: { silent?: boolean }) => {
-      if (!deviceId) return;
+      if (!deviceId) {
+        setThreads([]);
+        return;
+      }
+      const targetDev = devices.find((d) => d.id === deviceId);
+      if (targetDev?.status !== "connected") {
+        setThreads([]);
+        return;
+      }
       const silent = opts?.silent === true;
       if (silent) setThreadsRefreshing(true);
       else setThreadsLoading(true);
@@ -230,14 +255,16 @@ export function LiveChatClient() {
           err instanceof ApiError
             ? err.message
             : "Could not load conversations.";
-        toast.error("Load failed", { description: msg });
+        if (!silent) {
+          toast.error("Load failed", { description: msg });
+        }
         setThreads([]);
       } finally {
         if (silent) setThreadsRefreshing(false);
         else setThreadsLoading(false);
       }
     },
-    [deviceId]
+    [deviceId, devices]
   );
 
   React.useEffect(() => {
@@ -412,7 +439,11 @@ export function LiveChatClient() {
     if (!file) return;
     clearAttachmentSelection();
     setAttachmentMimeType(file.type || "");
-    if (file.type.startsWith("image/") || file.type.startsWith("audio/")) {
+    if (
+      file.type.startsWith("image/") ||
+      file.type.startsWith("audio/") ||
+      file.type.startsWith("video/")
+    ) {
       setAttachmentPreviewUrl(URL.createObjectURL(file));
     }
     setAttachmentUploading(true);
@@ -603,100 +634,110 @@ export function LiveChatClient() {
   const sessionConnected = selectedDevice?.status === "connected";
 
   return (
-    <div
-      className={cn(
-        "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm",
-        "dark:border-slate-800 dark:bg-slate-950"
-      )}
-    >
-      <div className="flex flex-col gap-3 border-b border-border bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-          <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
-              <Smartphone className="size-4" />
-            </div>
-            <span className="whitespace-nowrap text-sm font-semibold">Live Chat</span>
-          </div>
-          {devicesLoading ? (
-            <div className="flex h-10 items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" />
-              Loading sessions...
-            </div>
-          ) : devices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Add a device under Devices to use live chat.
-            </p>
-          ) : (
-            <Select
-              value={deviceId}
-              onValueChange={(v) => setDeviceId(v ?? "")}
-              items={devices.map((d) => ({
-                value: d.id,
-                label: deviceOptionLabel(d),
-              }))}
-            >
-              <SelectTrigger className="h-10 w-full rounded-md sm:w-[min(100%,320px)]">
-                <SelectValue placeholder="Select session..." />
-              </SelectTrigger>
-              <SelectContent>
-                {devices.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {deviceOptionLabel(d)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 rounded-md"
-            disabled={!deviceId || threadsLoading || threadsRefreshing}
-            onClick={() => void loadThreads({ silent: true })}
-          >
-            <RefreshCw
-              className={`size-4 ${threadsRefreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
-          <div
-            className={cn(
-              "flex items-center gap-2 text-sm font-medium",
-              sessionConnected
-                ? "text-emerald-700 dark:text-emerald-400"
-                : "text-amber-700 dark:text-amber-400"
-            )}
-          >
-            <span
-              className={cn(
-                "size-2 shrink-0 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.35)]",
-                sessionConnected ? "bg-emerald-500" : "bg-amber-500"
-              )}
-              aria-hidden
-            />
-            {sessionConnected ? "Session connected" : "Session not connected"}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4">
+      {!sessionConnected && !devicesLoading ? (
+        <DeviceConnectionAlert
+          title="No WhatsApp Device Connected"
+          description="Live Chat requires an active, connected WhatsApp device to send and receive real-time messages. Please connect a device under Devices to start chatting."
+          actionText="Connect Device"
+          actionHref="/devices"
+        />
+      ) : null}
 
-      <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/90 lg:w-[320px] lg:border-r lg:border-b-0 dark:border-slate-800">
-          <div className="flex items-center justify-between border-b border-slate-200/90 px-4 py-3 dark:border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-              Chats
-            </h2>
+      <div
+        className={cn(
+          "flex h-[min(720px,calc(100vh-11rem))] flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm",
+          "dark:border-slate-800 dark:bg-slate-950"
+        )}
+      >
+        <div className="flex flex-col gap-3 border-b border-border bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-muted dark:text-foreground">
+                <Smartphone className="size-4" />
+              </div>
+              <span className="whitespace-nowrap text-sm font-semibold">Live Chat</span>
+            </div>
+            {devicesLoading ? (
+              <div className="flex h-10 items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                Loading sessions...
+              </div>
+            ) : devices.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Add a device under Devices to use live chat.
+              </p>
+            ) : (
+              <Select
+                value={deviceId}
+                onValueChange={(v) => setDeviceId(v ?? "")}
+                items={devices.map((d) => ({
+                  value: d.id,
+                  label: deviceOptionLabel(d),
+                }))}
+              >
+                <SelectTrigger className="h-10 w-full rounded-md sm:w-[min(100%,320px)]">
+                  <SelectValue placeholder="Select session..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {devices.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {deviceOptionLabel(d)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="rounded-md text-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:bg-muted/50"
-              disabled={!deviceId || devices.length === 0}
-              onClick={() => setNewThreadOpen(true)}
-              aria-label="New chat"
+              variant="outline"
+              size="sm"
+              className="h-9 rounded-md"
+              disabled={!sessionConnected || !deviceId || threadsLoading || threadsRefreshing}
+              onClick={() => void loadThreads({ silent: true })}
             >
+              <RefreshCw
+                className={`size-4 ${threadsRefreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <div
+              className={cn(
+                "flex items-center gap-2 text-sm font-medium",
+                sessionConnected
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : "text-amber-700 dark:text-amber-400"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-2 shrink-0 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.35)]",
+                  sessionConnected ? "bg-emerald-500" : "bg-amber-500"
+                )}
+                aria-hidden
+              />
+              {sessionConnected ? "Session connected" : "Session not connected"}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
+          <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/90 lg:w-[320px] lg:border-r lg:border-b-0 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200/90 px-4 py-3 dark:border-slate-800">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                Chats
+              </h2>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-md text-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:bg-muted/50"
+                disabled={!sessionConnected || !deviceId || devices.length === 0}
+                onClick={() => setNewThreadOpen(true)}
+                aria-label="New chat"
+              >
               <Plus className="size-5" />
             </Button>
           </div>
@@ -903,6 +944,32 @@ export function LiveChatClient() {
                                 className="mt-2 max-h-44 w-auto rounded-lg object-contain"
                               />
                             ) : null}
+                            {m.kind === "location" ? (
+                              <div
+                                className={cn(
+                                  "mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium",
+                                  outbound
+                                    ? "bg-white/15 text-white"
+                                    : "bg-muted text-foreground"
+                                )}
+                              >
+                                <MapPin className="size-3.5 text-rose-500" />
+                                <span>Shared Location</span>
+                              </div>
+                            ) : null}
+                            {m.kind === "contact" ? (
+                              <div
+                                className={cn(
+                                  "mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium",
+                                  outbound
+                                    ? "bg-white/15 text-white"
+                                    : "bg-muted text-foreground"
+                                )}
+                              >
+                                <UserCheck className="size-3.5 text-primary" />
+                                <span>Shared Contact</span>
+                              </div>
+                            ) : null}
                             <div
                               className={cn(
                                 "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]",
@@ -939,118 +1006,142 @@ export function LiveChatClient() {
               </div>
 
               <div className="border-t border-slate-200/90 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-                {!sessionConnected ? (
-                  <p className="text-center text-sm text-amber-700 dark:text-amber-400">
-                    Connect this session under Devices to send messages.
-                  </p>
-                ) : (
-                  <div className="mx-auto flex max-w-2xl flex-col gap-2">
-                    <input
-                      ref={attachmentInputRef}
-                      type="file"
-                      className="hidden"
-                      onChange={handleAttachmentFile}
-                    />
-                    <Textarea
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      onKeyDown={onComposerKeyDown}
-                      placeholder="Type a message..."
-                      rows={2}
-                      className="min-h-[44px] w-full resize-none rounded-md text-[15px]"
-                      disabled={sending}
-                      aria-label="Message text"
-                    />
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-10 shrink-0 rounded-md px-3"
-                        disabled={sending}
-                        onClick={() => setEmojiOpen((v) => !v)}
-                      >
-                        <Smile className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-10 shrink-0 rounded-md"
-                        disabled={sending || attachmentUploading}
-                        onClick={() => attachmentInputRef.current?.click()}
-                      >
-                        {attachmentUploading ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Paperclip className="size-4" />
-                        )}
-                        {attachmentAssetId ? "Replace file" : "Attach"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={recording ? "destructive" : "outline"}
-                        className="h-10 shrink-0 rounded-md"
-                        disabled={sending || attachmentUploading}
-                        onClick={() =>
-                          recording ? stopVoiceRecording() : void startVoiceRecording()
-                        }
-                      >
-                        {recording ? (
-                          <>
-                            <Square className="size-4" />
-                            Stop
-                          </>
-                        ) : (
-                          <>
-                            <Mic className="size-4" />
-                            Voice
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        className="h-10 shrink-0 rounded-md bg-primary px-5 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
-                        disabled={!canSend}
-                        onClick={() => void handleSend()}
-                      >
-                        {sending ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <SendHorizontal className="size-4" />
-                        )}
-                        Send
-                      </Button>
-                    </div>
-                    {attachmentAssetId ? (
-                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-800 dark:bg-slate-900/40">
-                        {attachmentMimeType.startsWith("image/") && attachmentPreviewUrl ? (
-                          <img
-                            src={attachmentPreviewUrl}
-                            alt={attachmentName || "Attachment preview"}
-                            className="max-h-44 w-auto rounded-lg object-contain"
-                          />
-                        ) : attachmentMimeType.startsWith("audio/") &&
-                          attachmentPreviewUrl ? (
-                          <audio className="w-full" src={attachmentPreviewUrl} controls />
-                        ) : null}
-                        <div className="mt-1.5 flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                          {voiceReady ? (
-                            <Mic className="inline size-3.5" />
-                          ) : (
-                            <ImageIcon className="inline size-3.5" />
-                          )}
-                          <span className="break-all">{attachmentName}</span>
-                          <button
-                            type="button"
-                            className="ml-auto rounded px-1.5 py-0.5 text-[11px] hover:bg-slate-100 dark:hover:bg-slate-800"
-                            onClick={discardVoice}
-                          >
-                            Discard
-                          </button>
-                        </div>
-                      </div>
-                    ) : null}
+                <div className="mx-auto flex max-w-2xl flex-col gap-2">
+                  <input
+                    ref={attachmentInputRef}
+                    type="file"
+                    className="hidden"
+                    disabled={!sessionConnected}
+                    onChange={handleAttachmentFile}
+                  />
+                  <Textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={onComposerKeyDown}
+                    placeholder={
+                      !sessionConnected
+                        ? "Connect this WhatsApp session under Devices to send messages..."
+                        : "Type a message..."
+                    }
+                    rows={2}
+                    className="min-h-[44px] w-full resize-none rounded-md text-[15px]"
+                    disabled={!sessionConnected || sending}
+                    aria-label="Message text"
+                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10 shrink-0 rounded-md px-3"
+                      disabled={!sessionConnected || sending}
+                      onClick={() => setEmojiOpen((v) => !v)}
+                    >
+                      <Smile className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10 shrink-0 rounded-md"
+                      disabled={!sessionConnected || sending || attachmentUploading}
+                      onClick={() => attachmentInputRef.current?.click()}
+                    >
+                      {attachmentUploading ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Paperclip className="size-4" />
+                      )}
+                      {attachmentAssetId ? "Replace file" : "Attach"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recording ? "destructive" : "outline"}
+                      className="h-10 shrink-0 rounded-md"
+                      disabled={!sessionConnected || sending || attachmentUploading}
+                      onClick={() =>
+                        recording ? stopVoiceRecording() : void startVoiceRecording()
+                      }
+                    >
+                      {recording ? (
+                        <>
+                          <Square className="size-4" />
+                          Stop
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="size-4" />
+                          Voice
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      className="h-10 shrink-0 rounded-md bg-primary px-5 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+                      disabled={!sessionConnected || !canSend}
+                      onClick={() => void handleSend()}
+                    >
+                      {sending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <SendHorizontal className="size-4" />
+                      )}
+                      Send
+                    </Button>
                   </div>
-                )}
+                  {attachmentAssetId ? (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-900/40">
+                      {attachmentMimeType.startsWith("image/") && attachmentPreviewUrl ? (
+                        <img
+                          src={attachmentPreviewUrl}
+                          alt={attachmentName || "Attachment preview"}
+                          className="max-h-44 w-auto rounded-lg object-contain"
+                        />
+                      ) : attachmentMimeType.startsWith("video/") && attachmentPreviewUrl ? (
+                        <video
+                          className="max-h-48 w-full rounded-lg bg-black/10 object-contain"
+                          src={attachmentPreviewUrl}
+                          controls
+                        />
+                      ) : attachmentMimeType.startsWith("audio/") &&
+                        attachmentPreviewUrl ? (
+                        <audio className="w-full" src={attachmentPreviewUrl} controls />
+                      ) : !attachmentMimeType.startsWith("image/") &&
+                        !attachmentMimeType.startsWith("audio/") &&
+                        !attachmentMimeType.startsWith("video/") &&
+                        attachmentName ? (
+                        <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-950">
+                          <FileText className="size-5 text-primary shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium text-slate-800 dark:text-slate-200">
+                              {attachmentName}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground uppercase">
+                              {attachmentMimeType || "Document"}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
+                      <div className="mt-2 flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                        {voiceReady ? (
+                          <Mic className="inline size-3.5 text-rose-500" />
+                        ) : attachmentMimeType.startsWith("video/") ? (
+                          <Film className="inline size-3.5 text-indigo-500" />
+                        ) : attachmentMimeType.startsWith("image/") ? (
+                          <ImageIcon className="inline size-3.5 text-emerald-500" />
+                        ) : (
+                          <FileText className="inline size-3.5 text-sky-500" />
+                        )}
+                        <span className="truncate font-medium">{attachmentName}</span>
+                        <button
+                          type="button"
+                          className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                          onClick={discardVoice}
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
                 {recording ? (
                   <div className="mx-auto mt-2 flex max-w-2xl items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
                     <Circle className="size-3 fill-current" />
@@ -1097,6 +1188,7 @@ export function LiveChatClient() {
         thread={selectedThread}
         onSaved={onThreadRenamed}
       />
+    </div>
     </div>
   );
 }

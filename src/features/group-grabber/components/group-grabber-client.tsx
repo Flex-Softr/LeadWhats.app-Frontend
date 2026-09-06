@@ -18,6 +18,7 @@ import {
 
 import { GroupGrabberList } from "@/features/group-grabber/components/group-grabber-list";
 import { GroupMembersSheet } from "@/features/group-grabber/components/group-members-sheet";
+import { DeviceConnectionAlert } from "@/features/shared/components/device-connection-alert";
 import { StatCard } from "@/features/shared/components/stat-card";
 import type { DevicesListResponse } from "@/types/device";
 import type { GrabbedGroup } from "@/types/group-grabber";
@@ -117,15 +118,22 @@ export function GroupGrabberClient() {
 
   const groupsFetchGen = React.useRef(0);
 
+  const connectedDevices = React.useMemo(
+    () => devices.filter((d) => d.status === "connected"),
+    [devices]
+  );
+  const hasConnectedDevice = connectedDevices.length > 0;
+
   const loadDevices = React.useCallback(async () => {
     setDevicesLoading(true);
     try {
       const data = await apiJson<DevicesListResponse>("/v1/devices");
       setDevices(data.devices);
+      const connected = data.devices.filter((d) => d.status === "connected");
       setDeviceId((prev) => {
-        if (prev !== "" && data.devices.some((d) => d.id === prev))
+        if (prev !== "" && connected.some((d) => d.id === prev))
           return prev;
-        return data.devices[0]?.id ?? "";
+        return connected[0]?.id ?? "";
       });
     } catch (err) {
       const msg =
@@ -139,9 +147,11 @@ export function GroupGrabberClient() {
   const loadGroups = React.useCallback(
     async (opts?: { silent?: boolean }) => {
       const silent = opts?.silent === true;
-      if (!deviceId) {
+      const targetDevice = devices.find((d) => d.id === deviceId);
+      if (!deviceId || targetDevice?.status !== "connected") {
         setGroups([]);
         setMeta(null);
+        setGroupsLoading(false);
         return;
       }
       const gen = (groupsFetchGen.current += 1);
@@ -192,7 +202,7 @@ export function GroupGrabberClient() {
         }
       }
     },
-    [deviceId]
+    [deviceId, devices]
   );
 
   React.useEffect(() => {
@@ -277,6 +287,15 @@ export function GroupGrabberClient() {
         </p>
       </div>
 
+      {!hasConnectedDevice && !devicesLoading ? (
+        <DeviceConnectionAlert
+          title="No WhatsApp Device Connected"
+          description="Group Grabber requires an active, connected WhatsApp device to scan group chats, inspect participants, and export contacts. Please connect a device under Devices to get started."
+          actionText="Connect Device"
+          actionHref="/devices"
+        />
+      ) : null}
+
       <Card className="overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:p-6">
           <div className="min-w-0 flex-1 space-y-2">
@@ -329,7 +348,7 @@ export function GroupGrabberClient() {
               type="button"
               variant="secondary"
               className="h-10 rounded-md"
-              disabled={!deviceId || groupsLoading}
+              disabled={!hasConnectedDevice || !deviceId || groupsLoading}
               onClick={() => void loadGroups({ silent: false })}
             >
               {groupsLoading ? (
@@ -492,7 +511,7 @@ export function GroupGrabberClient() {
                 variant="link"
                 className="h-auto px-0 text-blue-600"
                 onClick={selectAllVisible}
-                disabled={visible.length === 0}
+                disabled={!hasConnectedDevice || visible.length === 0}
               >
                 Select all visible
               </Button>

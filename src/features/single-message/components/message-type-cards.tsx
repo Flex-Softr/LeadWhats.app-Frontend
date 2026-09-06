@@ -1,19 +1,30 @@
 "use client";
 
-import { FileText, MessageSquare } from "lucide-react";
+import { FileText, Image as ImageIcon, MessageSquare } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 export type MessageFormType = "text" | "template";
+export type SingleMessageFormType = "text" | "template" | "media";
 
 type MessageTypeCardsProps = {
-  value: MessageFormType;
-  onChange: (value: MessageFormType) => void;
+  value: SingleMessageFormType;
+  onChange: (value: any) => void;
+  includeMedia?: boolean;
 };
 
-export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
+export function MessageTypeCards({
+  value,
+  onChange,
+  includeMedia = false,
+}: MessageTypeCardsProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div
+      className={cn(
+        "grid gap-3",
+        includeMedia ? "sm:grid-cols-3" : "sm:grid-cols-2"
+      )}
+    >
       <button
         type="button"
         onClick={() => onChange("text")}
@@ -65,6 +76,34 @@ export function MessageTypeCards({ value, onChange }: MessageTypeCardsProps) {
           Send from your saved template library.
         </span>
       </button>
+
+      {includeMedia ? (
+        <button
+          type="button"
+          onClick={() => onChange("media")}
+          className={cn(
+            "flex min-h-32 flex-col items-start gap-2 rounded-xl border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
+            value === "media"
+              ? "border-foreground/20 bg-muted text-foreground ring-2 ring-foreground/10"
+              : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+          )}
+        >
+          <span
+            className={cn(
+              "flex size-10 items-center justify-center rounded-lg",
+              value === "media"
+                ? "bg-foreground text-background"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            <ImageIcon className="size-5" />
+          </span>
+          <span className="font-semibold text-foreground">Media & Document</span>
+          <span className="text-sm leading-5 text-muted-foreground">
+            Send image, video, audio, or document with caption.
+          </span>
+        </button>
+      ) : null}
     </div>
   );
 }

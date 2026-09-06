@@ -169,6 +169,68 @@ export const OPEN_API_ENDPOINTS: OpenApiEndpointDoc[] = [
     ],
   },
   {
+    id: "send-media",
+    method: "POST",
+    path: "/v1/open/messages/media",
+    title: "Send media message",
+    description:
+      "Send an image, video, audio note, or document via WhatsApp using your default device. Supports multipart/form-data upload or JSON with a public fileUrl or base64 data URI.",
+    bodyExample: `{
+  "toPhone": "+14155552671",
+  "caption": "Check out our latest catalogue!",
+  "fileUrl": "https://example.com/assets/catalogue.pdf",
+  "fileName": "catalogue.pdf"
+}`,
+    responseExample: envelope("Message sent successfully.", `{
+  "id": "00000000-0000-0000-0000-000000000020",
+  "status": "sent",
+  "kind": "media",
+  "toPhone": "+14155552671",
+  "deviceId": "00000000-0000-0000-0000-000000000001",
+  "templateId": null,
+  "bodyText": "Check out our latest catalogue!",
+  "fileName": "catalogue.pdf",
+  "createdAt": "2026-08-05T04:00:00.000Z",
+  "note": "Sent from device “Sales phone” via your linked WhatsApp."
+}`),
+    notes: [
+      "Send either a public fileUrl, a fileBase64 string (data URI), or upload a file using multipart/form-data with field name 'file'.",
+      "Accepted formats: Images (PNG, JPG, WEBP, GIF), Videos (MP4), Audio (MP3, OGG, Opus), Documents (PDF, DOCX, XLSX, ZIP, TXT).",
+      "Max file size is 16 MB for media and 30 MB for documents.",
+      "Requires a connected default device.",
+    ],
+  },
+  {
+    id: "send-document",
+    method: "POST",
+    path: "/v1/open/messages/document",
+    title: "Send document",
+    description:
+      "Send a PDF invoice, Word document, Excel spreadsheet, or archive to a recipient with a custom filename and optional caption.",
+    bodyExample: `{
+  "toPhone": "+14155552671",
+  "caption": "Your invoice for order #INV-9821",
+  "fileUrl": "https://example.com/invoices/inv-9821.pdf",
+  "fileName": "invoice-9821.pdf"
+}`,
+    responseExample: envelope("Message sent successfully.", `{
+  "id": "00000000-0000-0000-0000-000000000021",
+  "status": "sent",
+  "kind": "media",
+  "toPhone": "+14155552671",
+  "deviceId": "00000000-0000-0000-0000-000000000001",
+  "templateId": null,
+  "bodyText": "Your invoice for order #INV-9821",
+  "fileName": "invoice-9821.pdf",
+  "createdAt": "2026-08-05T04:00:00.000Z",
+  "note": "Sent from device “Sales phone” via your linked WhatsApp."
+}`),
+    notes: [
+      "If fileName is omitted, a filename will be inferred from the URL or MIME type.",
+      "Also accepts multipart/form-data with field name 'file'.",
+    ],
+  },
+  {
     id: "list-groups",
     method: "GET",
     path: "/v1/open/contact-groups",

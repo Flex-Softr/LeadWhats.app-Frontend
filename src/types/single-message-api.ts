@@ -11,11 +11,12 @@ export type ValidatePhoneResponse =
 export type SingleSendResponse = {
   id: string;
   status: "queued" | "sent" | "failed" | "simulated";
-  kind: "text" | "template";
+  kind: "text" | "template" | "media";
   toPhone: string;
   deviceId: string;
   templateId: string | null;
   bodyText: string | null;
+  fileName?: string | null;
   createdAt: string;
   note?: string;
 };

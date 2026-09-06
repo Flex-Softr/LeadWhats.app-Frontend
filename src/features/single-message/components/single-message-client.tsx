@@ -7,11 +7,18 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileText,
+  Film,
+  Image as ImageIcon,
+  Link2,
   Loader2,
   MessageSquare,
+  Music,
+  Paperclip,
   Send,
   SendHorizontal,
   Smartphone,
+  Upload,
+  X,
 } from "lucide-react";
 
 import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
@@ -20,8 +27,10 @@ import type {
   SingleSendResponse,
   ValidatePhoneResponse,
 } from "@/types/single-message-api";
+import { DeviceConnectionAlert } from "@/features/shared/components/device-connection-alert";
 import { MessageTypeCards } from "@/features/single-message/components/message-type-cards";
-import type { MessageFormType } from "@/features/single-message/components/message-type-cards";
+import type { SingleMessageFormType } from "@/features/single-message/components/message-type-cards";
+import { cn } from "@/lib/utils";
 import { PhoneNumberWithCountryInput } from "@/features/shared/components/phone-number-with-country-input";
 import {
   buildE164Phone,
@@ -47,7 +56,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
+function formatBytes(bytes: number, decimals = 1): string {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
 
 function deviceName(d: DeviceApiRecord): string {
   const name = (d.name ?? "").trim();
@@ -67,14 +86,82 @@ export function SingleMessageClient() {
     DEFAULT_PHONE_COUNTRY_ISO2
   );
   const [localPhoneNumber, setLocalPhoneNumber] = React.useState("");
-  const [messageType, setMessageType] = React.useState<MessageFormType>("text");
+  const [messageType, setMessageType] = React.useState<SingleMessageFormType>("text");
   const [messageText, setMessageText] = React.useState("");
   const [templateId, setTemplateId] = React.useState<string>("");
   const [checking, setChecking] = React.useState(false);
   const [sending, setSending] = React.useState(false);
 
+  // Media attachment states
+  const [mediaMode, setMediaMode] = React.useState<"upload" | "url">("upload");
+  const [mediaFile, setMediaFile] = React.useState<File | null>(null);
+  const [mediaFileName, setMediaFileName] = React.useState("");
+  const [mediaMimeType, setMediaMimeType] = React.useState("");
+  const [mediaFileSize, setMediaFileSize] = React.useState(0);
+  const [mediaFileBase64, setMediaFileBase64] = React.useState("");
+  const [mediaFileUrl, setMediaFileUrl] = React.useState("");
+  const [mediaPreviewUrl, setMediaPreviewUrl] = React.useState("");
+  const mediaInputRef = React.useRef<HTMLInputElement>(null);
+
+  const clearMediaFile = React.useCallback(() => {
+    if (mediaPreviewUrl) {
+      URL.revokeObjectURL(mediaPreviewUrl);
+    }
+    setMediaFile(null);
+    setMediaFileName("");
+    setMediaMimeType("");
+    setMediaFileSize(0);
+    setMediaFileBase64("");
+    setMediaPreviewUrl("");
+    if (mediaInputRef.current) {
+      mediaInputRef.current.value = "";
+    }
+  }, [mediaPreviewUrl]);
+
   React.useEffect(() => {
-    if (messageType === "text") setTemplateId("");
+    return () => {
+      if (mediaPreviewUrl) {
+        URL.revokeObjectURL(mediaPreviewUrl);
+      }
+    };
+  }, [mediaPreviewUrl]);
+
+  const handleMediaFileChange = (file: File) => {
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error("File too large", {
+        description: "Maximum file size for WhatsApp attachment is 16 MB.",
+      });
+      return;
+    }
+    if (mediaPreviewUrl) {
+      URL.revokeObjectURL(mediaPreviewUrl);
+    }
+    setMediaFile(file);
+    setMediaFileName(file.name);
+    setMediaMimeType(file.type || "application/octet-stream");
+    setMediaFileSize(file.size);
+    setMediaPreviewUrl(URL.createObjectURL(file));
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        setMediaFileBase64(result);
+      }
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read file", {
+        description: "Could not encode the chosen file for sending.",
+      });
+      clearMediaFile();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  React.useEffect(() => {
+    if (messageType === "text") {
+      setTemplateId("");
+    }
   }, [messageType]);
 
   const loadContext = React.useCallback(async () => {
@@ -137,7 +224,9 @@ export function SingleMessageClient() {
     localPhoneNumber.trim().length > 0 &&
     (messageType === "template"
       ? templateId.length > 0
-      : messageText.trim().length > 0);
+      : messageType === "media"
+        ? (mediaMode === "upload" ? Boolean(mediaFileBase64) : Boolean(mediaFileUrl.trim()))
+        : messageText.trim().length > 0);
 
   async function handleCheckNumber() {
     const trimmed = phone.trim();
@@ -183,20 +272,44 @@ export function SingleMessageClient() {
     setSending(true);
     try {
       const toPhone = phone.trim();
-      const body =
-        messageType === "text"
-          ? {
-              deviceId,
-              toPhone,
-              kind: "text" as const,
-              bodyText: messageText.trim(),
-            }
-          : {
-              deviceId,
-              toPhone,
-              kind: "template" as const,
-              templateId,
-            };
+      let body: {
+        deviceId: string;
+        toPhone: string;
+        kind: "text" | "template" | "media";
+        bodyText?: string;
+        templateId?: string;
+        fileBase64?: string;
+        fileUrl?: string;
+        fileName?: string;
+        mimeType?: string;
+      };
+
+      if (messageType === "text") {
+        body = {
+          deviceId,
+          toPhone,
+          kind: "text",
+          bodyText: messageText.trim(),
+        };
+      } else if (messageType === "template") {
+        body = {
+          deviceId,
+          toPhone,
+          kind: "template",
+          templateId,
+        };
+      } else {
+        body = {
+          deviceId,
+          toPhone,
+          kind: "media",
+          bodyText: messageText.trim() || undefined,
+          fileBase64: mediaMode === "upload" ? mediaFileBase64 : undefined,
+          fileUrl: mediaMode === "url" ? mediaFileUrl.trim() : undefined,
+          fileName: mediaFileName.trim() || undefined,
+          mimeType: mediaMimeType.trim() || undefined,
+        };
+      }
 
       const out = await apiJson<SingleSendResponse>("/v1/messages/single", {
         method: "POST",
@@ -226,6 +339,8 @@ export function SingleMessageClient() {
       setMessageType("text");
       setMessageText("");
       setTemplateId("");
+      clearMediaFile();
+      setMediaFileUrl("");
     } catch (err) {
       const msg =
         err instanceof ApiError ? err.message : "Send request failed.";
@@ -335,26 +450,12 @@ export function SingleMessageClient() {
       </div>
 
       {connected.length === 0 ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
-          <div className="flex items-start gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-200">
-              <AlertTriangle className="size-4" />
-            </span>
-            <div>
-              <p className="font-semibold">No connected WhatsApp device</p>
-              <p className="mt-1 text-amber-900/90 dark:text-amber-200/90">
-                Link a phone from{" "}
-                <Link
-                  href="/devices"
-                  className="font-semibold underline underline-offset-2"
-                >
-                  Devices
-                </Link>{" "}
-                before sending a single message.
-              </p>
-            </div>
-          </div>
-        </div>
+        <DeviceConnectionAlert
+          title="No WhatsApp Device Connected"
+          description="An active, connected WhatsApp device is required to send messages. Please connect a device under Devices to get started."
+          actionText="Connect Device"
+          actionHref="/devices"
+        />
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -429,7 +530,7 @@ export function SingleMessageClient() {
                     type="button"
                     variant="outline"
                     className="h-12 w-full rounded-lg border-border bg-white px-4 font-semibold text-foreground shadow-sm hover:bg-muted dark:border-border dark:bg-slate-950 dark:text-foreground dark:hover:bg-muted/50 md:w-auto"
-                    disabled={checking}
+                    disabled={connected.length === 0 || checking || !localPhoneNumber.trim()}
                     onClick={() => void handleCheckNumber()}
                   >
                     {checking ? (
@@ -458,7 +559,11 @@ export function SingleMessageClient() {
               </CardDescription>
             </CardHeader>
             <CardContent className="px-5 pb-6 sm:px-6 sm:pb-7">
-              <MessageTypeCards value={messageType} onChange={setMessageType} />
+              <MessageTypeCards
+                value={messageType}
+                onChange={setMessageType}
+                includeMedia={true}
+              />
             </CardContent>
           </Card>
 
@@ -478,7 +583,12 @@ export function SingleMessageClient() {
                   id="message-body"
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Write the WhatsApp message here..."
+                  disabled={connected.length === 0 || sending}
+                  placeholder={
+                    connected.length === 0
+                      ? "Connect a WhatsApp device to write and send messages..."
+                      : "Write the WhatsApp message here..."
+                  }
                   className="min-h-48 resize-y rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-relaxed shadow-inner shadow-foreground/5 focus-visible:border-ring focus-visible:ring-ring/20 dark:border-slate-800 dark:bg-slate-900/70"
                 />
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -491,7 +601,7 @@ export function SingleMessageClient() {
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          ) : messageType === "template" ? (
             <Card className={cardClass}>
               <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
                 <CardTitle className="text-base font-semibold sm:text-lg">
@@ -519,6 +629,7 @@ export function SingleMessageClient() {
                     <Select
                       value={templateId}
                       onValueChange={(v) => setTemplateId(v ?? "")}
+                      disabled={connected.length === 0 || sending}
                       items={templates.map((t) => ({
                         value: t.id,
                         label: t.name,
@@ -543,6 +654,231 @@ export function SingleMessageClient() {
                     The selected template content and attached media will be
                     used for this send.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className={cardClass}>
+              <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-6">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="size-5 text-foreground dark:text-muted-foreground" />
+                  <CardTitle className="text-base font-semibold sm:text-lg">
+                    Media attachment & caption
+                  </CardTitle>
+                </div>
+                <CardDescription>
+                  Send an image, video, audio note, or document (PDF, Excel, Word, ZIP, etc.) up to 16 MB.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5 px-5 pb-6 sm:px-6 sm:pb-7">
+                {/* Mode toggle: Upload File vs Direct URL */}
+                <div className="flex items-center gap-2 rounded-lg border border-border/80 bg-slate-50 p-1 dark:bg-slate-900/60">
+                  <button
+                    type="button"
+                    onClick={() => setMediaMode("upload")}
+                    disabled={connected.length === 0 || sending}
+                    className={cn(
+                      "flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition-colors",
+                      mediaMode === "upload"
+                        ? "bg-white text-foreground shadow-sm dark:bg-slate-950"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Upload className="size-3.5" />
+                    Upload File
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMediaMode("url")}
+                    disabled={connected.length === 0 || sending}
+                    className={cn(
+                      "flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition-colors",
+                      mediaMode === "url"
+                        ? "bg-white text-foreground shadow-sm dark:bg-slate-950"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Link2 className="size-3.5" />
+                    Direct URL
+                  </button>
+                </div>
+
+                {mediaMode === "upload" ? (
+                  <div>
+                    <input
+                      ref={mediaInputRef}
+                      type="file"
+                      id="single-media-upload"
+                      className="hidden"
+                      disabled={connected.length === 0 || sending}
+                      accept="image/*,video/*,audio/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,text/csv,application/zip"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleMediaFileChange(file);
+                      }}
+                    />
+
+                    {!mediaFile ? (
+                      <div
+                        onClick={() => {
+                          if (connected.length > 0 && !sending) {
+                            mediaInputRef.current?.click();
+                          }
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (connected.length > 0 && !sending) {
+                            const file = e.dataTransfer.files?.[0];
+                            if (file) handleMediaFileChange(file);
+                          }
+                        }}
+                        className={cn(
+                          "group flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 p-7 text-center transition-colors dark:border-slate-800",
+                          connected.length === 0 || sending
+                            ? "cursor-not-allowed opacity-60"
+                            : "cursor-pointer hover:border-primary/50 hover:bg-slate-50/70 dark:hover:bg-slate-900/40"
+                        )}
+                      >
+                        <div className="flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary dark:bg-slate-800 dark:text-slate-400">
+                          <Upload className="size-6" />
+                        </div>
+                        <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          Click to upload or drag & drop
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          Images (JPG, PNG, WEBP), Audio (MP3, OGG, Opus), Video (MP4), or Documents (PDF, DOC, XLS)
+                        </p>
+                        <span className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          Max 16 MB
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                        {/* File preview */}
+                        {mediaMimeType.startsWith("image/") && mediaPreviewUrl ? (
+                          <div className="mb-3 flex justify-center">
+                            <img
+                              src={mediaPreviewUrl}
+                              alt={mediaFileName}
+                              className="max-h-56 w-auto rounded-lg border border-border object-contain shadow-sm"
+                            />
+                          </div>
+                        ) : mediaMimeType.startsWith("video/") && mediaPreviewUrl ? (
+                          <div className="mb-3 flex justify-center">
+                            <video
+                              src={mediaPreviewUrl}
+                              controls
+                              className="max-h-56 w-full rounded-lg border border-border shadow-sm"
+                            />
+                          </div>
+                        ) : mediaMimeType.startsWith("audio/") && mediaPreviewUrl ? (
+                          <div className="mb-3">
+                            <audio
+                              src={mediaPreviewUrl}
+                              controls
+                              className="w-full"
+                            />
+                          </div>
+                        ) : (
+                          <div className="mb-3 flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-950">
+                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                              <FileText className="size-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-foreground">
+                                {mediaFileName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {mediaMimeType || "Document"} · {formatBytes(mediaFileSize)}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2 border-t border-slate-200/60 pt-2 dark:border-slate-800/60">
+                          <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                            <Paperclip className="size-3.5 shrink-0" />
+                            <span className="truncate font-medium text-foreground">{mediaFileName}</span>
+                            <span className="shrink-0 text-slate-400">({formatBytes(mediaFileSize)})</span>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => mediaInputRef.current?.click()}
+                              disabled={sending}
+                            >
+                              Change
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                              onClick={clearMediaFile}
+                              disabled={sending}
+                            >
+                              <X className="mr-1 size-3.5" />
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="media-url">Public File URL</Label>
+                      <Input
+                        id="media-url"
+                        type="url"
+                        placeholder="https://example.com/invoice.pdf or image link"
+                        value={mediaFileUrl}
+                        onChange={(e) => setMediaFileUrl(e.target.value)}
+                        disabled={connected.length === 0 || sending}
+                        className={fieldClass}
+                      />
+                      <p className={helperClass}>
+                        Must be a direct, publicly reachable URL (https://) to an image, video, audio, or document file.
+                      </p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="media-url-name">Custom file name (optional)</Label>
+                      <Input
+                        id="media-url-name"
+                        placeholder="e.g. invoice.pdf"
+                        value={mediaFileName}
+                        onChange={(e) => setMediaFileName(e.target.value)}
+                        disabled={connected.length === 0 || sending}
+                        className={fieldClass}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Caption / body text */}
+                <div className="space-y-2 border-t border-slate-100 pt-2 dark:border-slate-800">
+                  <Label htmlFor="media-caption">Caption or message text (optional)</Label>
+                  <Textarea
+                    id="media-caption"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    disabled={connected.length === 0 || sending}
+                    placeholder="Add an optional caption for this media..."
+                    className="min-h-28 resize-y rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-relaxed shadow-inner shadow-foreground/5 focus-visible:border-ring focus-visible:ring-ring/20 dark:border-slate-800 dark:bg-slate-900/70"
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className={helperClass}>
+                      The caption will accompany the attachment on WhatsApp.
+                    </p>
+                    <p className={`${helperClass} tabular-nums`}>
+                      {messageText.trim().length} chars
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -590,8 +926,15 @@ export function SingleMessageClient() {
                 <p className="mt-1 font-semibold text-slate-900 dark:text-slate-50">
                   {messageType === "text"
                     ? "Text message"
-                    : "Template message"}
+                    : messageType === "template"
+                      ? "Template message"
+                      : "Media & Document"}
                 </p>
+                {messageType === "media" && (mediaFileName || mediaFileUrl) ? (
+                  <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                    {mediaFileName || mediaFileUrl}
+                  </p>
+                ) : null}
               </div>
               <Button
                 type="button"

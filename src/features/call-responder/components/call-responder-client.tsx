@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { CallResponderRulesTable } from "@/features/call-responder/components/call-responder-rules-table";
 import { CreateCallResponderRuleDialog } from "@/features/call-responder/components/create-call-responder-rule-dialog";
+import { DeviceConnectionAlert } from "@/features/shared/components/device-connection-alert";
 import { ListEmptyState } from "@/features/shared/components/list-empty-state";
 import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
 import { StatCard } from "@/features/shared/components/stat-card";
@@ -92,6 +93,12 @@ export function CallResponderClient() {
       cancelled = true;
     };
   }, []);
+
+  const connectedDevices = React.useMemo(
+    () => devices.filter((d) => d.status === "connected"),
+    [devices]
+  );
+  const hasConnectedDevice = connectedDevices.length > 0;
 
   const stats = React.useMemo(() => {
     const total = rules.length;
@@ -213,7 +220,7 @@ export function CallResponderClient() {
             <Button
               type="button"
               className="h-10 rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary/90"
-              disabled={loading || devices.length === 0}
+              disabled={!hasConnectedDevice || loading}
               onClick={() => setCreateOpen(true)}
             >
               <Plus className="size-4" />
@@ -221,6 +228,15 @@ export function CallResponderClient() {
             </Button>
           </div>
         </div>
+
+        {!hasConnectedDevice && !loading ? (
+          <DeviceConnectionAlert
+            title="No WhatsApp Device Connected"
+            description="Call responder requires an active, connected WhatsApp device to detect calls and send automatic WhatsApp replies. Please connect a device under Devices to get started."
+            actionText="Connect Device"
+            actionHref="/devices"
+          />
+        ) : null}
 
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs sm:flex-row sm:items-center sm:gap-4">
           <div className="relative flex-1">

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { AutoReplyRulesTable } from "@/features/auto-reply/components/auto-reply-rules-table";
 import { CreateAutoReplyRuleDialog } from "@/features/auto-reply/components/create-auto-reply-rule-dialog";
 import { ruleApiToUi } from "@/features/auto-reply/lib/auto-reply-map";
+import { DeviceConnectionAlert } from "@/features/shared/components/device-connection-alert";
 import { ListEmptyState } from "@/features/shared/components/list-empty-state";
 import { ConfirmDestructiveDialog } from "@/features/shared/components/confirm-destructive-dialog";
 import { StatCard } from "@/features/shared/components/stat-card";
@@ -24,6 +25,7 @@ import type {
   AutoReplyRuleMutationResponse,
   AutoReplyRulesListResponse,
 } from "@/types/auto-reply-api";
+import type { DeviceApiRecord, DevicesListResponse } from "@/types/device";
 import { useSessionIdentity } from "@/hooks/use-session-identity";
 import { ApiError, apiJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -56,6 +58,30 @@ export function AutoReplyClient() {
   const [deleteTarget, setDeleteTarget] = React.useState<AutoReplyRule | null>(
     null
   );
+  const [devices, setDevices] = React.useState<DeviceApiRecord[]>([]);
+  const [devicesLoading, setDevicesLoading] = React.useState(true);
+
+  const loadDevices = React.useCallback(async () => {
+    setDevicesLoading(true);
+    try {
+      const data = await apiJson<DevicesListResponse>("/v1/devices");
+      setDevices(data.devices);
+    } catch {
+      setDevices([]);
+    } finally {
+      setDevicesLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void loadDevices();
+  }, [loadDevices, userId, workspaceId, routeKey]);
+
+  const connectedDevices = React.useMemo(
+    () => devices.filter((d) => d.status === "connected"),
+    [devices]
+  );
+  const hasConnectedDevice = connectedDevices.length > 0;
 
   const loadRules = React.useCallback(async (opts?: { silent?: boolean }) => {
     const silent = opts?.silent === true;
@@ -196,7 +222,7 @@ export function AutoReplyClient() {
             <Button
               type="button"
               className="h-10 rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary/90"
-              disabled={loading}
+              disabled={!hasConnectedDevice || loading}
               onClick={() => openCreate()}
             >
               <Plus className="size-4" />
@@ -204,6 +230,15 @@ export function AutoReplyClient() {
             </Button>
           </div>
         </div>
+
+        {!hasConnectedDevice && !devicesLoading ? (
+          <DeviceConnectionAlert
+            title="No WhatsApp Device Connected"
+            description="Auto-reply rules require an active, connected WhatsApp device to listen for incoming messages and trigger automated responses. Please connect a device under Devices to get started."
+            actionText="Connect Device"
+            actionHref="/devices"
+          />
+        ) : null}
 
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs sm:flex-row sm:items-center sm:gap-4">
           <div className="relative flex-1">
